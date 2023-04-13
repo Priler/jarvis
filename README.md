@@ -7,9 +7,9 @@ Simple Voice Assistant made as an experiment using [Silero](https://github.com/s
 `The code has NOT been polished and is provided "as is". There are a lot of code that are redundant and there are tons of improvements that can be made.`
 
 # Installation
-First, install the requirements, the file is just a `pip freeze` 'k.<br>
-Second, check `config.py` and set required values.<br>
-Next, just run the `main.py` script.<br><br>
+First, install the requirements, the `requirements.txt` file is just an output of `pip freeze` from my test venv 'k.<br>
+Second, check `config.py` and set required values (api key, device index).<br>
+Next, run the `main.py` script and Voilà, as simple as that.<br><br>
 
 And don't forget to put models of Vosk to main folder.<br>
 You can get the latest from the [official website.](https://alphacephei.com/vosk/models)
