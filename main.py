@@ -53,7 +53,7 @@ openai.api_key = config.OPENAI_TOKEN
 
 # PORCUPINE
 porcupine = pvporcupine.create(
-    access_key='H2JhXpfLdGYG2wMqvc61tipo0uKZQvwkEfA26CAQQe5n1y7zfZGneQ==',
+    access_key=config.PICOVOICE_TOKEN,
     keywords=['jarvis'],
     sensitivities=[1]
 )

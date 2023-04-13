@@ -10,6 +10,8 @@ MICROPHONE_INDEX = 0  # ID микрофона (можете просто мен�
 
 CHROME_PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
+PICOVOICE_TOKEN = "<ТУТ ТОКЕН PICOVOICE>"
+
 OPENAI_TOKEN = "<ТУТ ТОКЕН CHAT-GPT>"
 
 VA_CMD_LIST = {
