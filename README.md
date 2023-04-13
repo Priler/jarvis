@@ -14,7 +14,10 @@ Next, just run the `main.py` script.<br><br>
 And don't forget to put models of Vosk to main folder.<br>
 You can get the latest from the [official website.](https://alphacephei.com/vosk/models)
 <br>The one I was using is `small`.
+<br>p.s. If you don't understand how to install or where to put the Vosk model, I've made a [screenshot](https://i.imgur.com/N3bu2lC.png) for you.
 
+# Python version
+I was using Python `3.8.3`, but it should work on any newer version.
 
 # Author
 (2022) Abraham Tugalov
