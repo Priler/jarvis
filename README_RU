@@ -8,8 +8,8 @@ English page is [here](https://github.com/Priler/jarvis/blob/master/README.md)
 `Код НЕ дорабатывался и предоставляется «как есть». Есть много кода, который является избыточным, и есть множество улучшений, которые можно сделать.`
 
 # Пред-установочные действия
-Вам необходим [Python 3.8.3 (64-bit)](https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe), либо выше. Обязательно при установке добавить в PATH!
-Установите [GIT](https://git-scm.com/download/). 
+Вам необходим [Python 3.8.3 (64-bit)](https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe), либо выше. Обязательно при установке добавить в PATH!<br>
+Установите [GIT](https://git-scm.com/download/). <br><br>
 
 # Установка
 Во-первых, Установите зависимости из файла `requirements.txt` путем ввода команды `pip install -r requirements.txt` в каталоге с распакованным проектом 'k.<br>
