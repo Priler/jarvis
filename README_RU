@@ -1,5 +1,5 @@
-English page is [here](https://github.com/Priler/jarvis/blob/master/README.md)
 # Kesha v3.0 пре-пре-альфа (aka Jarvis обновление)
+English page is [here](https://github.com/Priler/jarvis/blob/master/README.md)<br>
 Простой голосовой помощник, сделанный в качестве эксперимента с использованием [Silero](https://github.com/snakers4/silero-models) & [Vosk](https://pypi.org/project/vosk/).
 <br>Позже были добавлены [Picovoice Porcupine Wake Word Detection](https://picovoice.ai/platform/porcupine/) и [ChatGPT](https://chat.openai.com/).
 
