@@ -19,5 +19,12 @@ You can get the latest from the [official website.](https://alphacephei.com/vosk
 # Python version
 I was using Python `3.8.3`, but it should work on any newer version.
 
+# ToDo
+- Адекватная архитектура кода, собрать всё и переписать from the ground up. 
+- Задержка воспроизведения звука на основе реальной длительности .wav файла (прогружать при запуске?)
+- Speech to intent? 
+- Отключать self listening protection во время воспроизведения с наушников. 
+- Указание из списка или по имени будет реализовано позже.
+
 # Author
 (2022) Abraham Tugalov

@@ -1,52 +1,36 @@
-# КЕША 3.0 (aka Jarvis)
-"""
-    ВНИМАНИЕ!!!
-    Пока что это максимально сырой прототип.
-    Позже будет опубликована нормальная версия с удобной установкой и поддержкой всего чего только можно.
-    А пока что, код ниже к вашим услугам, сэр :)
-
-    @TODO:
-    0. Адекватная архитектура кода, собрать всё и переписать from the ground up.
-    1. Задержка воспроизведения звука на основе реальной длительности .wav файла (прогружать при запуске?)
-    2. Speech to intent?
-    3. Отключать self listening protection во время воспроизведения с наушников.
-    4. Указание из списка или по имени будет реализовано позже.
-"""
-
+import datetime
+import json
 import os
+import queue
 import random
+import struct
+import subprocess
+import sys
+import time
+from ctypes import POINTER, cast
 
+import openai
 import pvporcupine
 import simpleaudio as sa
-from pvrecorder import PvRecorder
-from rich import print
 import vosk
-import sys
-import queue
-import json
-import struct
-import config
+import yaml
+from comtypes import CLSCTX_ALL
 from fuzzywuzzy import fuzz
-import tts
-import datetime
-from num2t4ru import num2text
-import subprocess
-import time
-
-from ctypes import POINTER, cast
-from comtypes import CLSCTX_ALL, COMObject
+from pvrecorder import PvRecorder
 from pycaw.pycaw import (
     AudioUtilities,
     IAudioEndpointVolume
 )
+from rich import print
 
-import openai
-from gpytranslate import SyncTranslator
+import config
+import tts
 
+# some consts
 CDIR = os.getcwd()
-
-# init translator
-t = SyncTranslator()
+VA_CMD_LIST = yaml.safe_load(
+    open('commands.yaml', 'rt', encoding='utf8'),
+)
 
 # init openai
 openai.api_key = config.OPENAI_TOKEN
@@ -68,12 +52,11 @@ q = queue.Queue()
 
 
 def gpt_answer(message):
-    model_engine = "text-davinci-003"
-    max_tokens = 128  # default 1024
-    prompt = t.translate(message, targetlang="en")
+    model_engine = "gpt-3.5-turbo"
+    max_tokens = 256  # default 1024
     completion = openai.Completion.create(
         engine=model_engine,
-        prompt=prompt.text,
+        prompt=message,
         max_tokens=max_tokens,
         temperature=0.5,
         top_p=1,
@@ -81,8 +64,7 @@ def gpt_answer(message):
         presence_penalty=0
     )
 
-    translated_result = t.translate(completion.choices[0].text, targetlang="ru")
-    return translated_result.text
+    return completion.choices[0].text
 
 
 # play(f'{CDIR}\\sound\\ok{random.choice([1, 2, 3, 4])}.wav')
@@ -90,7 +72,7 @@ def play(phrase, wait_done=True):
     global recorder
     filename = f"{CDIR}\\sound\\"
 
-    if phrase == "greet": # for py 3.8
+    if phrase == "greet":  # for py 3.8
         filename += f"greet{random.choice([1, 2, 3])}.wav"
     elif phrase == "ok":
         filename += f"ok{random.choice([1, 2, 3])}.wav"
@@ -111,13 +93,13 @@ def play(phrase, wait_done=True):
         recorder.stop()
 
     wave_obj = sa.WaveObject.from_wave_file(filename)
-    wave_obj.play()
+    play_obj = wave_obj.play()
 
     if wait_done:
-        # play_obj.wait_done()
+        play_obj.wait_done()
         # time.sleep((len(wave_obj.audio_data) / wave_obj.sample_rate) + 0.5)
         # print("END")
-        time.sleep(0.8)
+        # time.sleep(0.5)
         recorder.start()
 
 
@@ -137,7 +119,7 @@ def va_respond(voice: str):
 
     if len(cmd['cmd'].strip()) <= 0:
         return False
-    elif cmd['percent'] < 70 or cmd['cmd'] not in config.VA_CMD_LIST.keys():
+    elif cmd['percent'] < 70 or cmd['cmd'] not in VA_CMD_LIST.keys():
         # play("not_found")
         # tts.va_speak("Что?")
         if fuzz.ratio(voice.join(voice.split()[:1]).strip(), "скажи") > 75:
@@ -171,7 +153,7 @@ def filter_cmd(raw_voice: str):
 
 def recognize_cmd(cmd: str):
     rc = {'cmd': '', 'percent': 0}
-    for c, v in config.VA_CMD_LIST.items():
+    for c, v in VA_CMD_LIST.items():
 
         for x in v:
             vrt = fuzz.ratio(cmd, x)
@@ -183,30 +165,7 @@ def recognize_cmd(cmd: str):
 
 
 def execute_cmd(cmd: str, voice: str):
-    if cmd == 'help':
-        # help
-        text = "Я умею: ..."
-        text += "произносить время ..."
-        text += "рассказывать анекдоты ..."
-        text += "и открывать браузер"
-        tts.va_speak(text)
-        pass
-    elif cmd == 'ctime':
-        # current time
-        now = datetime.datetime.now()
-        text = "Сейч+ас " + num2text(now.hour) + " " + num2text(now.minute)
-        tts.va_speak(text)
-
-    elif cmd == 'joke':
-        jokes = ['Как смеются программисты? ... ехе ехе ехе',
-                 'ЭсКьюЭль запрос заходит в бар, подходит к двум столам и спрашивает .. «м+ожно присоединиться?»',
-                 'Программист это машина для преобразования кофе в код']
-
-        play("ok", True)
-
-        tts.va_speak(random.choice(jokes))
-
-    elif cmd == 'open_browser':
+    if cmd == 'open_browser':
         subprocess.Popen([f'{CDIR}\\custom-commands\\Run browser.exe'])
         play("ok")
 

@@ -5,6 +5,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Custom
+model_small/
+
 # C extensions
 *.so
 
