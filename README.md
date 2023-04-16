@@ -1,6 +1,6 @@
 # Kesha v3.0 pre-pre-alpha (aka Jarvis update)
 
-Русский вариант установки есть [тут](https://github.com/Priler/jarvis/blob/master/README_RU.md)
+Русский вариант установки есть [тут](https://github.com/Priler/jarvis/blob/master/README_RU.md)<br>
 Simple Voice Assistant made as an experiment using [Silero](https://github.com/snakers4/silero-models) & [Vosk](https://pypi.org/project/vosk/).
 <br>Later on [Picovoice Porcupine Wake Word Detection](https://picovoice.ai/platform/porcupine/) & [ChatGPT](https://chat.openai.com/) was added.
 
