@@ -32,6 +32,13 @@ VA_CMD_LIST = yaml.safe_load(
     open('commands.yaml', 'rt', encoding='utf8'),
 )
 
+# ChatGPT vars
+message_log = [
+    {"role": "system", "content": "Ты голосовой ассистент из железного человека."}
+]
+# Set a flag to keep track of whether this is the first request in the conversation
+first_request = True
+
 # init openai
 openai.api_key = config.OPENAI_TOKEN
 
@@ -51,20 +58,27 @@ kaldi_rec = vosk.KaldiRecognizer(model, samplerate)
 q = queue.Queue()
 
 
-def gpt_answer(message):
+def gpt_answer():
+    global message_log
+
     model_engine = "gpt-3.5-turbo"
     max_tokens = 256  # default 1024
-    completion = openai.Completion.create(
-        engine=model_engine,
-        prompt=message,
+    response = openai.ChatCompletion.create(
+        model=model_engine,
+        messages=message_log,
         max_tokens=max_tokens,
-        temperature=0.5,
+        temperature=0.7,
         top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+        stop=None
     )
 
-    return completion.choices[0].text
+    # Find the first response from the chatbot that has text in it (some responses may not have text)
+    for choice in response.choices:
+        if "text" in choice:
+            return choice.text
+
+    # If no response with text is found, return the first response's content (which may be empty)
+    return response.choices[0].message.content
 
 
 # play(f'{CDIR}\\sound\\ok{random.choice([1, 2, 3, 4])}.wav')
@@ -110,7 +124,7 @@ def q_callback(indata, frames, time, status):
 
 
 def va_respond(voice: str):
-    global recorder
+    global recorder, message_log, first_request
     print(f"Распознано: {voice}")
 
     cmd = recognize_cmd(filter_cmd(voice))
@@ -123,10 +137,17 @@ def va_respond(voice: str):
         # play("not_found")
         # tts.va_speak("Что?")
         if fuzz.ratio(voice.join(voice.split()[:1]).strip(), "скажи") > 75:
-            gpt_result = gpt_answer(voice)
+
+            if first_request:
+                message_log.append({"role": "user", "content": voice})
+                first_request = False
+
+            response = gpt_answer()
+            message_log.append({"role": "assistant", "content": response})
+
             recorder.stop()
-            tts.va_speak(gpt_result)
-            time.sleep(1)
+            tts.va_speak(response)
+            time.sleep(0.5)
             recorder.start()
             return False
         else:
