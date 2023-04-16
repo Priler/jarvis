@@ -14,7 +14,7 @@ English page is [here](https://github.com/Priler/jarvis/blob/master/README.md)<b
 # Установка
 Во-первых, Установите зависимости из файла `requirements.txt` путем ввода команды `pip install -r requirements.txt` в каталоге с распакованным проектом.<br>
 Во-вторых, скопируйте архив VOSK в основную папку. Я использую версию [`small`](https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip). Но вы можете найти другие версии на [официальном сайте.](https://alphacephei.com/vosk/models). Вам необходимо перейменовать папку как на [скриншоте](https://i.imgur.com/N3bu2lC.png)<br>
-В-третьих, посмотрите `config.py` и измените нужные значения на ваши, например (Ключ OpenAI, ID устройства).<br>
+В-третьих, посмотрите `config.py` и измените нужные значения на ваши, например ключ OpenAI, ID устройства и другие.<br>
 Затем, запустите файл `main.py` в консоли, и вуаля, это всё.<br><br>
 
 # Автор
