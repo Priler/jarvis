@@ -10,6 +10,7 @@ import time
 from ctypes import POINTER, cast
 
 import openai
+from openai import error
 import pvporcupine
 import simpleaudio as sa
 import vosk
@@ -33,11 +34,8 @@ VA_CMD_LIST = yaml.safe_load(
 )
 
 # ChatGPT vars
-message_log = [
-    {"role": "system", "content": "Ты голосовой ассистент из железного человека."}
-]
-# Set a flag to keep track of whether this is the first request in the conversation
-first_request = True
+system_message = {"role": "system", "content": "Ты голосовой ассистент из железного человека."}
+message_log = [system_message]
 
 # init openai
 openai.api_key = config.OPENAI_TOKEN
@@ -63,14 +61,24 @@ def gpt_answer():
 
     model_engine = "gpt-3.5-turbo"
     max_tokens = 256  # default 1024
-    response = openai.ChatCompletion.create(
-        model=model_engine,
-        messages=message_log,
-        max_tokens=max_tokens,
-        temperature=0.7,
-        top_p=1,
-        stop=None
-    )
+    try:
+        response = openai.ChatCompletion.create(
+            model=model_engine,
+            messages=message_log,
+            max_tokens=max_tokens,
+            temperature=0.7,
+            top_p=1,
+            stop=None
+        )
+    except (error.TryAgain, error.ServiceUnavailableError):
+        return "ChatGPT перегружен!"
+    except openai.OpenAIError as ex:
+        # если ошибка - это макс длина контекста, то возвращаем ответ с очищенным контекстом
+        if ex.code == "context_length_exceeded":
+            message_log = [system_message, message_log[-1]]
+            return gpt_answer()
+        else:
+            return "OpenAI токен не рабочий."
 
     # Find the first response from the chatbot that has text in it (some responses may not have text)
     for choice in response.choices:
@@ -138,10 +146,7 @@ def va_respond(voice: str):
         # tts.va_speak("Что?")
         if fuzz.ratio(voice.join(voice.split()[:1]).strip(), "скажи") > 75:
 
-            if first_request:
-                message_log.append({"role": "user", "content": voice})
-                first_request = False
-
+            message_log.append({"role": "user", "content": voice})
             response = gpt_answer()
             message_log.append({"role": "assistant", "content": response})
 
