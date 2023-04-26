@@ -1,0 +1,39 @@
+[package]
+name = "jarvis-app"
+version = "0.0.1"
+description = "Jarvis Voice Assistant"
+authors = ["Abraham Tugalov"]
+license = "GPL-3.0-only"
+repository = "https://github.com/Priler/jarvis"
+edition = "2021"
+
+[lib]
+name = "const_concat"
+path = "src/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.2", features = [] }
+
+[dependencies]
+tauri = { version = "1.2", features = ["dialog-message", "path-all", "shell-open"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+lazy_static = "1.4.0"
+pickledb = "0.5.1"
+peak_alloc = "0.2.0"
+systemstat = "0.2.3"
+hound = "3.5.0"
+pv_recorder = "1.1.1"
+pv_porcupine = "2.2.0"
+rodio = "0.17.1"
+serde_yaml = "0.9.21"
+seqdiff = "0.3.0"
+vosk = "0.2.0"
+rand = "0.8.5"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem
+# DO NOT REMOVE!!
+custom-protocol = ["tauri/custom-protocol"]

@@ -1,0 +1,13 @@
+list:
+- command:
+    action: voice
+    exe_path:
+    exe_args:
+  voice:
+    sounds:
+    - stupid
+  phrases:
+  - ты дурак
+  - ты дебил
+  - ты глупый
+  - ты тупой

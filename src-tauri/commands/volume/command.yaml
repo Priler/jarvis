@@ -1,0 +1,31 @@
+list:
+- command:
+    action: ahk
+    exe_path: ahk/Mute volume.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+    - ok4
+  phrases:
+  - выключи звук
+  - беззвучный режим
+  - режим без звука
+  - отключи звук
+
+- command:
+    action: ahk
+    exe_path: ahk/Mute volume.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+    - ok4
+  phrases:
+  - включи звук
+  - режим со звуком
+  - верни звук

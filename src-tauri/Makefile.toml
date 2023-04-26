@@ -1,0 +1,45 @@
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build_debug]
+command = "cargo"
+args = ["build"]
+
+[tasks.run]
+command = "cargo"
+args = ["run"]
+
+[tasks.build_release]
+command = "cargo"
+args = ["build", "--release"]
+dependencies = ["clean"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+# dependencies = ["clean"]
+
+[tasks.vosk]
+script_runner = "python"
+script_extension = "py"
+script = { file = "vosk_build.py" }
+
+[tasks.debug]
+dependencies = [
+    "format",
+    "build_debug",
+    "vosk"
+]
+
+[tasks.release]
+dependencies = [
+    "format",
+    "build_release",
+    "vosk"
+]
