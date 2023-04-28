@@ -43,11 +43,11 @@ Or run dev with `cargo tauri dev`.
 
 ## Author
 
+Abraham Tugalov
+
 ## Python version?
 Old version of Jarvis was build with Python.<br>
 The last Python version commit can be found [here](https://github.com/Priler/jarvis/tree/943efbfbdb8aeb5889fa5e2dc7348ca4ea0b81df).
-
-Abraham Tugalov
 
 ## License
 
