@@ -12,9 +12,6 @@ For the frontend we use ⚡️ **[Vite](https://vitejs.dev/)** + 🛠️ **[Svel
 
 *Other libraries, tools and packages can be found in source code.*
 
- [Silero](https://github.com/snakers4/silero-models) & [Vosk](https://pypi.org/project/vosk/).  
-Later on [Picovoice Porcupine Wake Word Detection](https://picovoice.ai/platform/porcupine/) & [ChatGPT](https://chat.openai.com/) was added.
-
 ## Neural Networks
 
 This are the neural networks we are currently using:
@@ -29,6 +26,8 @@ This are the neural networks we are currently using:
 	 - [~~Rustpotter~~](https://github.com/GiviMAD/rustpotter) (coming soon)
  - NLU
 	 - Nothing yet.
+- Chat
+	- [~~ChatGPT~~](https://chat.openai.com/) (coming soon)
 
 ## Supported Languages
 
