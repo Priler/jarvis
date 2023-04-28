@@ -9,6 +9,7 @@ use std::env::current_dir;
 // };
 
 pub const COMMANDS_PATH: &str = "commands/";
+pub const KEYWORDS_PATH: &str = "picovoice/keywords/";
 
 pub const DB_FILE_NAME: &str = "app.db";
 pub const APP_VERSION: Option<&str> = option_env!("CARGO_PKG_VERSION");

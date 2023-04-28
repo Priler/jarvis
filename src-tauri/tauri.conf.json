@@ -40,10 +40,12 @@
         "commands",
         "sound",
         "vosk/model_small",
+        "picovoice",
         "libvosk.dll",
         "libstdc++-6.dll",
         "libwinpthread-1.dll",
-        "libgcc_s_seh-1.dll"
+        "libgcc_s_seh-1.dll",
+        "libpv_recorder.dll"
       ]
     },
     "security": {

@@ -1,6 +1,7 @@
 use porcupine::{BuiltinKeywords, Porcupine, PorcupineBuilder};
 use pv_recorder::RecorderBuilder;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::path::Path;
 
 use crate::events::Payload;
 use tauri::Manager;
@@ -47,32 +48,39 @@ pub fn start_listening(app_handle: tauri::AppHandle) -> Result<bool, String> {
 
     // vars
     let porcupine: Porcupine;
-    let picovoice_api_key: String;
+    let mut picovoice_api_key: String = String::from("");
     let selected_microphone: i32;
 
     let mut start = SystemTime::now();
 
     // Retrieve API key from DB
     if let Some(pkey) = DB.lock().unwrap().get::<String>("api_key__picovoice") {
-        picovoice_api_key = pkey;
-    } else {
+        if !pkey.is_empty() {
+            picovoice_api_key = pkey;
+        }
+    }
+
+    if picovoice_api_key.is_empty() {
         return Err("Picovoice API key is not set!".into());
     }
 
     // Create instance of Porcupine with the given API key
-    if let Ok(pinstance) =
-        PorcupineBuilder::new_with_keywords(picovoice_api_key, &[BuiltinKeywords::Jarvis])
-            .sensitivities(&[1.0f32]) // max sensitivity possible
-            .init()
-    {
-        // porcupine successfully initialized with the valid API key
-        porcupine = pinstance;
-    } else {
-        // something went wrong
-        return Err(
-            "Porcupine error: either API key is not valid or there is no internet connection"
-                .into(),
-        );
+    match PorcupineBuilder::new_with_keyword_paths(picovoice_api_key, &[Path::new(config::KEYWORDS_PATH).join("jarvis_windows.ppn")])
+    .sensitivities(&[1.0f32]) // max sensitivity possible
+    .init() {
+        Ok(pinstance) => {
+            // porcupine successfully initialized with the valid API key
+            println!("Porcupine successfully initialized with the valid API key ...");
+            porcupine = pinstance;
+        }
+        Err(e) => {
+            println!("Porcupine error: either API key is not valid or there is no internet connection");
+            println!("Error details: {}", e);
+            return Err(
+                "Porcupine error: either API key is not valid or there is no internet connection"
+                    .into(),
+            );
+        }
     }
 
     // Retrieve microphone index

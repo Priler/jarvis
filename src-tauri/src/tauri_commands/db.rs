@@ -2,11 +2,11 @@ use crate::DB;
 
 #[tauri::command]
 pub fn db_read(key: &str) -> String {
-    if let Some(value) = DB.lock().unwrap().get(key) {
-        value
-    } else {
-        String::from("")
+    if let Some(value) = DB.lock().unwrap().get::<String>(key) {
+        return value
     }
+
+    String::from("")
 }
 
 #[tauri::command]
