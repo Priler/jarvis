@@ -18,13 +18,16 @@ pub fn init_vosk() {
     RECOGNIZER.lock().unwrap().set_partial_words(true);
 }
 
-pub fn recognize(data: &[i16]) -> Option<String> {
+pub fn recognize(data: &[i16], include_partial: bool) -> Option<String> {
     let state = RECOGNIZER.lock().unwrap().accept_waveform(data);
 
     match state {
         DecodingState::Running => {
-            None
-            // Some(RECOGNIZER.lock().unwrap().partial_result().partial.into())
+            if include_partial {
+                Some(RECOGNIZER.lock().unwrap().partial_result().partial.into())
+            } else {
+                None
+            }
         }
         DecodingState::Finalized => {
             // Result will always be multiple because we called set_max_alternatives

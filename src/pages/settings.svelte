@@ -124,6 +124,7 @@
 
     <NativeSelect data={[
       { label: 'Rustpotter', value: 'rustpotter' },
+      { label: 'Vosk (медленный)', value: 'vosk' },
       { label: 'Picovoice Porcupine (требует API ключ)', value: 'picovoice' }
     ]}
     label="Распознавание активационной фразы (Wake Word)"
