@@ -1,5 +1,4 @@
-use const_concat::const_concat;
-use std::env::current_dir;
+// use const_concat::const_concat;
 
 // pub const IS_DEV: bool = cfg!(debug_assertions);// cfg!(debug_assertions);
 // pub const PUBLIC_PATH: &str = if IS_DEV {
@@ -8,13 +7,16 @@ use std::env::current_dir;
 //     "./public"
 // };
 
-pub const COMMANDS_PATH: &str = "commands/";
-pub const KEYWORDS_PATH: &str = "picovoice/keywords/";
+pub const WAKE_WORD_ENGINES: [&str; 2] = ["rustpotter", "picovoice"];
 
 pub const DB_FILE_NAME: &str = "app.db";
+pub const LOG_FILE_NAME: &str = "log.txt";
 pub const APP_VERSION: Option<&str> = option_env!("CARGO_PKG_VERSION");
 pub const AUTHOR_NAME: Option<&str> = option_env!("CARGO_PKG_AUTHORS");
 pub const REPOSITORY_LINK: Option<&str> = option_env!("CARGO_PKG_REPOSITORY");
+
+pub const COMMANDS_PATH: &str = "commands/";
+pub const KEYWORDS_PATH: &str = "picovoice/keywords/";
 
 // pub const VOSK_MODEL_PATH: &str = const_concat!(PUBLIC_PATH, "/vosk/model_small");
 pub const VOSK_MODEL_PATH: &str = "vosk/model_small";

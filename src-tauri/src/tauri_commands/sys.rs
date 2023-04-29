@@ -6,7 +6,7 @@ static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 extern crate systemstat;
 use std::thread;
 use std::time::Duration;
-use systemstat::{saturating_sub_bytes, Platform, System};
+use systemstat::{Platform, System};
 
 lazy_static! {
     static ref SYS: System = System::new();

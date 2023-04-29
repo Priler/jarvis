@@ -7,6 +7,8 @@
 </script>
 
 <HDivider />
-<Notification title='Этот раздел еще находится в разработке.' icon={InfoCircled} color='blue'></Notification>
+<Notification title='404' icon={InfoCircled} color='blue' withCloseButton={false}>
+    Этот раздел еще находится в разработке.
+</Notification>
 <HDivider />
 <Footer />

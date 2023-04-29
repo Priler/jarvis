@@ -4,6 +4,8 @@
 #[macro_use]
 extern crate lazy_static; // better switch to once_cell ?
 use pickledb::{PickleDb, PickleDbDumpPolicy, SerializationMethod};
+use log::{info};
+use log::LevelFilter;
 use std::sync::Mutex;
 
 // expose the config
@@ -23,6 +25,9 @@ mod vosk;
 // include events
 mod events;
 
+// include recorder
+mod recorder;
+
 // app dir
 lazy_static! {
     static ref APP_CONFIG_DIR: Mutex<String> = Mutex::new(String::new());
@@ -37,7 +42,7 @@ lazy_static! {
             SerializationMethod::Json
         )
         .unwrap_or_else(|_x: _| {
-            println!("Creating new db file at {} ...", format!("{}/{}", APP_CONFIG_DIR.lock().unwrap(), DB_FILE_NAME));
+            info!("Creating new db file at {} ...", format!("{}/{}", APP_CONFIG_DIR.lock().unwrap(), DB_FILE_NAME));
             PickleDb::new(
                 format!("{}/{}", APP_CONFIG_DIR.lock().unwrap(), DB_FILE_NAME),
                 PickleDbDumpPolicy::AutoDump,
@@ -53,8 +58,13 @@ lazy_static! {
 }
 
 fn main() {
+    // log to file
+    simple_logging::log_to_file(config::LOG_FILE_NAME, LevelFilter::max()).expect("Failed to start logger ... is directory writable?");
+
+    // init vosk
     vosk::init_vosk();
 
+    // run the app
     tauri::Builder::default()
         .setup(|app| {
             std::fs::create_dir_all(app.path_resolver().app_config_dir().unwrap())?;

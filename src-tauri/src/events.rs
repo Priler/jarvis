@@ -6,6 +6,7 @@ pub struct Payload {
     pub data: String,
 }
 
+#[allow(dead_code)]
 pub enum EventTypes {
     AudioPlay,
     AssistantWaiting,

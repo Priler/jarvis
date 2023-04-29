@@ -27,11 +27,15 @@ systemstat = "0.2.3"
 hound = "3.5.0"
 pv_recorder = "1.1.1"
 pv_porcupine = "2.2.0"
-rodio = "0.17.1"
 serde_yaml = "0.9.21"
 seqdiff = "0.3.0"
 vosk = "0.2.0"
 rand = "0.8.5"
+rodio = "0.17.1"
+rustpotter = "2.0.0"
+simple-logging = "2.0.2"
+log = "0.4.17"
+once_cell = "1.17.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

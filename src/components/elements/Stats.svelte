@@ -1,13 +1,23 @@
 <script>
+      // IMPORTS
     import { invoke } from "@tauri-apps/api/tauri"
+    import { onMount } from 'svelte'
+    import { capitalizeFirstLetter } from "@/functions";
 
+    // VARIABLES
     let selected_microphone = 0;
     let microphone_label = "";
-    let nn_label = "Picovoice + Vosk";
+
+    let nn_details = {
+        "ww_engine": "",
+        "stt_engine": "Vosk"
+    }
+
     // let resources_cpu_temp = 0;
     // let resources_cpu_usage = 0;
     let resources_ram_usage = "-";
 
+    // CODE
     setInterval(() => {
         (async () => {
             resources_ram_usage = Number(await invoke("get_current_ram_usage")).toFixed(2);
@@ -18,12 +28,13 @@
         });
     }, 1000);
 
-    import { onMount } from 'svelte';
-
     onMount(async () => {
         (async () => {
             selected_microphone = +Number(await invoke("db_read", {key: "selected_microphone"}));
             microphone_label = await invoke("pv_get_audio_device_name", {idx: selected_microphone});
+
+            nn_details["ww_engine"] = capitalizeFirstLetter(await invoke("db_read", {key: "selected_wake_word_engine"}));
+
             // resources_cpu_temp = await invoke("get_cpu_temp");
             // resources_cpu_usage = +Number(await invoke("get_cpu_usage")).toFixed(2);
         })().catch(err => {
@@ -44,7 +55,7 @@
         <div class="pulse"><div class="wave"></div></div>
         <div class="info">
             <span class="num">Нейросети</span>
-            <small title="{nn_label}">{nn_label}</small>
+            <small>{nn_details["ww_engine"]} + {nn_details["stt_engine"]}</small>
         </div>
     </div>
     <div class="downloads hint--bottom" aria-label="Общее количество скачиваний по всему проекту">

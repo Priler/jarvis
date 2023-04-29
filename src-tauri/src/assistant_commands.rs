@@ -8,7 +8,7 @@ use core::time::Duration;
 use std::path::PathBuf;
 use std::process::Child;
 use std::process::Command;
-use tauri::Manager;
+// use tauri::Manager;
 
 mod structs;
 pub use structs::*;

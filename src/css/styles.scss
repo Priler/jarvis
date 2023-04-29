@@ -72,3 +72,21 @@ a {
 select, input {
   color: #ccc!important;
 }
+
+.form {
+  label {
+    font-weight: bold!important;
+    color: #8AC832!important;
+    font-size: 15px!important;
+    border-bottom: 1px dotted gray;
+    margin-bottom: 10px!important;
+
+    & + div {
+      line-height: 1.2em;
+    }
+  }
+
+  .svelteui-Tab-label {
+    font-size: 18px!important;
+  }
+}

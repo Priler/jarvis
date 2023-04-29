@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "jarvis-app",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -45,7 +45,7 @@
         "libstdc++-6.dll",
         "libwinpthread-1.dll",
         "libgcc_s_seh-1.dll",
-        "libpv_recorder.dll"
+        "libvosk.lib"
       ]
     },
     "security": {
