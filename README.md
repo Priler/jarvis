@@ -22,8 +22,9 @@ This are the neural networks we are currently using:
 	 - [~~Silero TTS~~](https://github.com/snakers4/silero-models) (currently not used)
 	 - [~~Coqui TTS~~](https://github.com/coqui-ai/TTS) (currently not used)
  - Wake Word
+	 - [~~Rustpotter~~](https://github.com/GiviMAD/rustpotter) (WIP)
 	 - [Picovoice Porcupine](https://github.com/Picovoice/porcupine) via [official SDK](https://github.com/Picovoice/porcupine#rust)
-	 - [~~Rustpotter~~](https://github.com/GiviMAD/rustpotter) (coming soon)
+	 - [Vosk Speech Recognition Toolkit](https://github.com/alphacep/vosk-api) via [Vosk-rs](https://github.com/Bear-03/vosk-rs)
  - NLU
 	 - Nothing yet.
 - Chat

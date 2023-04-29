@@ -66,6 +66,13 @@ pub fn start_listening(app_handle: tauri::AppHandle) -> Result<bool, String> {
                 events::play("run", &app_handle);
             }, |app, kidx| keyword_callback(app, kidx));
         },
+        "vosk" => {
+            info!("Starting vosk wake-word engine ...");
+            return vosk_listen(&app_handle, |_app| {
+                // Greet user
+                events::play("run", &app_handle);
+            }, |app, kidx| keyword_callback(app, kidx));
+        },
         "picovoice" => {
             info!("Starting picovoice wake-word engine ...");
             return picovoice_listen(&app_handle, |_app| {
@@ -100,7 +107,7 @@ pub fn keyword_callback(app_handle: &tauri::AppHandle, _keyword_index: i32) {
         recorder::read_microphone(&mut frame_buffer);
 
         // vosk part (partials included)
-        if let Some(mut test) = vosk::recognize(&frame_buffer) {
+        if let Some(mut test) = vosk::recognize(&frame_buffer, false) {
             if !test.is_empty() {
                 println!("Recognized: {}", test);
 
@@ -154,6 +161,56 @@ pub fn keyword_callback(app_handle: &tauri::AppHandle, _keyword_index: i32) {
             _ => (),
         }
     }
+}
+
+pub fn vosk_listen<'s, S, K>(app_handle: &tauri::AppHandle, start_callback: S, mut keyword_callback: K) -> Result<bool, String>
+    where S: Fn(&tauri::AppHandle),
+          K: FnMut(&tauri::AppHandle, i32) {
+
+    // vars
+    let fetch_phrase = "джарвис".chars().collect::<Vec<_>>();
+    let frame_length: usize = 128;
+    let min_ratio: f64 = 0.8;
+
+    // Start recording
+    let mut frame_buffer = vec![0; frame_length];
+    recorder::FRAME_LENGTH.store(frame_length as u32, Ordering::SeqCst);
+    recorder::start_recording();
+    LISTENING.store(true, Ordering::SeqCst);
+
+    // run start callback
+    start_callback(app_handle);
+
+    // Listen until stop flag will be true
+    while !STOP_LISTENING.load(Ordering::SeqCst) {
+        recorder::read_microphone(&mut frame_buffer);
+
+        // recognize & convert to sequence
+        let recognized_phrase = vosk::recognize(&frame_buffer, true).unwrap_or("".into());
+
+        if !recognized_phrase.trim().is_empty() {
+            info!("Rec: {}", recognized_phrase);
+            let recognized_phrases = recognized_phrase.split_whitespace();
+            for phrase in recognized_phrases {
+                let recognized_phrase_chars = phrase.trim().to_lowercase().chars().collect::<Vec<_>>();
+        
+                // compare
+                if seqdiff::ratio(&fetch_phrase, &recognized_phrase_chars) >= min_ratio {
+                    info!("Phrase: {:?}", &fetch_phrase);
+                    info!("Compare: {:?}", &recognized_phrase_chars);
+                    keyword_callback(&app_handle, 0);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Stop listening
+    recorder::stop_recording();
+    LISTENING.store(false, Ordering::SeqCst);
+    STOP_LISTENING.store(false, Ordering::SeqCst);
+
+    Ok(true)
 }
 
 pub fn picovoice_listen<'s, S, K>(app_handle: &tauri::AppHandle, start_callback: S, mut keyword_callback: K) -> Result<bool, String>
