@@ -1,0 +1,2 @@
+[env]
+PORTAUDIO_ONLY_STATIC = true

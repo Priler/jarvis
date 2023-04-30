@@ -3,8 +3,8 @@ mod db;
 pub use db::*;
 
 // import RECORDER commands
-mod recorder;
-pub use recorder::*;
+mod audio;
+pub use audio::*;
 
 // import PORCUPINE commands
 mod listener;

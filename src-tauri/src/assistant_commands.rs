@@ -3,6 +3,7 @@ use seqdiff::ratio;
 use serde_yaml;
 use std::path::Path;
 use std::{fs, fs::File};
+use log::{info, warn, error};
 
 use core::time::Duration;
 use std::path::PathBuf;
@@ -36,7 +37,7 @@ pub fn parse_commands() -> Result<Vec<AssistantCommand>, String> {
                 if let Ok(parse_result) = serde_yaml::from_reader::<File, CommandsList>(cc_reader) {
                     cc_yaml = parse_result;
                 } else {
-                    println!("Can't parse {}, skipping ...", &cc_file.display());
+                    warn!("Can't parse {}, skipping ...", &cc_file.display());
                     continue;
                     // return Err(format!("Can't parse {}", &cc_file.display()));
                 }
@@ -52,9 +53,11 @@ pub fn parse_commands() -> Result<Vec<AssistantCommand>, String> {
         if commands.len() > 0 {
             Ok(commands)
         } else {
+            error!("No commands were found");
             Err("No commands were found".into())
         }
     } else {
+        error!("Error reading commands directory");
         return Err("Error reading commands directory".into());
     }
 }
@@ -95,6 +98,7 @@ pub fn fetch_command<'a>(
 
     if let Some((cmd_path, scmd)) = result_scmd {
         println!("Ratio is: {}", current_max_ratio);
+        info!("CMD is: {cmd_path:?}, SCMD is: {scmd:?}, Ratio is: {}", current_max_ratio);
         Some((&cmd_path, &scmd))
     } else {
         None
@@ -144,6 +148,7 @@ pub fn execute_command(
 
                 Ok(())
             } else {
+                error!("AHK process spawn error (does exe path is valid?)");
                 Err("AHK process spawn error (does exe path is valid?)".into())
             }
         }
@@ -169,6 +174,7 @@ pub fn execute_command(
 
                 Ok(())
             } else {
+                error!("Shell process spawn error (does cli command is valid?)");
                 Err("Shell process spawn error (does cli command is valid?)".into())
             }
         }
@@ -184,6 +190,9 @@ pub fn execute_command(
             std::thread::sleep(Duration::from_secs(2));
             std::process::exit(0);
         }
-        _ => Err("Command type unknown".into()),
+        _ => {
+            error!("Command type unknown");
+            Err("Command type unknown".into())
+        },
     }
 }

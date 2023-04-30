@@ -16,6 +16,7 @@
   // VARIABLES
   let available_microphones = [];
   let settings_saved = false;
+  let save_button_disabled = false;
 
   let assistant_voice_val = ""; // shared
   let selected_microphone = "";
@@ -32,6 +33,7 @@
 
   // FUNCTIONS
   async function save_settings() {
+    save_button_disabled = true; // disable save button for a while
     settings_saved = false; // hide alert
 
     await invoke("db_write", {key: "assistant_voice", val: assistant_voice_val});
@@ -48,6 +50,10 @@
     setTimeout(() => {
       settings_saved = false; // hide alert again after N seconds
     }, 5000);
+
+    setTimeout(() => {
+      save_button_disabled = false; // enable save button again
+    }, 1000);
 
     // restart listening everytime new settings is saved
     stopListening(() => {
@@ -157,7 +163,7 @@
 
 <Space h="xl" />
 
-<Button color="lime" radius="md" size="sm" uppercase ripple fullSize on:click={save_settings}>
+<Button color="lime" radius="md" size="sm" uppercase ripple fullSize on:click={save_settings} disabled={save_button_disabled}>
   Сохранить
 </Button>
 <Space h="sm" />

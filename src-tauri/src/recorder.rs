@@ -1,51 +1,126 @@
-use once_cell::sync::OnceCell;
-use std::sync::atomic::{AtomicU32, AtomicBool, Ordering};
-use pv_recorder::{Recorder, RecorderBuilder};
-use log::{info};
+// use once_cell::sync::OnceCell;
+use std::sync::atomic::{AtomicU32, Ordering};
+use log::{info, warn, error};
+use atomic_enum::atomic_enum;
+
+mod pvrecorder;
+// mod cpal;
+// mod portaudio;
 
 use crate::DB;
 
+#[atomic_enum]
+#[derive(PartialEq)]
+pub enum RecorderType {
+    Cpal,
+    PvRecorder,
+    PortAudio
+}
+
+pub static RECORDER_TYPE: AtomicRecorderType = AtomicRecorderType::new(RecorderType::PvRecorder); // use pvrecorder as default
 pub static FRAME_LENGTH: AtomicU32 = AtomicU32::new(0);
-static RECORDER: OnceCell<Recorder> = OnceCell::new();
-pub static IS_RECORDING: AtomicBool = AtomicBool::new(false);
 
-fn init_microphone() {
-    if RECORDER.get().is_none() {
-        RECORDER.get_or_init(|| RecorderBuilder::new()
-        .device_index(get_selected_microphone_index())
-        .frame_length(FRAME_LENGTH.load(Ordering::SeqCst) as i32)
-        .init()
-        .expect("Failed to initialize pvrecorder"));
 
-        info!("Microphone recorder initialized!")
+pub fn init() {
+    match RECORDER_TYPE.load(Ordering::SeqCst) {
+        RecorderType::PvRecorder => {
+            // Init Pv Recorder
+            info!("Initializing Pv Recorder audio backend.");
+            match pvrecorder::init_microphone(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst)) {
+                false => {
+                    // Switch to CPAL recorder
+                    warn!("Pv Recorder audio backend failed.");
+                    // RECORDER_TYPE.store(RecorderType::PortAudio, Ordering::SeqCst);
+
+                    // init again
+                    init();
+                },
+                _ => ()
+            }
+        },
+        RecorderType::PortAudio => {
+            // Init PortAudio
+            info!("Initializing PortAudio audio backend");
+            todo!();
+            // match portaudio::init_microphone(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst)) {
+            //     false => {
+            //         // Switch to PortAudio recorder
+            //         error!("PortAudio audio backend failed.");
+            //     },
+            //     _ => ()
+            // }
+        },
+        RecorderType::Cpal => {
+            // Init CPAL
+            info!("Initializing CPAL audio backend");
+            todo!();
+            // match cpal::init_microphone(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst)) {
+            //     false => {
+            //         // Switch to CPAL recorder
+            //         error!("CPAL audio backend failed.");
+            //     },
+            //     _ => ()
+            // }
+        }
     }
 }
 
 pub fn read_microphone(frame_buffer: &mut [i16]) {
-    // ensure microphone is initialized
-    init_microphone();
-
-    // read to frame buffer
-    RECORDER.get().unwrap().read(frame_buffer).expect("Failed to read audio frame");
+    match RECORDER_TYPE.load(Ordering::SeqCst) {
+        RecorderType::PvRecorder => {
+            pvrecorder::read_microphone(frame_buffer);
+        },
+        RecorderType::PortAudio => {
+            todo!();
+            // portaudio::read_microphone(frame_buffer);
+        },
+        RecorderType::Cpal => {
+            // cpal::read_microphone(frame_buffer);
+            panic!("Cpal should be used via callback assignment");
+        }
+    }
 }
 
 pub fn start_recording() {
-    // ensure microphone is initialized
-    init_microphone();
-
-    RECORDER.get().unwrap().start().expect("Failed to start audio recording!");
-    IS_RECORDING.store(true, Ordering::SeqCst);
-    info!("START recording from microphone ...");
+    match RECORDER_TYPE.load(Ordering::SeqCst) {
+        RecorderType::PvRecorder => {
+            pvrecorder::start_recording(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst));
+        },
+        RecorderType::PortAudio => {
+            todo!();
+            // portaudio::start_recording(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst));
+        },
+        RecorderType::Cpal => {
+            // cpal::start_recording(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst));
+        }
+    }
 }
 
 pub fn stop_recording() {
-    // ensure microphone is initialized
-    init_microphone();
-
-    RECORDER.get().unwrap().start().expect("Failed to start audio recording!");
-    IS_RECORDING.store(false, Ordering::SeqCst);
-    info!("STOP recording from microphone ...");
+    match RECORDER_TYPE.load(Ordering::SeqCst) {
+        RecorderType::PvRecorder => {
+            pvrecorder::stop_recording();
+        },
+        RecorderType::PortAudio => {
+            todo!();
+            // portaudio::stop_recording();
+        },
+        RecorderType::Cpal => {
+            // cpal::stop_recording();
+        }
+    }
 }
+
+// pub fn update_selected_microphone_index() -> i32 {
+//     let selected_microphone: i32 = get_selected_microphone_index();
+
+//     // store current microphone idx
+//     SELECTED_MICROPHONE_IDX.store(selected_microphone, Ordering::SeqCst);
+
+//     // return microphone index
+//     info!("Selected microphone index = {selected_microphone}");
+//     selected_microphone
+// }
 
 pub fn get_selected_microphone_index() -> i32 {
     let selected_microphone: i32;
@@ -57,7 +132,5 @@ pub fn get_selected_microphone_index() -> i32 {
         selected_microphone = -1;
     }
 
-    // return microphone index
-    info!("Selected microphone index = {selected_microphone}");
     selected_microphone
 }

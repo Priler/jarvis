@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "jarvis-app",
-    "version": "0.0.1"
+    "version": "0.0.2"
   },
   "tauri": {
     "allowlist": {
@@ -41,6 +41,7 @@
         "sound",
         "vosk/model_small",
         "picovoice",
+        "rustpotter",
         "libvosk.dll",
         "libstdc++-6.dll",
         "libwinpthread-1.dll",

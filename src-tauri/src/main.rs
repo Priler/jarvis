@@ -33,6 +33,11 @@ lazy_static! {
     static ref APP_CONFIG_DIR: Mutex<String> = Mutex::new(String::new());
 }
 
+// data dir
+lazy_static! {
+    static ref APP_LOG_DIR: Mutex<String> = Mutex::new(String::new());
+}
+
 // init PickleDb connection
 lazy_static! {
     static ref DB: Mutex<PickleDb> = Mutex::new(
@@ -58,9 +63,6 @@ lazy_static! {
 }
 
 fn main() {
-    // log to file
-    simple_logging::log_to_file(config::LOG_FILE_NAME, LevelFilter::max()).expect("Failed to start logger ... is directory writable?");
-
     // init vosk
     vosk::init_vosk();
 
@@ -69,6 +71,14 @@ fn main() {
         .setup(|app| {
             std::fs::create_dir_all(app.path_resolver().app_config_dir().unwrap())?;
             APP_CONFIG_DIR.lock().unwrap().push_str(app.path_resolver().app_config_dir().unwrap().to_str().unwrap());
+
+            std::fs::create_dir_all(app.path_resolver().app_log_dir().unwrap())?;
+            APP_LOG_DIR.lock().unwrap().push_str(app.path_resolver().app_log_dir().unwrap().to_str().unwrap());
+
+            // log to file
+            let log_file_path = format!("{}/{}", APP_LOG_DIR.lock().unwrap(), config::LOG_FILE_NAME);
+            println!("!!!===============!!!\nLOGGING TO {}\n!!!===============!!!\n", &log_file_path);
+            simple_logging::log_to_file(log_file_path, LevelFilter::max()).expect("Failed to start logger ... is directory writable?");
 
             Ok(())
         })

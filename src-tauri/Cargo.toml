@@ -1,6 +1,6 @@
 [package]
 name = "jarvis-app"
-version = "0.0.1"
+version = "0.0.2"
 description = "Jarvis Voice Assistant"
 authors = ["Abraham Tugalov"]
 license = "GPL-3.0-only"
@@ -36,6 +36,9 @@ rustpotter = "2.0.0"
 simple-logging = "2.0.2"
 log = "0.4.17"
 once_cell = "1.17.1"
+arc-swap = "1.6.0"
+atomic_enum = "0.2.0"
+portaudio = "0.7.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
