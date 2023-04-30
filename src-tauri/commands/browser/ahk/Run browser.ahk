@@ -9,5 +9,3 @@ StringGetPos, pos, BrowserFullCommand, ",,1
 pos := --pos
 StringMid, BrowserPathandEXE, BrowserFullCommand, 2, %pos%
 Run, % BrowserPathandEXE
-
-

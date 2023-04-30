@@ -1,15 +1,12 @@
 list:
 - command:
     action: terminate
-    exe_path:
-    exe_args:
   voice:
     sounds:
     - off
   phrases:
   - выключись
   - вырубись
-  - завершить работу
   - закройся
   - отключись
   - заверши свою работу

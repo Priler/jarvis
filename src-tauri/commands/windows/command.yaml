@@ -1,0 +1,124 @@
+list:
+- command:
+    action: ahk
+    exe_path: ahk/Roll up windows.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - сверни все окна
+  - сверни окна
+
+- command:
+    action: ahk
+    exe_path: ahk/Empty trash.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - очисти корзину
+  - почисти корзину
+  - очистка корзины
+
+- command:
+    action: ahk
+    exe_path: ahk/Task manager open.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - запусти диспетчер задач
+  - открой диспетчер задач
+  - диспетчер задач
+
+- command:
+    action: ahk
+    exe_path: ahk/screenshot.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - сделай скриншот
+  - сделай снимок экрана
+  - сними экран
+
+- command:
+    action: ahk
+    exe_path: ahk/blocking.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+    - ok4
+  phrases:
+  - заблокируй компьютер
+  - заблокируй комп
+
+- command:
+    action: ahk
+    exe_path: ahk/sleep.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+    - ok4
+  phrases:
+  - спящий режим
+  - ждущий режим
+  - иди поспи
+
+- command:
+    action: ahk
+    exe_path: ahk/clipboard.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - открой буфер обмена
+  - покажи буфер обмена
+  - запусти буфер обмена
+  - буфер обмена
+
+- command:
+    action: ahk
+    exe_path: ahk/Set language.exe
+    exe_args:
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - смени раскладку
+  - поменяй раскладку
+  - смени язык
+  - поменяй язык
+  - переключи на русский
+  - переключи на английский
+  - смени раскладку на русскую
+  - поменяй раскладку на русскую
+  - поменяй раскладку на английскую
+  - смени раскладку на английскую
+  - смени язык на русский
+  - поменяй язык на русский
+  - смени язык на английский
+  - поменяй язык на английский

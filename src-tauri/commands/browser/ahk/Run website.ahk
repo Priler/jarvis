@@ -3,4 +3,9 @@
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
-Run C:/Program Files (x86)/Google/Chrome/Application/chrome.exe "https://youtube.com"
+#Include _include.ahk
+
+args = %1%
+path := DefaultBrowser()
+
+Run, %path% %args%

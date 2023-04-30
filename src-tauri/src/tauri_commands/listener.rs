@@ -1,4 +1,5 @@
 use porcupine::{Porcupine, PorcupineBuilder};
+use std::ops::Sub;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::path::Path;
 use log::{info, warn, error};
@@ -149,9 +150,17 @@ fn keyword_callback(_keyword_index: i32) {
                     );
 
                     match cmd_result {
-                        Ok(_) => {
+                        Ok(chain) => {
                             println!("Command executed successfully!");
-                            start = SystemTime::now(); // listen for more commands
+
+                            if chain {
+                                // continue chaining commands
+                                start = SystemTime::now(); // listen for more commands
+                            } else {
+                                // skip forward if chaining is not required
+                                start = start.checked_sub(core::time::Duration::from_secs(1000)).unwrap();
+                            }
+
                             continue;
                         }
                         Err(error_message) => {
@@ -317,7 +326,7 @@ fn rustpotter_init() -> Result<bool, String> {
             avg_threshold: 0.,
             threshold: 0.5,
             min_scores: 15,
-            score_mode: ScoreMode::Max,
+            score_mode: ScoreMode::Average,
             comparator_band_size: 5,
             comparator_ref: 0.22
         },
@@ -325,7 +334,7 @@ fn rustpotter_init() -> Result<bool, String> {
             gain_normalizer: GainNormalizationConfig {
                 enabled: true,
                 gain_ref: None,
-                min_gain: 0.5,
+                min_gain: 0.7,
                 max_gain: 1.0,
             },
             band_pass: BandPassConfig {

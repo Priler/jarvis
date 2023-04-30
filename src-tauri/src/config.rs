@@ -24,7 +24,7 @@ pub const AUTHOR_NAME: Option<&str> = option_env!("CARGO_PKG_AUTHORS");
 pub const REPOSITORY_LINK: Option<&str> = option_env!("CARGO_PKG_REPOSITORY");
 
 // RUSPOTTER
-pub const RUSPOTTER_MIN_SCORE: f32 = 0.64;
+pub const RUSPOTTER_MIN_SCORE: f32 = 0.62;
 
 // PICOVOICE
 pub const COMMANDS_PATH: &str = "commands/";

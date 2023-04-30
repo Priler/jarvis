@@ -1,8 +1,46 @@
 list:
 - command:
+    action: ahk
+    exe_path: ahk/reboot.exe
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - перезагрузись
+  - перезагрузи себя
+  - выполни перезагрузку
+
+- command:
     action: voice
-    exe_path:
-    exe_args:
+  voice:
+    sounds:
+    - stupid
+  phrases:
+  - ты дурак
+  - ты дебил
+  - ты глупый
+  - ты тупой
+
+- command:
+    action: voice
+  voice:
+    sounds:
+    - thanks
+  phrases:
+  - спасибо
+  - молодец
+  - респект
+  - ты супер
+  - отличная работа
+  - ты крут
+  - ты большой молодец
+  - ты реально крут
+  - ты афигенный
+
+- command:
+    action: voice
   voice:
     sounds:
     - joke1
@@ -29,8 +67,6 @@ list:
 
 - command:
     action: voice
-    exe_path:
-    exe_args:
   voice:
     sounds:
     - thanks

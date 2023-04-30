@@ -111,17 +111,6 @@ pub fn stop_recording() {
     }
 }
 
-// pub fn update_selected_microphone_index() -> i32 {
-//     let selected_microphone: i32 = get_selected_microphone_index();
-
-//     // store current microphone idx
-//     SELECTED_MICROPHONE_IDX.store(selected_microphone, Ordering::SeqCst);
-
-//     // return microphone index
-//     info!("Selected microphone index = {selected_microphone}");
-//     selected_microphone
-// }
-
 pub fn get_selected_microphone_index() -> i32 {
     let selected_microphone: i32;
 

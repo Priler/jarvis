@@ -7,8 +7,7 @@ use log::{info, warn, error};
 
 use core::time::Duration;
 use std::path::PathBuf;
-use std::process::Child;
-use std::process::Command;
+use std::process::{Command, Child};
 // use tauri::Manager;
 
 mod structs;
@@ -34,14 +33,16 @@ pub fn parse_commands() -> Result<Vec<AssistantCommand>, String> {
                 let cc_yaml: CommandsList;
 
                 // try parse command.yaml
-                if let Ok(parse_result) = serde_yaml::from_reader::<File, CommandsList>(cc_reader) {
-                    cc_yaml = parse_result;
-                } else {
-                    warn!("Can't parse {}, skipping ...", &cc_file.display());
-                    continue;
-                    // return Err(format!("Can't parse {}", &cc_file.display()));
+                match serde_yaml::from_reader::<File, CommandsList>(cc_reader) {
+                    Ok(parse_result) => {
+                        cc_yaml = parse_result;
+                    },
+                    Err(msg) => {
+                        warn!("Can't parse {}, skipping ...\nCommand parse error is: {:?}", &cc_file.display(), msg);
+                        eprintln!("Can't parse {}, skipping ...\nCommand parse error is: {:?}", &cc_file.display(), msg);
+                        continue;
+                    }
                 }
-
                 // everything seems to be Ok
                 commands.push(AssistantCommand {
                     path: _cpath,
@@ -109,11 +110,30 @@ pub fn execute_exe(exe: &str, args: &Vec<String>) -> std::io::Result<Child> {
     Command::new(exe).args(args).spawn()
 }
 
+pub fn execute_cli(cmd: &str, args: &Vec<String>) -> std::io::Result<Child> {
+
+    println!("Spawning cmd as: cmd /C {} {:?}", cmd, args);
+
+    if cfg!(target_os = "windows") {
+        Command::new("cmd")
+                .arg("/C")
+                .arg(cmd)
+                .args(args)
+                .spawn()
+    } else {
+        Command::new("sh")
+                .arg("-c")
+                .arg(cmd)
+                .args(args)
+                .spawn()
+    }
+}
+
 pub fn execute_command(
     cmd_path: &PathBuf,
     cmd_config: &Config,
     app_handle: &tauri::AppHandle,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     match cmd_config.command.action.as_str() {
         "voice" => {
             // VOICE command type
@@ -124,7 +144,7 @@ pub fn execute_command(
                 .unwrap();
             events::play(random_cmd_sound, app_handle);
 
-            Ok(())
+            Ok(true)
         }
         "ahk" => {
             // AutoHotkey command type
@@ -146,7 +166,7 @@ pub fn execute_command(
                     .unwrap();
                 events::play(random_cmd_sound, app_handle);
 
-                Ok(())
+                Ok(true)
             } else {
                 error!("AHK process spawn error (does exe path is valid?)");
                 Err("AHK process spawn error (does exe path is valid?)".into())
@@ -154,28 +174,26 @@ pub fn execute_command(
         }
         "cli" => {
             // CLI command type
-            let exe_path_absolute = Path::new(&cmd_config.command.exe_path);
-            let exe_path_local = Path::new(&cmd_path).join(&cmd_config.command.exe_path);
+            let cli_cmd = &cmd_config.command.cli_cmd;
 
-            if let Ok(_) = execute_exe(
-                if exe_path_absolute.exists() {
-                    exe_path_absolute.to_str().unwrap()
-                } else {
-                    exe_path_local.to_str().unwrap()
-                },
-                &cmd_config.command.exe_args,
+            match execute_cli(
+                cli_cmd,
+                &cmd_config.command.cli_args,
             ) {
-                let random_cmd_sound = cmd_config
-                    .voice
-                    .sounds
-                    .choose(&mut rand::thread_rng())
-                    .unwrap();
-                events::play(random_cmd_sound, app_handle);
+                    Ok(_) => {
+                        let random_cmd_sound = cmd_config
+                        .voice
+                        .sounds
+                        .choose(&mut rand::thread_rng())
+                        .unwrap();
+                    events::play(random_cmd_sound, app_handle);
 
-                Ok(())
-            } else {
-                error!("Shell process spawn error (does cli command is valid?)");
-                Err("Shell process spawn error (does cli command is valid?)".into())
+                    Ok(true)
+                },
+                Err(msg) => {
+                    error!("CLI command error ({})", msg);
+                    Err(format!("Shell command error ({})", msg).into())
+                }
             }
         }
         "terminate" => {
@@ -189,6 +207,17 @@ pub fn execute_command(
 
             std::thread::sleep(Duration::from_secs(2));
             std::process::exit(0);
+        }
+        "stop_chaining" => {
+            // STOP_CHAINING command type
+            let random_cmd_sound = cmd_config
+                .voice
+                .sounds
+                .choose(&mut rand::thread_rng())
+                .unwrap();
+            events::play(random_cmd_sound, app_handle);
+
+            Ok(false)
         }
         _ => {
             error!("Command type unknown");

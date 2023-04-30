@@ -1,0 +1,31 @@
+list:
+- command:
+    action: cli
+    cli_cmd: calc
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - открой калькулятор
+  - покажи калькулятор
+  - запусти калькулятор
+  - калькулятор
+
+- command:
+    action: cli
+    cli_cmd: taskkill
+    cli_args:
+    - /f
+    - /im
+    - CalculatorApp.exe
+  voice:
+    sounds:
+    - ok1
+    - ok2
+    - ok3
+  phrases:
+  - закрой калькулятор
+  - отключи калькулятор
+  - выключи калькулятор
