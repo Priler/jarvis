@@ -21,12 +21,12 @@ This are the neural networks we are currently using:
  - Speech-To-Text
 	 - [Vosk Speech Recognition Toolkit](https://github.com/alphacep/vosk-api) via [Vosk-rs](https://github.com/Bear-03/vosk-rs)
  - Text-To-Speech
-	 - [~~Silero TTS~~](https://github.com/snakers4/silero-models) (currently not used)
-	 - [~~Coqui TTS~~](https://github.com/coqui-ai/TTS) (currently not used)
+	 - [~~Silero TTS~~](https://github.com/snakers4/silero-models) *(currently not used)*
+	 - [~~Coqui TTS~~](https://github.com/coqui-ai/TTS) *(currently not used)*
  - Wake Word
-	 - [~~Rustpotter~~](https://github.com/GiviMAD/rustpotter) (WIP)
-	 - [Picovoice Porcupine](https://github.com/Picovoice/porcupine) via [official SDK](https://github.com/Picovoice/porcupine#rust)
-	 - [Vosk Speech Recognition Toolkit](https://github.com/alphacep/vosk-api) via [Vosk-rs](https://github.com/Bear-03/vosk-rs)
+	 - [Rustpotter](https://github.com/GiviMAD/rustpotter) *(Partially implemented, still WIP)*
+	 - [Picovoice Porcupine](https://github.com/Picovoice/porcupine) via [official SDK](https://github.com/Picovoice/porcupine#rust) *(requires API key)*
+	 - [Vosk Speech Recognition Toolkit](https://github.com/alphacep/vosk-api) via [Vosk-rs](https://github.com/Bear-03/vosk-rs) *(very slow)*
  - NLU
 	 - Nothing yet.
 - Chat
@@ -35,7 +35,7 @@ This are the neural networks we are currently using:
 ## Supported Languages
 
 Currently, only Russian language is supported.<br>
-But soon, Ukranian and English will be added.
+But soon, Ukranian and English will be added for the interface, wake-word detection and speech recognition.
 
 ## How to build?
 
@@ -43,6 +43,9 @@ Nothing special was used to build this project.<br>
 You need only Rust and NodeJS installed on your system.<br>
 Other than that, all you need is to install all the dependencies and then compile the code with `cargo tauri build` command.<br>
 Or run dev with `cargo tauri dev`.
+
+<br><br>
+*Thought you might need some of the platform specific libraries for [PvRecorder](https://github.com/Picovoice/pvrecorder) and [Vosk](https://github.com/alphacep/vosk-api).*
 
 ## Author
 
