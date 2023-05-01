@@ -78,7 +78,7 @@ fn main() {
             // log to file
             let log_file_path = format!("{}/{}", APP_LOG_DIR.lock().unwrap(), config::LOG_FILE_NAME);
             println!("!!!===============!!!\nLOGGING TO {}\n!!!===============!!!\n", &log_file_path);
-            simple_logging::log_to_file(log_file_path, LevelFilter::max()).expect("Failed to start logger ... is directory writable?");
+            simple_logging::log_to_file(&log_file_path, LevelFilter::max()).expect("Failed to start logger ... is directory writable?");
 
             Ok(())
         })
@@ -100,10 +100,15 @@ fn main() {
             tauri_commands::get_cpu_usage,
             // sound commands
             tauri_commands::play_sound,
+            // fs commands
+            tauri_commands::show_in_folder,
             // etc commands
             tauri_commands::get_app_version,
             tauri_commands::get_author_name,
-            tauri_commands::get_repository_link
+            tauri_commands::get_repository_link,
+            tauri_commands::get_tg_official_link,
+            tauri_commands::get_feedback_link,
+            tauri_commands::get_log_file_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -134,6 +134,7 @@ fn keyword_callback(_keyword_index: i32) {
                 for tbr in config::ASSISTANT_PHRASES_TBR {
                     test = test.replace(tbr, "");
                 }
+                test = test.trim().into();
 
                 // infer command
                 if let Some((cmd_path, cmd_config)) =

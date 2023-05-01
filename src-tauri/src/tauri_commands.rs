@@ -18,6 +18,10 @@ pub use sys::*;
 mod voice;
 pub use voice::*;
 
+// import FS commands
+mod fs;
+pub use fs::*;
+
 // import ETC commands
 mod etc;
 pub use etc::*;

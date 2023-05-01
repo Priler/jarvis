@@ -3,17 +3,20 @@
   import { invoke } from "@tauri-apps/api/tauri"
   import { goto } from '@roxi/routify'
   import { onMount } from 'svelte'
-  import { startListening, stopListening } from "@/functions";
+  import { startListening, stopListening, showInExplorer } from "@/functions";
   import { setTimeout } from 'worker-timers';
+
+  import { feedback_link, log_file_path } from "@/stores";
 
   // COMPONENTS & STUFF
   import HDivider from "@/components/elements/HDivider.svelte"
   import Footer from "@/components/Footer.svelte"
 
   import { Notification, Button, Text, Tabs, Space, Alert, Input, InputWrapper, NativeSelect  } from '@svelteuidev/core';
-  import { Check, Mix, Cube, Code, Gear, QuestionMarkCircled } from 'radix-icons-svelte';
+  import { Check, Mix, Cube, Code, Gear, QuestionMarkCircled, CrossCircled } from 'radix-icons-svelte';
 
   // VARIABLES
+
   let available_microphones = [];
   let settings_saved = false;
   let save_button_disabled = false;
@@ -91,7 +94,9 @@
 
 <Notification title='БЕТА версия!' icon={QuestionMarkCircled} color='blue' withCloseButton={false}>
   Часть функций может работать некорректно.<br />
-  Сообщайте обо всех найденных багах в <a href="https://t.me/hhsharebot" target="_blank">наш телеграм бот</a>.
+  Сообщайте обо всех найденных багах в <a href="{feedback_link}" target="_blank">наш телеграм бот</a>.
+  <Space h="sm" />
+  <Button color="gray" radius="md" size="xs" uppercase on:click={() => {showInExplorer(log_file_path)}}>Открыть папку с логами</Button>
 </Notification>
 
 <Space h="xl" />
@@ -143,7 +148,15 @@
       <Space h="sm" />
       <Alert title="Внимание!" color="#868E96" variant="outline">
 
-          <Text size='sm' color="gray">Введите сюда свой ключ Picovoice.<br />Он выдается бесплатно при регистрации в <a href='https://console.picovoice.ai/' target="_blank">Picovoice Console</a>.</Text>
+          <Notification title='Эта нейросеть работает не у всех!' icon={CrossCircled} color='orange' withCloseButton={false}>
+            Мы ждем официального патча от разработчиков.
+          </Notification>
+          <Space h="sm" />
+
+          <Text size='sm' color="gray">
+            Введите сюда свой ключ Picovoice.<br />
+            Он выдается бесплатно при регистрации в <a href='https://console.picovoice.ai/' target="_blank">Picovoice Console</a>.<br>
+          </Text>
           <Space h="sm" />
           <Input icon={Code} placeholder='Ключ Picovoice' variant='filled' autocomplete="off"  bind:value={api_key__picovoice}/>
 

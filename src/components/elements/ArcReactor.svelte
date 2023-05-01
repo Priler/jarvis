@@ -49,12 +49,14 @@
 
     .reactor-container {
         width: 300px;
-        height: 400px;
+        height: 320px;
         margin: auto;
         //  border: 1px dashed #888;
         position: relative;
         border-radius: 50%;
-        transition: scale 1s;
+        transition: scale 1s ease, opacity .5s ease;
+        scale: 0.9;
+        opacity: .9;
         //   background-color: #384c50;
         //   border: 1px solid #121414;
         //   box-shadow: 0px 0px 32px 8px #121414, 0px 0px 4px 1px #121414 inset;
@@ -113,7 +115,7 @@
         position: relative;
         width: 100%;
         height: 100%;
-        animation: 8s infinite linear reactor-anim;
+        animation: 10s infinite linear reactor-anim;
         transition: animation 1s;
     }
     .coil {
@@ -586,7 +588,8 @@
     $colour3: rgba(2, 255, 255, 0.3);
     $cshadow: rgba(2, 254, 255, 0.8);
 
-    scale: 1.07;
+    scale: 1.1;
+    opacity: 1;
     .coil-container {
         animation: 3s infinite linear reactor-anim;
     }

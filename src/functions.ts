@@ -46,3 +46,16 @@ export function stopListening(callback) {
 export function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+export function showInExplorer(path) {
+    (async () => {
+        invoke('show_in_folder', {path: path})
+            .then((message) => {})
+            .catch((error) => {
+                console.error(error);
+                // alert("Ошибка: " + error);
+            })
+    })().catch(err => {
+        console.error(err);
+    });
+}

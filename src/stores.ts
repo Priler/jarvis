@@ -17,3 +17,18 @@ export const assistant_voice = writable("");
 })().catch(err => {
     console.error(err);
 });
+
+// etc
+export let tg_official_link = "";
+export let feedback_link = "";
+export let github_repository_link = "";
+export let log_file_path = "";
+
+(async () => {
+  tg_official_link = await invoke("get_tg_official_link")
+  feedback_link = await invoke("get_feedback_link")
+  github_repository_link = await invoke("get_repository_link")
+  log_file_path = await invoke("get_log_file_path")
+})().catch(err => {
+    console.error(err);
+});

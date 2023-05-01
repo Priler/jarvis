@@ -13,7 +13,7 @@
 </script>
 <header id="header">
     <div class="logo">
-        <a href="/" title="Хауди Хо!"><img src="/media/app-logo.png" alt=""></a>
+        <a href="/" title="Проект канала Хауди Хо!"><img src="/media/header-logo.png" alt=""></a>
         <div>
             <h1><a href="/">JARVIS</a></h1>
             <h2>v{app_version} <small style="color: #8AC832;opacity: .9;font-size: 13px;">BETA</small></h2>

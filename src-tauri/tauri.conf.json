@@ -60,8 +60,8 @@
         "fullscreen": false,
         "resizable": false,
         "title": "Jarvis Voice Assistant",
-        "width": 550,
-        "height": 820
+        "width": 500,
+        "height": 700
       }
     ]
   }
