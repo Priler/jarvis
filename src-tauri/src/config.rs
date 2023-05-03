@@ -43,7 +43,7 @@ pub const VOSK_MODEL_PATH: &str = "vosk/model_small";
 pub const VOSK_MIN_RATIO: f64 = 70.0;
 
 // ETC
-pub const CMD_RATIO_THRESHOLD: f64 = 60f64;
+pub const CMD_RATIO_THRESHOLD: f64 = 65f64;
 pub const CMS_WAIT_DELAY: std::time::Duration = std::time::Duration::from_secs(15);
 
 pub const ASSISTANT_GREET_PHRASES: [&str; 3] = ["greet1", "greet2", "greet3"];

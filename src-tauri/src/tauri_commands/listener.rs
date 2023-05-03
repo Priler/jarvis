@@ -63,7 +63,7 @@ fn get_wake_word_engine() -> config::WakeWordEngine {
             "rustpotter" => selected_wake_word_engine = config::WakeWordEngine::Rustpotter,
             "vosk" => selected_wake_word_engine = config::WakeWordEngine::Vosk,
             "picovoice" => selected_wake_word_engine = config::WakeWordEngine::Porcupine,
-            &_ => todo!()
+            _ => selected_wake_word_engine = config::DEFAULT_WAKE_WORD_ENGINE
         }
     } else {
         // default
