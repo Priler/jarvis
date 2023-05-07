@@ -23,14 +23,14 @@ This are the neural networks we are currently using:
  - Text-To-Speech
 	 - [~~Silero TTS~~](https://github.com/snakers4/silero-models) *(currently not used)*
 	 - [~~Coqui TTS~~](https://github.com/coqui-ai/TTS) *(currently not used)*
-	 - [~~WinRT~~] (https://github.com/ndarilek/tts-rs) *(currently not used)*
-	 - [~gTTS~] (https://github.com/nightlyistaken/tts_rust) *(currently not used)*
-	 - [~~SAM~~] (https://github.com/s-macke/SAM) *(currently not used)*
+	 - [~~WinRT~~](https://github.com/ndarilek/tts-rs) *(currently not used)*
+	 - [~gTTS~](https://github.com/nightlyistaken/tts_rust) *(currently not used)*
+	 - [~~SAM~~](https://github.com/s-macke/SAM) *(currently not used)*
  - Wake Word
 	 - [Rustpotter](https://github.com/GiviMAD/rustpotter) *(Partially implemented, still WIP)*
 	 - [Picovoice Porcupine](https://github.com/Picovoice/porcupine) via [official SDK](https://github.com/Picovoice/porcupine#rust) *(requires API key)*
 	 - [Vosk Speech Recognition Toolkit](https://github.com/alphacep/vosk-api) via [Vosk-rs](https://github.com/Bear-03/vosk-rs) *(very slow)*
-	 - [~~Snowboy~~] *(currently not used)*
+	 - [~~Snowboy~~](https://github.com/Kitt-AI/snowboy) *(currently not used)*
  - NLU
 	 - Nothing yet.
 - Chat
