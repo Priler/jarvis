@@ -1,8 +1,8 @@
-# Kesha v3.0 very early (aka Jarvis update)
+#  Jarvis python
 Simple Voice Assistant made as an experiment using [Silero](https://github.com/snakers4/silero-models) & [Vosk](https://pypi.org/project/vosk/).
 <br>Later on [Picovoice Porcupine Wake Word Detection](https://picovoice.ai/platform/porcupine/) & [ChatGPT](https://chat.openai.com/) was added.
 
-![image](https://i.pinimg.com/originals/63/e9/b7/63e9b72b983793f64bffc07fd14a0e62.jpg)
+![We are NOT limited by the technology of our time!](poster.webp)
 
 `The code has NOT been polished and is provided "as is". There are a lot of code that are redundant and there are tons of improvements that can be made.`
 
