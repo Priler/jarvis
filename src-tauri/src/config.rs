@@ -1,25 +1,15 @@
-use std::iter::Once;
+mod structs;
+use structs::WakeWordEngine;
+use structs::SpeechToTextEngine;
 
-use once_cell::sync::OnceCell;
 
-// use const_concat::const_concat;
-
-// pub const IS_DEV: bool = cfg!(debug_assertions);// cfg!(debug_assertions);
-// pub const PUBLIC_PATH: &str = if IS_DEV {
-//     "D:/Rust/jarvis-app/public"
-// } else {
-//     "./public"
-// };
-
-// APP
-// pub const WAKE_WORD_ENGINES: [&str; 3] = ["rustpotter", "vosk", "picovoice"];
-pub enum WakeWordEngine {
-    Rustpotter,
-    Vosk,
-    Porcupine
-}
-
+/*
+    Defaults.
+ */
 pub const DEFAULT_WAKE_WORD_ENGINE: WakeWordEngine = WakeWordEngine::Rustpotter;
+pub const DEFAULT_SPEECH_TO_TEXT_ENGINE: SpeechToTextEngine = SpeechToTextEngine::Vosk;
+
+
 
 pub const DB_FILE_NAME: &str = "app.db";
 pub const LOG_FILE_NAME: &str = "log.txt";
