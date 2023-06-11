@@ -1,0 +1,92 @@
+/*
+  SOME DEFAULT CSS.
+*/
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+
+  background-color: #4C5062;
+  color: white;
+
+
+  &.assist-page {
+    background: rgb(24,123,123);
+    background: -moz-radial-gradient(circle, rgba(24,123,123,0.4906337535014006) 0%, rgba(13,15,19,1) 64%);
+    background: -webkit-radial-gradient(circle, rgba(24,123,123,0.4906337535014006) 0%, rgba(13,15,19,1) 64%);
+    background: radial-gradient(circle, rgba(24,123,123,0.4906337535014006) 0%, rgba(13,15,19,1) 64%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#187b7b",endColorstr="#0d0f13",GradientType=1);
+  
+    &.assist-active {
+      background: rgb(24,81,123);
+      background: -moz-radial-gradient(circle, rgba(24,81,123,0.6418942577030813) 0%, rgba(13,15,19,1) 64%);
+      background: -webkit-radial-gradient(circle, rgba(24,81,123,0.6418942577030813) 0%, rgba(13,15,19,1) 64%);
+      background: radial-gradient(circle, rgba(24,81,123,0.6418942577030813) 0%, rgba(13,15,19,1) 64%);
+      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#18517b",endColorstr="#0d0f13",GradientType=1);
+    }
+
+  }
+}
+
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+
+a {
+  color: #2A9CD0;
+  text-decoration: none;
+  font-weight: bold;
+
+  &:hover {
+      color: #1dabed;
+      text-decoration: underline;
+  }
+}
+
+/*
+  OVERRIDES.
+*/
+#wrapper {
+  padding: 0;
+  margin: 0;
+}
+
+#header, main {
+  padding: 0 30px;
+}
+
+select, input {
+  color: #ccc!important;
+}
+
+.form {
+  label {
+    font-weight: bold!important;
+    color: #8AC832!important;
+    font-size: 15px!important;
+    border-bottom: 1px dotted gray;
+    margin-bottom: 10px!important;
+
+    & + div {
+      line-height: 1.2em;
+    }
+  }
+
+  .svelteui-Tab-label {
+    font-size: 18px!important;
+  }
+}

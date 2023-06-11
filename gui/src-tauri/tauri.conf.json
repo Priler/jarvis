@@ -1,0 +1,68 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "jarvis-app",
+    "version": "0.0.3"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "dialog": { "message": true },
+      "fs": {
+        "scope": ["$RESOURCE/*"]
+      },
+      "path": {
+        "all": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "com.priler.jarvis",
+      "targets": "all",
+      "resources": [
+        "commands",
+        "sound",
+        "vosk/model_small",
+        "picovoice",
+        "rustpotter",
+        "libvosk.dll",
+        "libstdc++-6.dll",
+        "libwinpthread-1.dll",
+        "libgcc_s_seh-1.dll",
+        "libvosk.lib"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": false,
+        "title": "Jarvis Voice Assistant",
+        "width": 550,
+        "height": 700
+      }
+    ]
+  }
+}
