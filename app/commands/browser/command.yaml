@@ -74,3 +74,19 @@ list:
   - открой переводчик
   - переводчик
   - запусти переводчик
+
+  - command:
+    action: ahk
+    exe_path: ahk/Run website.exe,
+    exe_args:
+    - https://web.telegram.org
+  voice:
+    sounds: 
+    - ok1
+    - ok2
+    - ok3
+     - ok4
+   phrases: 
+   - открой тг
+   - телеграмм
+   - запусти тг
