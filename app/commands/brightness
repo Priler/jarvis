@@ -1,0 +1,53 @@
+list:
+- command:
+    action: increase_brightness
+  voice:
+    sounds:
+    - up
+  phrases:
+  - увеличь яркость
+  - сделай ярче
+  - яркость выше
+  - прибавь свет
+  - накинь яркость
+  - подними свет
+
+- command:
+    action: decrease_brightness
+  voice:
+    sounds:
+    - down
+  phrases:
+  - уменьши яркость
+  - сделай тусклее
+  - яркость ниже
+  - убавь свет
+  - понизь яркость
+  - снизь освещение
+
+- command:
+    action: set_brightness
+  voice:
+    sounds:
+    - set
+  phrases:
+  - установи яркость на
+  - поставь яркость на
+  - яркость на
+  - сделай яркость
+
+- command:
+    action: terminate
+  voice:
+    sounds:
+    - off
+  phrases:
+  - выключись
+  - вырубись
+  - закройся
+  - отключись
+  - заверши свою работу
+  - на сегодня хватит
+  - выгрузи себя из памяти
+  - ты мне надоел
+  - пора спать
