@@ -1,0 +1,35 @@
+# --- Импорты ---
+import os
+import speech_recognition as sr
+import screen_brightness_control as sbc
+import re
+
+# --- Функции ---
+def speak(text):
+    # озвучка
+    ...
+
+def increase_brightness():
+    ...
+
+def decrease_brightness():
+    ...
+
+def set_brightness_to_number(command):
+    ...
+
+# --- Основной цикл ---
+while True:
+    command = listen()  # или как у тебя там команда распознаётся
+
+    if "открой ютуб" in command:
+        open_youtube()
+
+    elif "увеличь яркость" in command:
+        increase_brightness()
+
+    elif "уменьши яркость" in command:
+        decrease_brightness()
+
+    elif "установи яркость" in command:
+        set_brightness_to_number(command)
