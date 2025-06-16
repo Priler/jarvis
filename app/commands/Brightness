@@ -1,0 +1,87 @@
+import speech_recognition as sr
+import pyttsx3
+import screen_brightness_control as sbc
+import re
+import os
+
+# --- Озвучка (говорит голосом) ---
+engine = pyttsx3.init()
+engine.setProperty('rate', 170)  # скорость речи
+
+def speak(text):
+    print(f"Jarvis: {text}")
+    engine.say(text)
+    engine.runAndWait()
+
+# --- Слушает команду с микрофона ---
+def listen():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Слушаю команду...")
+        audio = recognizer.listen(source)
+    try:
+        command = recognizer.recognize_google(audio, language="ru-RU").lower()
+        print(f"Вы сказали: {command}")
+        return command
+    except sr.UnknownValueError:
+        speak("Я не расслышал команду.")
+        return ""
+    except sr.RequestError:
+        speak("Ошибка подключения к сервису распознавания.")
+        return ""
+
+# --- Управление яркостью ---
+def increase_brightness():
+    try:
+        sbc.set_brightness('+10')
+        speak("Я увеличил яркость.")
+    except:
+        speak("Не удалось увеличить яркость.")
+
+def decrease_brightness():
+    try:
+        sbc.set_brightness('-10')
+        speak("Я уменьшил яркость.")
+    except:
+        speak("Не удалось уменьшить яркость.")
+
+def set_brightness_to_number(command):
+    match = re.search(r'\d{1,3}', command)
+    if match:
+        brightness = int(match.group())
+        if 0 <= brightness <= 100:
+            try:
+                sbc.set_brightness(brightness)
+                speak(f"Установил яркость на {brightness} процентов.")
+            except:
+                speak("Не удалось установить яркость.")
+        else:
+            speak("Процент должен быть от 0 до 100.")
+    else:
+        speak("Я не услышал, на сколько установить яркость.")
+
+# --- Основной цикл ---
+speak("Джарвис онлайн. Жду команду.")
+
+while True:
+    command = listen()
+
+    if "выход" in command or "стоп" in command:
+        speak("Отключаюсь.")
+        break
+
+    elif "увеличь яркость" in command or "сделай ярче" in command:
+        increase_brightness()
+
+    elif "уменьши яркость" in command or "сделай тусклее" in command:
+        decrease_brightness()
+
+    elif "установи яркость" in command:
+        set_brightness_to_number(command)
+
+    elif "открой калькулятор" in command:
+        os.system("calc")
+        speak("Калькулятор открыт.")
+
+    else:
+        speak("Команда не распознана.")
