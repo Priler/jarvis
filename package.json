@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@roxi/routify": "^3.5.3",
+    "svelte": "^4.2.20"
+  }
+}

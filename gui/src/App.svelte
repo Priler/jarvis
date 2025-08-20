@@ -1,9 +1,9 @@
 <!-- src/App.svelte -->
 <script>
   import { Router } from "@roxi/routify";
-  import { routes } from "../.routify/routes";
+  import { routes } from "../.routify/routes.default.js";
 
-  import { SvelteUIProvider } from '@svelteuidev/core';
+  import { SvelteUIProvider } from "@svelteuidev/core";
 
   import Events from "./Events.svelte";
 
@@ -12,7 +12,7 @@
   startListening();
 </script>
 
-<SvelteUIProvider themeObserver='dark' withNormalizeCSS withGlobalStyles>
+<SvelteUIProvider themeObserver="dark" withNormalizeCSS withGlobalStyles>
   <Router {routes} />
 </SvelteUIProvider>
 
