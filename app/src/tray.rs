@@ -6,6 +6,8 @@ use tray_icon::{
 };
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 use image;
+
+#[cfg(target_os="windows")]
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
 use crate::config;
@@ -42,8 +44,9 @@ pub fn init() {
         #[cfg(target_os = "linux")]
         {
             use tray_icon::menu::Menu;
-
+            
             gtk::init().unwrap();
+
             let _tray_icon = TrayIconBuilder::new()
                 .with_menu(Box::new(tray_menu))
                 .with_tooltip(config::TRAY_TOOLTIP)
@@ -55,7 +58,7 @@ pub fn init() {
         }
 
         // run the event loop
-        let event_loop = EventLoopBuilder::new().with_any_thread(true).build();
+        let event_loop = EventLoopBuilder::new().build();
 
         let menu_channel = MenuEvent::receiver();
         let tray_channel = TrayEvent::receiver();

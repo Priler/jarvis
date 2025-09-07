@@ -26,10 +26,11 @@ atomic_enum = "0.2.0"
 portaudio = "0.7.0"
 platform-dirs = "0.3.0"
 simple-log = "1.6.0"
-tray-icon = { version = "0.5.1" }
+tray-icon = "0.5.1"
 winit = "0.28.6"
 image = "0.24.6"
 serde_yaml = "0.9.21"
 kira = "0.8.3"
+gtk = "0.16.0"
 
 [features]
