@@ -1,6 +1,5 @@
 mod menu;
 
-use image;
 use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
     TrayIconBuilder, TrayIconEvent,

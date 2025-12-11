@@ -33,41 +33,50 @@ pub fn recognize(data: &[i16], include_partial: bool) -> Option<String> {
         .accept_waveform(data);
 
     match state {
-        DecodingState::Running => {
-            if include_partial {
-                Some(
-                    RECOGNIZER
-                        .get()
-                        .unwrap()
-                        .lock()
-                        .unwrap()
-                        .partial_result()
-                        .partial
-                        .into(),
-                )
-            } else {
-                None
+        Ok(ds) => {
+            match ds {
+                DecodingState::Running => {
+                    if include_partial {
+                        Some(
+                            RECOGNIZER
+                                .get()
+                                .unwrap()
+                                .lock()
+                                .unwrap()
+                                .partial_result()
+                                .partial
+                                .into(),
+                        )
+                    } else {
+                        None
+                    }
+                }
+                DecodingState::Finalized => {
+                    // Result will always be multiple because we called set_max_alternatives
+                    Some(
+                        RECOGNIZER
+                            .get()
+                            .unwrap()
+                            .lock()
+                            .unwrap()
+                            .result()
+                            .multiple()
+                            .unwrap()
+                            .alternatives
+                            .first()
+                            .unwrap()
+                            .text
+                            .into(),
+                    )
+                }
+                DecodingState::Failed => None,
             }
+        },
+        Err(err) => {
+                error!("Vosk accept waveform error.\nError details: {}", err);
+
+                None
         }
-        DecodingState::Finalized => {
-            // Result will always be multiple because we called set_max_alternatives
-            Some(
-                RECOGNIZER
-                    .get()
-                    .unwrap()
-                    .lock()
-                    .unwrap()
-                    .result()
-                    .multiple()
-                    .unwrap()
-                    .alternatives
-                    .first()
-                    .unwrap()
-                    .text
-                    .into(),
-            )
-        }
-        DecodingState::Failed => None,
     }
 }
 

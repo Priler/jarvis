@@ -55,7 +55,10 @@ pub fn init() -> Result<(), ()> {
 
 pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
     match WAKE_WORD_ENGINE.get().unwrap() {
-        WakeWordEngine::Porcupine => porcupine::data_callback(frame_buffer),
+        WakeWordEngine::Porcupine => {
+            // porcupine::data_callback(frame_buffer)
+            unimplemented!("f*ck picovoice");
+        },
         WakeWordEngine::Rustpotter => rustpotter::data_callback(frame_buffer),
         WakeWordEngine::Vosk => vosk::data_callback(frame_buffer),
     }
