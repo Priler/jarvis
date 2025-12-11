@@ -9,10 +9,11 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+// use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+use rodio::{Decoder, OutputStream, Sink};
 
 // static STREAM: OnceCell<OutputStream> = OnceCell::new();
-static STREAM_HANDLE: OnceCell<OutputStreamHandle> = OnceCell::new();
+static STREAM_HANDLE: OnceCell<OutputStream> = OnceCell::new();
 static SINK: OnceCell<Sink> = OnceCell::new();
 
 pub fn init() -> Result<(), ()> {
@@ -21,25 +22,11 @@ pub fn init() -> Result<(), ()> {
     } // already initialized
 
     // get output stream handle to the default physical sound device
-    match OutputStream::try_default() {
-        Ok(out) => {
-            // divide
-            let (_stream, stream_handle) = out;
-
+    match rodio::OutputStreamBuilder::open_default_stream() {
+        Ok(stream_handle) => {
             // create sink
-            let sink;
-            match Sink::try_new(&stream_handle) {
-                Ok(s) => {
-                    info!("Sink initialized.");
-                    sink = s;
-                }
-                Err(msg) => {
-                    error!("Cannot create sink.\nError details: {}", msg);
-
-                    // failed
-                    return Err(());
-                }
-            }
+            let sink = Sink::connect_new(&stream_handle.mixer());
+            info!("Sink initialized.");
 
             // store
             // STREAM.set(_stream).unwrap();

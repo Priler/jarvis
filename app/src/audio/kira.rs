@@ -2,9 +2,14 @@ use once_cell::sync::OnceCell;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+// use kira::{
+//     manager::{backend::DefaultBackend, AudioManager, AudioManagerSettings},
+//     sound::static_sound::{StaticSoundData, StaticSoundSettings},
+// };
+
 use kira::{
-    manager::{backend::DefaultBackend, AudioManager, AudioManagerSettings},
-    sound::static_sound::{StaticSoundData, StaticSoundSettings},
+	AudioManager, AudioManagerSettings, DefaultBackend,
+	sound::static_sound::StaticSoundData,
 };
 
 thread_local!(static MANAGER: OnceCell<Mutex<AudioManager>> = OnceCell::new());
@@ -37,7 +42,7 @@ pub fn init() -> Result<(), ()> {
 // @TODO. Cache sounds in memory? With a pool of a certain size, for instance.
 pub fn play_sound(filename: &PathBuf) {
     // load the file
-    match StaticSoundData::from_file(filename, StaticSoundSettings::default()) {
+    match StaticSoundData::from_file(filename) {
         Ok(sound_data) => {
             // sound_data.duration() can be used in order to sleep, if (for some reason) blocking behaviour is required
 
@@ -47,8 +52,8 @@ pub fn play_sound(filename: &PathBuf) {
                 audio_manager.play(sound_data.clone()).unwrap();
             });
         }
-        Err(msg) => {
-            warn!("Cannot find sound file: {}", filename.display());
+        Err(err) => {
+            warn!("Cannot find sound file: {} (err: {})", filename.display(), err);
         }
     }
 }
