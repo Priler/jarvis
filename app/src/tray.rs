@@ -6,12 +6,9 @@ use tray_icon::{
     TrayIconBuilder, TrayIconEvent,
 };
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
-<<<<<<< HEAD
-=======
 use image;
 
 #[cfg(target_os="windows")]
->>>>>>> sawixy/master
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
 use crate::config;
