@@ -1,14 +1,16 @@
 mod vosk;
 
-use once_cell::sync::OnceCell;
 use crate::config;
+use once_cell::sync::OnceCell;
 
 use crate::config::structs::SpeechToTextEngine;
 
 static STT_TYPE: OnceCell<SpeechToTextEngine> = OnceCell::new();
 
 pub fn init() -> Result<(), ()> {
-    if !STT_TYPE.get().is_none() {return Ok(());} // already initialized
+    if !STT_TYPE.get().is_none() {
+        return Ok(());
+    } // already initialized
 
     // set default stt type
     // @TODO. Make it configurable?
@@ -29,8 +31,6 @@ pub fn init() -> Result<(), ()> {
 
 pub fn recognize(data: &[i16], partial: bool) -> Option<String> {
     match STT_TYPE.get().unwrap() {
-        SpeechToTextEngine::Vosk => {
-            vosk::recognize(data, partial)
-        }
+        SpeechToTextEngine::Vosk => vosk::recognize(data, partial),
     }
 }

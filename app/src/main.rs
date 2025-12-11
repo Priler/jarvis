@@ -3,7 +3,7 @@ use std::error::Error;
 use std::path::PathBuf;
 
 use once_cell::sync::{Lazy, OnceCell};
-use platform_dirs::{AppDirs};
+use platform_dirs::AppDirs;
 
 // expose the config
 mod config;
@@ -35,8 +35,8 @@ mod stt;
 
 // include commands
 mod commands;
-use commands::AssistantCommand;
 use crate::commands::list;
+use commands::AssistantCommand;
 
 // include audio
 mod audio;
@@ -45,8 +45,8 @@ mod audio;
 mod listener;
 
 // some global data
-static APP_DIR: Lazy<PathBuf> = Lazy::new(|| {env::current_dir().unwrap()});
-static SOUND_DIR: Lazy<PathBuf> = Lazy::new(|| {APP_DIR.clone().join("sound")});
+static APP_DIR: Lazy<PathBuf> = Lazy::new(|| env::current_dir().unwrap());
+static SOUND_DIR: Lazy<PathBuf> = Lazy::new(|| APP_DIR.clone().join("sound"));
 static APP_DIRS: OnceCell<AppDirs> = OnceCell::new();
 static APP_CONFIG_DIR: OnceCell<PathBuf> = OnceCell::new();
 static APP_LOG_DIR: OnceCell<PathBuf> = OnceCell::new();
@@ -62,7 +62,10 @@ fn main() -> Result<(), String> {
 
     // log some base info
     info!("Starting Jarvis v{} ...", config::APP_VERSION.unwrap());
-    info!("Config directory is: {}", APP_CONFIG_DIR.get().unwrap().display());
+    info!(
+        "Config directory is: {}",
+        APP_CONFIG_DIR.get().unwrap().display()
+    );
     info!("Log directory is: {}", APP_LOG_DIR.get().unwrap().display());
 
     // initialize database (settings)
@@ -93,7 +96,11 @@ fn main() -> Result<(), String> {
     // init commands
     info!("Initializing commands.");
     let commands = commands::parse_commands().unwrap();
-    info!("Commands initialized.\nOverall commands parsed: {}\nParsed commands: {:?}", commands.len(), commands::list(&commands));
+    info!(
+        "Commands initialized.\nOverall commands parsed: {}\nParsed commands: {:?}",
+        commands.len(),
+        commands::list(&commands)
+    );
     COMMANDS_LIST.set(commands).unwrap();
 
     // init audio

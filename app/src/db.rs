@@ -1,22 +1,29 @@
 pub mod structs;
 use crate::{config, APP_CONFIG_DIR};
 
-use std::path::PathBuf;
+use log::info;
 use std::fs::File;
 use std::io::{BufReader, Read};
-use log::info;
+use std::path::PathBuf;
 
 use serde_json;
 
 fn get_db_file_path() -> PathBuf {
-    PathBuf::from(format!("{}/{}", APP_CONFIG_DIR.get().unwrap().display(), config::DB_FILE_NAME))
+    PathBuf::from(format!(
+        "{}/{}",
+        APP_CONFIG_DIR.get().unwrap().display(),
+        config::DB_FILE_NAME
+    ))
 }
 
 pub fn init_settings() -> structs::Settings {
     let mut db = None;
     let db_file_path = get_db_file_path();
 
-    info!("Loading settings db file located at: {}", db_file_path.display());
+    info!(
+        "Loading settings db file located at: {}",
+        db_file_path.display()
+    );
 
     if db_file_path.exists() {
         // try load existing settings
@@ -43,7 +50,7 @@ pub fn save_settings(settings: &structs::Settings) -> Result<(), std::io::Error>
 
     std::fs::write(
         db_file_path,
-        serde_json::to_string_pretty(&settings).unwrap()
+        serde_json::to_string_pretty(&settings).unwrap(),
     )?;
 
     info!("Settings saved.");

@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
-use crate::{config, audio, recorder, listener, stt, commands, COMMANDS_LIST};
-use rand::seq::SliceRandom;
+use crate::{audio, commands, config, listener, recorder, stt, COMMANDS_LIST};
+use rand::seq::IndexedRandom;
 
 pub fn start() -> Result<(), ()> {
     // start the loop
@@ -41,7 +41,12 @@ fn main_loop() -> Result<(), ()> {
 
                 // play some greet phrase
                 // @TODO. Make it via commands or upcoming events system.
-                audio::play_sound(&sounds_directory.join(format!("{}.wav", config::ASSISTANT_GREET_PHRASES.choose(&mut rand::thread_rng()).unwrap())));
+                audio::play_sound(&sounds_directory.join(format!(
+                        "{}.wav",
+                        config::ASSISTANT_GREET_PHRASES
+                            .choose(&mut rand::thread_rng())
+                            .unwrap()
+                    )));
 
                 // wait for voice commands
                 'voice_recognition: loop {
@@ -62,7 +67,10 @@ fn main_loop() -> Result<(), ()> {
                         recognized_voice = recognized_voice.trim().into();
 
                         // infer command
-                        if let Some((cmd_path, cmd_config)) = commands::fetch_command(&recognized_voice, &COMMANDS_LIST.get().unwrap()) {
+                        if let Some((cmd_path, cmd_config)) = commands::fetch_command(
+                            &recognized_voice,
+                            &COMMANDS_LIST.get().unwrap(),
+                        ) {
                             // some debug info
                             info!("Recognized voice (filtered): {}", recognized_voice);
                             info!("Command found: {:?}", cmd_path);
@@ -79,11 +87,13 @@ fn main_loop() -> Result<(), ()> {
                                         start = SystemTime::now();
                                     } else {
                                         // skip, if chaining is not required
-                                        start = start.checked_sub(core::time::Duration::from_secs(1000)).unwrap();
+                                        start = start
+                                            .checked_sub(core::time::Duration::from_secs(1000))
+                                            .unwrap();
                                     }
 
                                     continue 'voice_recognition; // continue voice recognition
-                                },
+                                }
                                 Err(msg) => {
                                     // fail
                                     error!("Error executing command: {}", msg);
@@ -100,21 +110,19 @@ fn main_loop() -> Result<(), ()> {
                         Ok(elapsed) if elapsed > config::CMS_WAIT_DELAY => {
                             // return to wake-word listening after N seconds
                             break 'voice_recognition;
-                        },
-                        _ => ()
+                        }
+                        _ => (),
                     }
                 }
-            },
-            None => ()
+            }
+            None => (),
         }
     }
 
     Ok(())
 }
 
-fn keyword_callback(keyword_index: i32) {
-
-}
+fn keyword_callback(keyword_index: i32) {}
 
 pub fn close(code: i32) {
     info!("Closing application.");

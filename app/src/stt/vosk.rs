@@ -9,7 +9,9 @@ static MODEL: OnceCell<Model> = OnceCell::new();
 static RECOGNIZER: OnceCell<Mutex<Recognizer>> = OnceCell::new();
 
 pub fn init_vosk() {
-    if !RECOGNIZER.get().is_none() {return;} // already initialized
+    if !RECOGNIZER.get().is_none() {
+        return;
+    } // already initialized
 
     let model = Model::new(VOSK_MODEL_PATH).unwrap();
     let mut recognizer = Recognizer::new(&model, 16000.0).unwrap();
@@ -23,12 +25,26 @@ pub fn init_vosk() {
 }
 
 pub fn recognize(data: &[i16], include_partial: bool) -> Option<String> {
-    let state = RECOGNIZER.get().unwrap().lock().unwrap().accept_waveform(data);
+    let state = RECOGNIZER
+        .get()
+        .unwrap()
+        .lock()
+        .unwrap()
+        .accept_waveform(data);
 
     match state {
         DecodingState::Running => {
             if include_partial {
-                Some(RECOGNIZER.get().unwrap().lock().unwrap().partial_result().partial.into())
+                Some(
+                    RECOGNIZER
+                        .get()
+                        .unwrap()
+                        .lock()
+                        .unwrap()
+                        .partial_result()
+                        .partial
+                        .into(),
+                )
             } else {
                 None
             }
@@ -36,7 +52,11 @@ pub fn recognize(data: &[i16], include_partial: bool) -> Option<String> {
         DecodingState::Finalized => {
             // Result will always be multiple because we called set_max_alternatives
             Some(
-                RECOGNIZER.get().unwrap().lock().unwrap()
+                RECOGNIZER
+                    .get()
+                    .unwrap()
+                    .lock()
+                    .unwrap()
                     .result()
                     .multiple()
                     .unwrap()

@@ -2,10 +2,13 @@ use std::path::Path;
 use std::sync::Mutex;
 
 use once_cell::sync::OnceCell;
-use rustpotter::{Rustpotter, RustpotterConfig, WavFmt, DetectorConfig, FiltersConfig, ScoreMode, GainNormalizationConfig, BandPassConfig};
+use rustpotter::{
+    AudioFmt, BandPassConfig, DetectorConfig, FiltersConfig, GainNormalizationConfig, Rustpotter,
+    RustpotterConfig, ScoreMode,
+};
 
-use crate::DB;
 use crate::config;
+use crate::DB;
 
 // store rustpotter instance
 static RUSTPOTTER: OnceCell<Mutex<Rustpotter>> = OnceCell::new();
@@ -19,23 +22,23 @@ pub fn init() -> Result<(), ()> {
             // success
             // wake word files list
             // @TODO. Make it configurable via GUI for custom user voice.
-            let rustpotter_wake_word_files: [&str; 5] = [
+            let rustpotter_wake_word_files: [&str; 1] = [
                 "rustpotter/jarvis-default.rpw",
-                "rustpotter/jarvis-community-1.rpw",
-                "rustpotter/jarvis-community-2.rpw",
-                "rustpotter/jarvis-community-3.rpw",
-                "rustpotter/jarvis-community-4.rpw",
+                // "rustpotter/jarvis-community-1.rpw",
+                // "rustpotter/jarvis-community-2.rpw",
+                // "rustpotter/jarvis-community-3.rpw",
+                // "rustpotter/jarvis-community-4.rpw",
                 // "rustpotter/jarvis-community-5.rpw",
             ];
 
             // load wake word files
             for rpw in rustpotter_wake_word_files {
-                rinstance.add_wakeword_from_file(rpw).unwrap();
+                rinstance.add_wakeword_from_file(rpw, rpw).unwrap(); // @TODO: Change wakeword key to something else?
             }
 
             // store
             RUSTPOTTER.set(Mutex::new(rinstance));
-        },
+        }
         Err(msg) => {
             error!("Rustpotter failed to initialize.\nError details: {}", msg);
 
@@ -49,13 +52,13 @@ pub fn init() -> Result<(), ()> {
 pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
     let mut lock = RUSTPOTTER.get().unwrap().lock();
     let rustpotter = lock.as_mut().unwrap();
-    let detection = rustpotter.process_i16(&frame_buffer);
+    let detection = rustpotter.process_samples(frame_buffer.to_vec()); // @TODO. Temp crutch. Fix optimization issue, frame_buffer should not be copied to a new vector!
 
     if let Some(detection) = detection {
         if detection.score > config::RUSPOTTER_MIN_SCORE {
             info!("Rustpotter detection info:\n{:?}", detection);
 
-            return Some(0)
+            return Some(0);
         } else {
             info!("Rustpotter detection info:\n{:?}", detection)
         }

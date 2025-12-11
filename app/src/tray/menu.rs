@@ -1,7 +1,7 @@
 pub enum TrayMenuItem {
     Restart,
     Settings,
-    Exit
+    Exit,
 }
 
 impl TrayMenuItem {
@@ -9,7 +9,7 @@ impl TrayMenuItem {
         match *self {
             TrayMenuItem::Restart => "Перезапустить",
             TrayMenuItem::Settings => "Настройки",
-            TrayMenuItem::Exit => "Выход"
+            TrayMenuItem::Exit => "Выход",
         }
     }
 }

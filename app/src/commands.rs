@@ -1,4 +1,4 @@
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 use seqdiff::ratio;
 use serde_yaml;
 use std::path::Path;
@@ -6,13 +6,13 @@ use std::{fs, fs::File};
 
 use core::time::Duration;
 use std::path::PathBuf;
-use std::process::{Command, Child};
+use std::process::{Child, Command};
 // use tauri::Manager;
 
 mod structs;
 pub use structs::*;
 
-use crate::{config, audio};
+use crate::{audio, config};
 
 // @TODO. Allow commands both in yaml and json format.
 pub fn parse_commands() -> Result<Vec<AssistantCommand>, String> {
@@ -35,9 +35,13 @@ pub fn parse_commands() -> Result<Vec<AssistantCommand>, String> {
                 match serde_yaml::from_reader::<File, CommandsList>(cc_reader) {
                     Ok(parse_result) => {
                         cc_yaml = parse_result;
-                    },
+                    }
                     Err(msg) => {
-                        warn!("Can't parse {}, skipping ...\nCommand parse error is: {:?}", &cc_file.display(), msg);
+                        warn!(
+                            "Can't parse {}, skipping ...\nCommand parse error is: {:?}",
+                            &cc_file.display(),
+                            msg
+                        );
                         continue;
                     }
                 }
@@ -98,7 +102,10 @@ pub fn fetch_command<'a>(
 
     if let Some((cmd_path, scmd)) = result_scmd {
         println!("Ratio is: {}", current_max_ratio);
-        info!("CMD is: {cmd_path:?}, SCMD is: {scmd:?}, Ratio is: {}", current_max_ratio);
+        info!(
+            "CMD is: {cmd_path:?}, SCMD is: {scmd:?}, Ratio is: {}",
+            current_max_ratio
+        );
         Some((&cmd_path, &scmd))
     } else {
         None
@@ -111,21 +118,12 @@ pub fn execute_exe(exe: &str, args: &Vec<String>) -> std::io::Result<Child> {
 }
 
 pub fn execute_cli(cmd: &str, args: &Vec<String>) -> std::io::Result<Child> {
-
     println!("Spawning cmd as: cmd /C {} {:?}", cmd, args);
 
     if cfg!(target_os = "windows") {
-        Command::new("cmd")
-                .arg("/C")
-                .arg(cmd)
-                .args(args)
-                .spawn()
+        Command::new("cmd").arg("/C").arg(cmd).args(args).spawn()
     } else {
-        Command::new("sh")
-                .arg("-c")
-                .arg(cmd)
-                .args(args)
-                .spawn()
+        Command::new("sh").arg("-c").arg(cmd).args(args).spawn()
     }
 }
 
@@ -139,7 +137,14 @@ pub fn execute_command(
     match cmd_config.command.action.as_str() {
         "voice" => {
             // VOICE command type
-            let random_cmd_sound = format!("{}.wav", cmd_config.voice.sounds.choose(&mut rand::thread_rng()).unwrap());
+            let random_cmd_sound = format!(
+                "{}.wav",
+                cmd_config
+                    .voice
+                    .sounds
+                    .choose(&mut rand::thread_rng())
+                    .unwrap()
+            );
             // events::play(random_cmd_sound, app_handle);
             audio::play_sound(&sounds_directory.join(random_cmd_sound));
 
@@ -158,7 +163,14 @@ pub fn execute_command(
                 },
                 &cmd_config.command.exe_args,
             ) {
-                let random_cmd_sound = format!("{}.wav", cmd_config.voice.sounds.choose(&mut rand::thread_rng()).unwrap());
+                let random_cmd_sound = format!(
+                    "{}.wav",
+                    cmd_config
+                        .voice
+                        .sounds
+                        .choose(&mut rand::thread_rng())
+                        .unwrap()
+                );
                 // events::play(random_cmd_sound, app_handle);
                 audio::play_sound(&sounds_directory.join(random_cmd_sound));
 
@@ -172,17 +184,21 @@ pub fn execute_command(
             // CLI command type
             let cli_cmd = &cmd_config.command.cli_cmd;
 
-            match execute_cli(
-                cli_cmd,
-                &cmd_config.command.cli_args,
-            ) {
-                    Ok(_) => {
-                        let random_cmd_sound = format!("{}.wav", cmd_config.voice.sounds.choose(&mut rand::thread_rng()).unwrap());
+            match execute_cli(cli_cmd, &cmd_config.command.cli_args) {
+                Ok(_) => {
+                    let random_cmd_sound = format!(
+                        "{}.wav",
+                        cmd_config
+                            .voice
+                            .sounds
+                            .choose(&mut rand::thread_rng())
+                            .unwrap()
+                    );
                     // events::play(random_cmd_sound, app_handle);
-                        audio::play_sound(&sounds_directory.join(random_cmd_sound));
+                    audio::play_sound(&sounds_directory.join(random_cmd_sound));
 
                     Ok(true)
-                },
+                }
                 Err(msg) => {
                     error!("CLI command error ({})", msg);
                     Err(format!("Shell command error ({})", msg).into())
@@ -191,7 +207,14 @@ pub fn execute_command(
         }
         "terminate" => {
             // TERMINATE command type
-            let random_cmd_sound = format!("{}.wav", cmd_config.voice.sounds.choose(&mut rand::thread_rng()).unwrap());
+            let random_cmd_sound = format!(
+                "{}.wav",
+                cmd_config
+                    .voice
+                    .sounds
+                    .choose(&mut rand::thread_rng())
+                    .unwrap()
+            );
             // events::play(random_cmd_sound, app_handle);
             audio::play_sound(&sounds_directory.join(random_cmd_sound));
 
@@ -200,7 +223,14 @@ pub fn execute_command(
         }
         "stop_chaining" => {
             // STOP_CHAINING command type
-            let random_cmd_sound = format!("{}.wav", cmd_config.voice.sounds.choose(&mut rand::thread_rng()).unwrap());
+            let random_cmd_sound = format!(
+                "{}.wav",
+                cmd_config
+                    .voice
+                    .sounds
+                    .choose(&mut rand::thread_rng())
+                    .unwrap()
+            );
             // events::play(random_cmd_sound, app_handle);
             audio::play_sound(&sounds_directory.join(random_cmd_sound));
 
@@ -209,7 +239,7 @@ pub fn execute_command(
         _ => {
             error!("Command type unknown");
             Err("Command type unknown".into())
-        },
+        }
     }
 }
 

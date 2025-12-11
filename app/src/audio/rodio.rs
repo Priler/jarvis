@@ -4,10 +4,10 @@
     Possible fixes are running rodio in a separate thread or smthng.
 */
 
-use std::fs::File;
-use std::path::PathBuf;
-use std::io::BufReader;
 use once_cell::sync::OnceCell;
+use std::fs::File;
+use std::io::BufReader;
+use std::path::PathBuf;
 
 use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
 
@@ -16,7 +16,9 @@ static STREAM_HANDLE: OnceCell<OutputStreamHandle> = OnceCell::new();
 static SINK: OnceCell<Sink> = OnceCell::new();
 
 pub fn init() -> Result<(), ()> {
-    if !STREAM_HANDLE.get().is_none() {return Ok(());} // already initialized
+    if !STREAM_HANDLE.get().is_none() {
+        return Ok(());
+    } // already initialized
 
     // get output stream handle to the default physical sound device
     match OutputStream::try_default() {
@@ -30,12 +32,12 @@ pub fn init() -> Result<(), ()> {
                 Ok(s) => {
                     info!("Sink initialized.");
                     sink = s;
-                },
+                }
                 Err(msg) => {
                     error!("Cannot create sink.\nError details: {}", msg);
 
                     // failed
-                    return Err(())
+                    return Err(());
                 }
             }
 
@@ -46,7 +48,7 @@ pub fn init() -> Result<(), ()> {
 
             // success
             Ok(())
-        },
+        }
         Err(msg) => {
             error!("Failed to initialize audio stream.\nError details: {}", msg);
 

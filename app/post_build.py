@@ -15,6 +15,8 @@ SOURCE = (
     "vosk/",
     "lib/",
     "keywords/",
+    "rustpotter/",
+    "sound/",
     "libgcc_s_seh-1.dll",
     "libstdc++-6.dll",
     "libvosk.dll",

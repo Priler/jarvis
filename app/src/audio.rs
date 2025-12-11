@@ -1,18 +1,19 @@
-mod rodio;
 mod kira;
+mod rodio;
 
+use once_cell::sync::OnceCell;
 use std::cmp::Ordering;
 use std::path::PathBuf;
-use once_cell::sync::OnceCell;
 
-use crate::{config, DB, SOUND_DIR};
 use crate::config::structs::AudioType;
+use crate::{config, DB, SOUND_DIR};
 
 static AUDIO_TYPE: OnceCell<AudioType> = OnceCell::new();
 
-
 pub fn init() -> Result<(), ()> {
-    if !AUDIO_TYPE.get().is_none() {return Ok(());} // already initialized
+    if !AUDIO_TYPE.get().is_none() {
+        return Ok(());
+    } // already initialized
 
     // set default audio type
     // @TODO. Make it configurable?
@@ -27,14 +28,14 @@ pub fn init() -> Result<(), ()> {
             match rodio::init() {
                 Ok(_) => {
                     info!("Successfully initialized Rodio audio backend.");
-                },
+                }
                 Err(msg) => {
                     error!("Failed to initialize Rodio audio backend.");
 
-                    return Err(())
+                    return Err(());
                 }
             }
-        },
+        }
         AudioType::Kira => {
             // Init Kira
             info!("Initializing Kira audio backend.");
@@ -42,11 +43,11 @@ pub fn init() -> Result<(), ()> {
             match kira::init() {
                 Ok(_) => {
                     info!("Successfully initialized Kira audio backend.");
-                },
+                }
                 Err(msg) => {
                     error!("Failed to initialize Kira audio backend.");
 
-                    return Err(())
+                    return Err(());
                 }
             }
         }
@@ -61,10 +62,8 @@ pub fn play_sound(filename: &PathBuf) {
     match AUDIO_TYPE.get().unwrap() {
         AudioType::Rodio => {
             rodio::play_sound(filename, true);
-        },
-        AudioType::Kira => {
-            kira::play_sound(filename)
         }
+        AudioType::Kira => kira::play_sound(filename),
     }
 }
 
@@ -79,7 +78,10 @@ pub fn get_sound_directory() -> Option<PathBuf> {
 
             match default_voice_path.exists() {
                 true => Some(default_voice_path),
-                _ => None
+                _ => {
+                    error!("No sounds found. Search path - {:?}", voice_path);
+                    None
+                }
             }
         }
     }

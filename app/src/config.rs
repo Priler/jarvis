@@ -1,21 +1,25 @@
 pub mod structs;
-use structs::WakeWordEngine;
-use structs::SpeechToTextEngine;
-use structs::RecorderType;
 use structs::AudioType;
+use structs::RecorderType;
+use structs::SpeechToTextEngine;
+use structs::WakeWordEngine;
 
-use std::fs;
-use std::env;
-use std::path::PathBuf;
 use once_cell::sync::Lazy;
+use std::env;
+use std::fs;
+use std::path::PathBuf;
 
-use platform_dirs::{AppDirs};
-use rustpotter::{RustpotterConfig, WavFmt, DetectorConfig, FiltersConfig, ScoreMode, GainNormalizationConfig, BandPassConfig};
+use platform_dirs::AppDirs;
 
-use crate::{config, APP_DIRS, APP_CONFIG_DIR, APP_LOG_DIR};
+#[cfg(feature="jarvis_app")]
+use rustpotter::{
+    AudioFmt, BandPassConfig, DetectorConfig, FiltersConfig, GainNormalizationConfig,
+    RustpotterConfig, ScoreMode,
+};
+
+use crate::{config, APP_CONFIG_DIR, APP_DIRS, APP_LOG_DIR};
 
 #[allow(dead_code)]
-
 pub fn init_dirs() -> Result<(), String> {
     // infer app dirs
     if APP_DIRS.get().is_some() {
@@ -23,7 +27,9 @@ pub fn init_dirs() -> Result<(), String> {
     }
 
     // cache_dir, config_dir, data_dir, state_dir
-    APP_DIRS.set(AppDirs::new(Some(config::BUNDLE_IDENTIFIER), false).unwrap()).unwrap();
+    APP_DIRS
+        .set(AppDirs::new(Some(config::BUNDLE_IDENTIFIER), false).unwrap())
+        .unwrap();
 
     // setup directories
     let mut config_dir = PathBuf::from(&APP_DIRS.get().unwrap().config_dir);
@@ -33,7 +39,8 @@ pub fn init_dirs() -> Result<(), String> {
     if !config_dir.exists() {
         if fs::create_dir_all(&config_dir).is_err() {
             config_dir = env::current_dir().expect("Cannot infer the config directory");
-            fs::create_dir_all(&config_dir).expect("Cannot create config directory, access denied?");
+            fs::create_dir_all(&config_dir)
+                .expect("Cannot create config directory, access denied?");
         }
     }
 
@@ -51,10 +58,9 @@ pub fn init_dirs() -> Result<(), String> {
     Ok(())
 }
 
-
 /*
-    Defaults.
- */
+   Defaults.
+*/
 pub const DEFAULT_AUDIO_TYPE: AudioType = AudioType::Kira;
 pub const DEFAULT_RECORDER_TYPE: RecorderType = RecorderType::PvRecorder;
 pub const DEFAULT_WAKE_WORD_ENGINE: WakeWordEngine = WakeWordEngine::Rustpotter;
@@ -72,23 +78,29 @@ pub const TG_OFFICIAL_LINK: Option<&str> = Some("https://t.me/howdyho_official")
 pub const FEEDBACK_LINK: Option<&str> = Some("https://t.me/jarvis_feedback_bot");
 
 /*
-    Tray.
- */
+   Tray.
+*/
 pub const TRAY_ICON: &str = "32x32.png";
 pub const TRAY_TOOLTIP: &str = "Jarvis Voice Assistant";
 
 // RUSPOTTER
+#[cfg(feature="jarvis_app")]
 pub const RUSPOTTER_MIN_SCORE: f32 = 0.62;
+#[cfg(feature="jarvis_app")]
 pub const RUSTPOTTER_DEFAULT_CONFIG: Lazy<RustpotterConfig> = Lazy::new(|| {
     RustpotterConfig {
-        fmt: WavFmt::default(),
+        fmt: AudioFmt::default(),
         detector: DetectorConfig {
             avg_threshold: 0.,
             threshold: 0.5,
             min_scores: 15,
-            score_mode: ScoreMode::Average,
-            comparator_band_size: 5,
-            comparator_ref: 0.22
+            score_ref: 0.22,
+            band_size: 5,
+            vad_mode: None,
+            score_mode: ScoreMode::Max,
+            eager: false,
+            // comparator_band_size: 5,
+            // comparator_ref: 0.22
         },
         filters: FiltersConfig {
             gain_normalizer: GainNormalizationConfig {
@@ -101,8 +113,8 @@ pub const RUSTPOTTER_DEFAULT_CONFIG: Lazy<RustpotterConfig> = Lazy::new(|| {
                 enabled: true,
                 low_cutoff: 80.,
                 high_cutoff: 400.,
-            }
-        }
+            },
+        },
     }
 });
 

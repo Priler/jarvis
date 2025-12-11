@@ -35,12 +35,11 @@ pub struct ConfigCommandSection {
     pub cli_cmd: String,
 
     #[serde(default)]
-    pub cli_args: Vec<String>
+    pub cli_args: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct ConfigVoiceSection {
-
     #[serde(default)]
     pub sounds: Vec<String>,
 }

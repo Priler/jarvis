@@ -1,11 +1,11 @@
 mod menu;
 
+use image;
 use tray_icon::{
     menu::{AboutMetadata, Menu, MenuEvent, MenuItem, PredefinedMenuItem},
-    TrayEvent, TrayIconBuilder,
+    TrayIconBuilder, TrayIconEvent,
 };
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
-use image;
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
 use crate::config;
@@ -15,7 +15,6 @@ pub fn init() {
     // New thread will prevent tray icon to work on MacOS
     // @TODO: MacOS support.
     std::thread::spawn(|| {
-
         // load tray icon
         let icon_path = format!("{}/icons/{}", env!("CARGO_MANIFEST_DIR"), config::TRAY_ICON);
         let icon = load_icon(std::path::Path::new(&icon_path));
@@ -24,8 +23,9 @@ pub fn init() {
         let tray_menu = Menu::with_items(&[
             &MenuItem::new("Перезапуск", true, None),
             &MenuItem::new("Настройки", true, None),
-            &MenuItem::new("Выход", true, None)
-        ]);
+            &MenuItem::new("Выход", true, None),
+        ])
+        .unwrap();
 
         #[cfg(not(target_os = "linux"))]
         let mut tray_icon = Some(
@@ -34,7 +34,7 @@ pub fn init() {
                 .with_tooltip(config::TRAY_TOOLTIP)
                 .with_icon(icon)
                 .build()
-                .unwrap()
+                .unwrap(),
         );
 
         // Since winit doesn't use gtk on Linux, and we need gtk for
@@ -55,33 +55,37 @@ pub fn init() {
         }
 
         // run the event loop
-        let event_loop = EventLoopBuilder::new().with_any_thread(true).build();
+        let event_loop = EventLoopBuilder::new()
+            .with_any_thread(true)
+            .build()
+            .unwrap();
 
         let menu_channel = MenuEvent::receiver();
-        let tray_channel = TrayEvent::receiver();
+        let tray_channel = TrayIconEvent::receiver();
 
-        event_loop.run(move |_event, _, control_flow| {
-            *control_flow = ControlFlow::Poll;
+        event_loop
+            .run(move |_event, event_loop| {
+                event_loop.set_control_flow(ControlFlow::Poll);
 
-            //if let Ok(event) = tray_channel.try_recv() {
-            //    println!("tray event: {event:?}");
-            //}
+                //if let Ok(event) = tray_channel.try_recv() {
+                //    println!("tray event: {event:?}");
+                //}
 
-            if let Ok(event) = menu_channel.try_recv() {
-                println!("menu event: {:?}", event);
+                if let Ok(event) = menu_channel.try_recv() {
+                    println!("menu event: {:?}", event);
 
-                if event.id == 1002 {
-                    std::process::exit(0);
+                    if event.id == "1002" {
+                        std::process::exit(0);
+                    }
                 }
-            }
-        });
-
+            })
+            .expect("Tray event loop run error");
     });
 
     info!("Tray initialized.");
 }
 
-fn load_icon(path: &std::path::Path) -> tray_icon::icon::Icon {
+fn load_icon(path: &std::path::Path) -> tray_icon::Icon {
     let (icon_rgba, icon_width, icon_height) = {
         let image = image::open(path)
             .expect("Failed to open icon path")
@@ -90,6 +94,5 @@ fn load_icon(path: &std::path::Path) -> tray_icon::icon::Icon {
         let rgba = image.into_raw();
         (rgba, width, height)
     };
-    tray_icon::icon::Icon::from_rgba(icon_rgba, icon_width, icon_height)
-        .expect("Failed to open icon")
+    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
 }

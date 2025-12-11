@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
 use crate::config;
+use serde::{Deserialize, Serialize};
 
-use crate::config::structs::WakeWordEngine;
 use crate::config::structs::SpeechToTextEngine;
+use crate::config::structs::WakeWordEngine;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Settings {
@@ -12,7 +12,7 @@ pub struct Settings {
     pub wake_word_engine: WakeWordEngine,
     pub speech_to_text_engine: SpeechToTextEngine,
 
-    pub api_keys: ApiKeys
+    pub api_keys: ApiKeys,
 }
 
 impl Default for Settings {
@@ -26,8 +26,8 @@ impl Default for Settings {
 
             api_keys: ApiKeys {
                 picovoice: String::from(""),
-                openai: String::from("")
-            }
+                openai: String::from(""),
+            },
         }
     }
 }
@@ -35,5 +35,5 @@ impl Default for Settings {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ApiKeys {
     pub picovoice: String,
-    pub openai: String
+    pub openai: String,
 }
