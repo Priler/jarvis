@@ -58,7 +58,10 @@ pub fn init() {
         }
 
         // run the event loop
-        let event_loop = EventLoopBuilder::new().build();
+        let event_loop = EventLoopBuilder::new()
+            // .with_any_thread(true)
+            .build()
+            .unwrap();
 
         let menu_channel = MenuEvent::receiver();
         let tray_channel = TrayEvent::receiver();
