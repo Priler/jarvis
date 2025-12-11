@@ -1,4 +1,4 @@
-use rand::seq::IndexedRandom;
+use rand::prelude::*;
 use seqdiff::ratio;
 use serde_yaml;
 use std::path::Path;

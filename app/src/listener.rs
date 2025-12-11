@@ -1,4 +1,4 @@
-mod porcupine;
+// mod porcupine;
 
 mod rustpotter;
 
@@ -34,7 +34,8 @@ pub fn init() -> Result<(), ()> {
             // Init Porcupine wake-word engine
             info!("Initializing Porcupine wake-word engine.");
 
-            return porcupine::init();
+            // return porcupine::init();
+            unimplemented!("f*ck picovoice");
         }
         WakeWordEngine::Rustpotter => {
             // Init Rustpotter wake-word engine

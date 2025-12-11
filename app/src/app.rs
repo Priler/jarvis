@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 
 use crate::{audio, commands, config, listener, recorder, stt, COMMANDS_LIST};
-use rand::seq::IndexedRandom;
+use rand::prelude::*;
 
 pub fn start() -> Result<(), ()> {
     // start the loop

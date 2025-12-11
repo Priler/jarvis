@@ -1,0 +1,16 @@
+# Cargo configuration file
+
+[build]
+jobs = 4
+rustflags = [
+    # "-Ctarget-feature=+fp16,+fhm"
+]
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
