@@ -7,7 +7,7 @@ import "./css/system.scss"
 import "./css/arc-reactor.scss"
 
 // ### APP
-import App from "./app.svelte"
+import App from "./App.svelte"
 
 const app = new App({
     target: document.getElementById("app")!

@@ -27,6 +27,7 @@ export {
 
 // Runtime process state + stats polling
 export {
+    jarvisStats,
     isJarvisRunning,
     jarvisRamUsage,
     jarvisCpuUsage,

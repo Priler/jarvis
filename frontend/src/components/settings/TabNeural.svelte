@@ -11,7 +11,7 @@
         VAD_OPTIONS,
     } from "@/lib/engine-options"
 
-    export let t: (key: string) => string
+    export let t: (key: string, fallback?: string) => string
     export let selectedWakeWordEngine: string
     export let selectedIntentRecognitionEngine: string
     export let selectedSlotExtractionEngine: string

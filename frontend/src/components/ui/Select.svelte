@@ -11,6 +11,7 @@
     export let value: string = ""
     export let label: string = ""
     export let description: string = ""
+    export let disabled: boolean = false
 
     const MAX_VISIBLE = 200
     $: visibleData = data.length > MAX_VISIBLE ? data.slice(0, MAX_VISIBLE) : data
@@ -131,6 +132,7 @@
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={_id}
+        {disabled}
     >
         <span class="select-value">{selectedLabel}</span>
         <svg class="select-arrow" class:open width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -242,6 +244,12 @@
     &[aria-expanded="true"] {
         border-color: rgba(0,229,255,0.4);
         background: var(--bg-hover);
+    }
+
+    &:disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+        pointer-events: none;
     }
 }
 

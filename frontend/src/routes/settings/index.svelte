@@ -203,7 +203,7 @@
     </div>
 {:else}
 <div class="settings-layout">
-    <nav class="settings-nav" role="tablist" on:keydown={handleTabNav}>
+    <div class="settings-nav" role="tablist" tabindex="-1" on:keydown={handleTabNav}>
         <button class="nav-item" role="tab" id="tab-general" aria-selected={activeTab === 'general'} aria-controls="panel-settings" class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
             {t('settings-general')}
         </button>
@@ -216,7 +216,7 @@
         <button class="nav-item" role="tab" id="tab-about" aria-selected={activeTab === 'about'} aria-controls="panel-settings" class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
             {t('settings-about')}
         </button>
-    </nav>
+    </div>
 
     <div class="settings-content"
          id="panel-settings"

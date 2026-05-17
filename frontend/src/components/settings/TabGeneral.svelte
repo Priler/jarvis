@@ -5,7 +5,7 @@
     import Select from "@/components/ui/Select.svelte"
     import type { VoiceMeta } from "@/types"
 
-    export let t: (key: string) => string
+    export let t: (key: string, fallback?: string) => string
     export let languages: { code: string; name: string }[]
     export let currentLanguage: string
     export let availableVoices: VoiceMeta[]

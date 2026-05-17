@@ -19,6 +19,7 @@ vi.stubGlobal("document", mockDocument)
 
 import { getJarvisStats } from "@/lib/api"
 import {
+    jarvisStats,
     isJarvisRunning,
     jarvisRamUsage,
     jarvisCpuUsage,
@@ -29,14 +30,14 @@ import {
 
 const mockGetStats = vi.mocked(getJarvisStats)
 
+const RESET = { running: false, ram_mb: 0, cpu_usage: 0 }
+
 // ── updateJarvisStats ─────────────────────────────────────────────────────────
 
 describe("updateJarvisStats", () => {
     beforeEach(() => {
         mockGetStats.mockReset()
-        isJarvisRunning.set(false)
-        jarvisRamUsage.set(0)
-        jarvisCpuUsage.set(0)
+        jarvisStats.set(RESET)
     })
 
     it("updates all stores on success", async () => {
@@ -48,7 +49,7 @@ describe("updateJarvisStats", () => {
     })
 
     it("sets running=false when API returns false", async () => {
-        isJarvisRunning.set(true)
+        jarvisStats.set({ running: true, ram_mb: 0, cpu_usage: 0 })
         mockGetStats.mockResolvedValueOnce({ running: false, ram_mb: 0, cpu_usage: 0 })
         await updateJarvisStats()
         expect(get(isJarvisRunning)).toBe(false)
@@ -60,8 +61,7 @@ describe("updateJarvisStats", () => {
     })
 
     it("leaves stores unchanged on API failure", async () => {
-        isJarvisRunning.set(true)
-        jarvisRamUsage.set(64)
+        jarvisStats.set({ running: true, ram_mb: 64, cpu_usage: 0 })
         mockGetStats.mockRejectedValueOnce(new Error("IPC error"))
         await updateJarvisStats()
         expect(get(isJarvisRunning)).toBe(true)
@@ -75,7 +75,7 @@ describe("startStatsPolling / stopStatsPolling", () => {
     beforeEach(() => {
         vi.useFakeTimers()
         mockGetStats.mockReset()
-        mockGetStats.mockResolvedValue({ running: false, ram_mb: 0, cpu_usage: 0 })
+        mockGetStats.mockResolvedValue(RESET)
         mockDocument.addEventListener.mockClear()
         mockDocument.removeEventListener.mockClear()
         stopStatsPolling() // reset module-level interval state

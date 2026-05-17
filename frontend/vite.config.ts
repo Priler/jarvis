@@ -10,6 +10,7 @@ export default defineConfig({
       preprocess: [
         sveltePreprocess({
           typescript: true,
+          scss: { silenceDeprecations: ["legacy-js-api"] },
         }),
       ],
       onwarn: (warning, handler) => {

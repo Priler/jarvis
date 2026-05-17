@@ -2,7 +2,7 @@
     import { showInExplorer } from "@/lib/shell"
     import Button from "@/components/ui/Button.svelte"
 
-    export let t: (key: string) => string
+    export let t: (key: string, fallback?: string) => string
     export let appVersion: string
     export let authorName: string
     export let feedbackLink: string
