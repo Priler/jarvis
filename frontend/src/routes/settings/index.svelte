@@ -6,6 +6,7 @@
     import { addToast } from "@/lib/toast"
     import { saveSettingsValues } from "@/lib/settings"
     import { loadSettingsPageData } from "@/lib/settings-loader"
+    import { LANGUAGE_NAMES } from "@/lib/engine-options"
     import type { VoiceMeta, SelectOption, IntentEngine } from "@/types"
 
     import TabGeneral from "@/components/settings/TabGeneral.svelte"
@@ -45,10 +46,6 @@
     let ollamaError = ""
     let ollamaModelsLoaded = false
 
-    const LANGUAGE_NAMES: Record<string, string> = {
-        ru: 'Русский', en: 'English', ua: 'Українська',
-        de: 'German',  fr: 'French',  es: 'Spanish',
-    }
     let languages: { code: string; name: string }[] = [
         { code: "ru", name: "Русский" },
         { code: "en", name: "English" },

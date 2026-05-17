@@ -1,12 +1,8 @@
 import { getAppVersion, listVoices, listVoskModels, listGlinerModels } from "./api"
 import { loadSettingsValues } from "./settings"
+import { LANGUAGE_NAMES } from "./engine-options"
 import type { VoiceMeta, SelectOption } from "@/types"
 import type { SettingsValues } from "./settings"
-
-const LANGUAGE_NAMES: Record<string, string> = {
-    us: 'English', ru: 'Русский', ua: 'Українська',
-    de: 'German',  fr: 'French',  es: 'Spanish',
-}
 
 export interface SettingsPageData {
     appVersion:           string

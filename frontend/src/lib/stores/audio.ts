@@ -13,5 +13,6 @@ export async function loadAudioDevices() {
     } catch (err: unknown) {
         _loaded = false
         console.error("failed to load audio devices:", err)
+        throw err
     }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte"
+    import { onMount, onDestroy } from "svelte"
     import { getCommandsList } from "@/lib/api"
 
     import { currentLanguage, tStore, reloadCommands, ipcConnected } from "@/stores"
@@ -53,6 +53,7 @@
     }
 
     onMount(loadCommands)
+    onDestroy(() => clearTimeout(_debounceTimer))
 </script>
 
 <div class="commands-header">

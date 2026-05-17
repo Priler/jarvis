@@ -3,10 +3,11 @@
     import { listen } from "@tauri-apps/api/event"
     import { playSound } from "@/lib/api"
     import { assistantVoice } from "@/stores"
+    import { DEFAULT_VOICE_ID } from "@/lib/engine-options"
 
-    let voiceVal = "jarvis-og"
+    let voiceVal = DEFAULT_VOICE_ID
     const unsubVoice = assistantVoice.subscribe(value => {
-        voiceVal = value || "jarvis-og"
+        voiceVal = value || DEFAULT_VOICE_ID
     })
 
     const SAFE_NAME = /^[a-zA-Z0-9_-]+$/

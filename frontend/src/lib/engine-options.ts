@@ -27,6 +27,13 @@ export const VAD_OPTIONS: SelectOption[] = [
     { label: "Nnnoiseless", value: "Nnnoiseless" },
 ]
 
+export const DEFAULT_VOICE_ID = "jarvis-og"
+
+export const LANGUAGE_NAMES: Record<string, string> = {
+    ru: 'Русский', en: 'English', ua: 'Українська',
+    de: 'German',  fr: 'French',  es: 'Spanish',
+}
+
 export const ENGINE_DEFAULTS = {
     wakeWordEngine:   "Rustpotter",
     sttEngine:        "Vosk",

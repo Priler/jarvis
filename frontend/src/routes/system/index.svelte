@@ -1,9 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte"
-    import { dbRead } from "@/lib/api"
     import { isJarvisRunning, ipcConnected, tStore, settingsSnapshot } from "@/stores"
-    import { DB_KEYS } from "@/lib/db-keys"
     import { ENGINE_DEFAULTS } from "@/lib/engine-options"
+    import { loadSettingsValues } from "@/lib/settings"
     import SysOverview  from "@/components/system/SysOverview.svelte"
     import SysPipeline  from "@/components/system/SysPipeline.svelte"
     import SysTelemetry from "@/components/system/SysTelemetry.svelte"
@@ -34,16 +33,10 @@
     $: pipelineStatus = ($isJarvisRunning && $ipcConnected) ? 'active' : ($isJarvisRunning ? 'loading' : 'offline')
 
     onMount(async () => {
-        const settled = await Promise.allSettled([
-            dbRead(DB_KEYS.voskModel),
-            dbRead(DB_KEYS.intentEngine),
-            dbRead(DB_KEYS.ollamaModel),
-        ])
-        const val = (r: PromiseSettledResult<string>) =>
-            r.status === 'fulfilled' ? r.value : ""
-        sttModel     = val(settled[0]) || t('settings-auto-detect', 'Auto-detect')
-        intentEngine = val(settled[1]) || 'none'
-        llmModel     = val(settled[2]) || ""
+        const s = await loadSettingsValues()
+        sttModel     = s.voskModel    || t('settings-auto-detect', 'Auto-detect')
+        intentEngine = s.intentEngine
+        llmModel     = s.ollamaModel
     })
 </script>
 

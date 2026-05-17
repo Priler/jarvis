@@ -23,6 +23,11 @@ export default defineConfig({
     ],
     resolve: {
         tsconfigPaths: true,
+        // Svelte 4 exports "svelte" with a "browser" condition for the runtime
+        // (onMount, tick, etc.) and a "default" condition for ssr.js where all
+        // lifecycle hooks are no-ops. Without "browser" here, Vitest (Node.js)
+        // resolves the SSR build and onMount never fires in component tests.
+        conditions: ["browser"],
     },
     test: {
         globals: true,

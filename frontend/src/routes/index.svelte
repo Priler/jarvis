@@ -32,8 +32,11 @@
             await runJarvisApp()
             const poll = async (attemptsLeft: number) => {
                 await updateJarvisStats()
-                if (get(isJarvisRunning) || attemptsLeft <= 0) {
+                if (get(isJarvisRunning)) {
                     launching = false
+                } else if (attemptsLeft <= 0) {
+                    launching = false
+                    addToast(t('error-start-timeout') || "JARVIS failed to start", "error")
                 } else {
                     setTimeout(() => poll(attemptsLeft - 1), 500)
                 }
