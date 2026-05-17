@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "svelte-check --ignore \".routify/**\" --no-tsconfig && vite build",
+    "build": "vite build && svelte-check --ignore \".routify/**\" --tsconfig ./tsconfig.json",
     "preview": "vite preview",
     "check": "svelte-check --ignore \".routify/**\" --tsconfig ./tsconfig.json",
     "test": "vitest run",

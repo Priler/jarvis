@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { showInExplorer } from "@/lib/shell"
+    import { showInExplorer, openUrl } from "@/lib/shell"
     import Button from "@/components/ui/Button.svelte"
 
     export let t: (key: string, fallback?: string) => string
@@ -22,7 +22,7 @@
         <span class="beta-panel-title">{t('settings-beta-title')}</span>
     </div>
     <p class="beta-panel-body">{t('settings-beta-desc')}</p>
-    <p class="beta-panel-body">{t('settings-beta-feedback')} <a href={feedbackLink} target="_blank" rel="noopener noreferrer" class="beta-panel-link">{t('settings-beta-bot')}</a>.</p>
+    <p class="beta-panel-body">{t('settings-beta-feedback')} <button class="beta-panel-link" on:click={() => openUrl(feedbackLink)}>{t('settings-beta-bot')}</button>.</p>
     <Button size="sm" class="btn-logs" disabled={!logFilePath} on:click={() => logFilePath && showInExplorer(logFilePath)}>
         {t('settings-open-logs')}
     </Button>
@@ -44,28 +44,28 @@
     <span class="section-label">{t('settings-links', 'LINKS')}</span>
     <div class="link-rows">
         {#if (currentLanguage === "ru" || currentLanguage === "ua") && tgLink}
-            <a href={tgLink} target="_blank" rel="noopener noreferrer" class="link-row">
+            <button class="link-row" on:click={() => openUrl(tgLink)}>
                 <span class="link-name">{t('footer-telegram')}</span>
                 <span class="link-arrow">→</span>
-            </a>
+            </button>
         {/if}
         {#if repoLink}
-            <a href={repoLink} target="_blank" rel="noopener noreferrer" class="link-row">
+            <button class="link-row" on:click={() => openUrl(repoLink)}>
                 <span class="link-name">{t('footer-github')}</span>
                 <span class="link-arrow">→</span>
-            </a>
+            </button>
         {/if}
         {#if currentLanguage === "ru" && boostyLink}
-            <a href={boostyLink} target="_blank" rel="noopener noreferrer" class="link-row">
+            <button class="link-row" on:click={() => openUrl(boostyLink)}>
                 <span class="link-name">Boosty</span>
                 <span class="link-arrow">→</span>
-            </a>
+            </button>
         {/if}
         {#if (currentLanguage === "ua" || currentLanguage === "en") && patreonLink}
-            <a href={patreonLink} target="_blank" rel="noopener noreferrer" class="link-row">
+            <button class="link-row" on:click={() => openUrl(patreonLink)}>
                 <span class="link-name">Patreon</span>
                 <span class="link-arrow">→</span>
-            </a>
+            </button>
         {/if}
     </div>
 </div>

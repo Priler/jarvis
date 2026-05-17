@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
+    import { openUrl } from "@/lib/shell"
     import Select from "@/components/ui/Select.svelte"
     import Button from "@/components/ui/Button.svelte"
     import type { SelectOption } from "@/types"
@@ -43,7 +44,7 @@
     {#if selectedWakeWordEngine === "Picovoice"}
         <div class="warn-panel">
             <p class="warn-panel-text">{t('settings-picovoice-warning')}</p>
-            <p class="warn-panel-text">{t('settings-picovoice-key-desc')} <a href="https://console.picovoice.ai/" target="_blank" rel="noopener noreferrer" class="warn-link">Picovoice Console</a>.</p>
+            <p class="warn-panel-text">{t('settings-picovoice-key-desc')} <button class="warn-link" on:click={() => openUrl("https://console.picovoice.ai/")}>Picovoice Console</button>.</p>
             <label class="field-label" for="picovoice-key-input">{t('settings-picovoice-key')}</label>
             <input
                 id="picovoice-key-input"
@@ -188,6 +189,12 @@
 }
 
 .warn-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
     color: rgba(255,190,90,0.9);
     text-decoration: underline;
     text-underline-offset: 2px;
