@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { showInExplorer } from "@/functions"
+    import { showInExplorer } from "@/lib/shell"
     import Button from "@/components/ui/Button.svelte"
 
     export let t: (key: string) => string
@@ -12,6 +12,8 @@
     export let boostyLink: string
     export let patreonLink: string
     export let currentLanguage: string
+
+    const currentYear = new Date().getFullYear()
 </script>
 
 <div class="beta-panel">
@@ -34,7 +36,7 @@
             <span class="about-card-ver">v{appVersion}</span>
             <span class="ver-badge">BETA</span>
         </div>
-        <p class="about-card-copy">© 2026 · {authorName}</p>
+        <p class="about-card-copy">© {currentYear} · {authorName}</p>
     </div>
 </div>
 

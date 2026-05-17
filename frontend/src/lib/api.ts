@@ -3,7 +3,7 @@ import type { JarvisStats, VoiceConfig, JCommand } from "@/types"
 
 // ── DB ─────────────────────────────────────────────────────────────────────
 export const dbRead  = (key: string)               => invoke<string>("db_read",  { key })
-export const dbWrite = (key: string, val: string)  => invoke<void>("db_write",  { key, val })
+export const dbWrite = (key: string, val: string)  => invoke<boolean>("db_write",  { key, val })
 
 // ── App meta ────────────────────────────────────────────────────────────────
 export const getAuthorName      = () => invoke<string>("get_author_name")

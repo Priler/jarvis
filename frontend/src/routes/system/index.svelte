@@ -14,9 +14,6 @@
 
     $: t = $tStore
 
-    const DEFAULT_STT_MODEL     = "Auto-detect"
-    const DEFAULT_INTENT_ENGINE = "Intent Classifier"
-
     // Wake/STT engines come from the cached snapshot (already loaded in deferredInit)
     $: wakeEngine = $settingsSnapshot.wakeWordEngine || ENGINE_DEFAULTS.wakeWordEngine
     $: sttEngine  = $settingsSnapshot.sttEngine      || ENGINE_DEFAULTS.sttEngine
@@ -26,9 +23,9 @@
     let llmModel     = ""
 
     $: intentDisplay = (!intentEngine || intentEngine === 'none')
-        ? 'NOT CONFIGURED'
+        ? t('system-not-configured', 'NOT CONFIGURED')
         : intentEngine === 'intent-classifier'
-        ? 'Intent Classifier'
+        ? t('system-intent-classifier', 'Intent Classifier')
         : intentEngine
 
     // ── Status derivation ─────────────────────────────────────────────────────
@@ -45,8 +42,8 @@
                 dbRead(DB_KEYS.intentEngine),
                 dbRead(DB_KEYS.ollamaModel),
             ])
-            sttModel     = vosk   || DEFAULT_STT_MODEL
-            intentEngine = intent || DEFAULT_INTENT_ENGINE
+            sttModel     = vosk   || t('settings-auto-detect', 'Auto-detect')
+            intentEngine = intent || 'none'
             llmModel     = llm    || ""
         } catch (err: unknown) {
             console.error("System: failed to load models", err)
@@ -72,7 +69,7 @@
 
         <div class="sys-section">
             <span class="sys-section-label">{t('system-pipeline', 'VOICE PIPELINE')}</span>
-            <SysPipeline />
+            <SysPipeline {t} />
         </div>
 
         <div class="sys-section">
@@ -82,7 +79,7 @@
 
         <div class="sys-section">
             <span class="sys-section-label">{t('system-events', 'EVENTS')}</span>
-            <SysEvents />
+            <SysEvents {t} />
         </div>
 
         <div class="sys-section">

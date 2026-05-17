@@ -7,7 +7,7 @@ import type { IntentEngine } from "@/types"
 export interface SettingsValues {
     microphone:            string
     wakeWordEngine:        string
-    sttEngine:             string
+    // sttEngine is backend-managed (read-only in Rust write_setting) — not writable from frontend
     intentEngine:          IntentEngine
     slotEngine:            string
     glinerModel:           string
@@ -35,7 +35,6 @@ export function normalizeSettingsValues(raw: Record<string, string>): SettingsVa
     return {
         microphone:            raw.microphone       ?? "",
         wakeWordEngine:        raw.wakeWordEngine    ?? "",
-        sttEngine:             raw.sttEngine         ?? "",
         intentEngine:          normalizeIntentEngine(raw.intentEngine ?? ""),
         slotEngine:            raw.slotEngine        ?? "",
         glinerModel:           raw.glinerModel       ?? "",
@@ -55,7 +54,6 @@ export async function loadSettingsValues(): Promise<SettingsValues> {
     const settled = await Promise.allSettled([
         dbRead(DB_KEYS.microphone),
         dbRead(DB_KEYS.wakeWordEngine),
-        dbRead(DB_KEYS.sttEngine),
         dbRead(DB_KEYS.intentEngine),
         dbRead(DB_KEYS.slotEngine),
         dbRead(DB_KEYS.glinerModel),
@@ -74,22 +72,21 @@ export async function loadSettingsValues(): Promise<SettingsValues> {
     return normalizeSettingsValues({
         microphone:            val(0),
         wakeWordEngine:        val(1),
-        sttEngine:             val(2),
-        intentEngine:          val(3),
-        slotEngine:            val(4),
-        glinerModel:           val(5),
-        voskModel:             val(6),
-        noiseSuppression:      val(7),
-        vad:                   val(8),
-        gainNormalizerEnabled: val(9),
-        apiKeyPicovoice:       val(10),
-        ollamaUrl:             val(11),
-        ollamaModel:           val(12),
+        intentEngine:          val(2),
+        slotEngine:            val(3),
+        glinerModel:           val(4),
+        voskModel:             val(5),
+        noiseSuppression:      val(6),
+        vad:                   val(7),
+        gainNormalizerEnabled: val(8),
+        apiKeyPicovoice:       val(9),
+        ollamaUrl:             val(10),
+        ollamaModel:           val(11),
     })
 }
 
 export async function saveSettingsValues(s: SettingsValues & { voiceVal: string }): Promise<void> {
-    await Promise.all([
+    const results = await Promise.allSettled([
         dbWrite(DB_KEYS.voice,            s.voiceVal),
         dbWrite(DB_KEYS.microphone,       s.microphone),
         dbWrite(DB_KEYS.wakeWordEngine,   s.wakeWordEngine),
@@ -104,4 +101,6 @@ export async function saveSettingsValues(s: SettingsValues & { voiceVal: string 
         dbWrite(DB_KEYS.ollamaUrl,        s.ollamaUrl),
         dbWrite(DB_KEYS.ollamaModel,      s.ollamaModel),
     ])
+    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false))
+    if (failed.length > 0) throw new Error(`${failed.length} setting(s) rejected by backend`)
 }

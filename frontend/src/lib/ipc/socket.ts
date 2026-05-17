@@ -46,6 +46,7 @@ export function connectIpc(port: number = IPC_PORT) {
     ws.onopen = () => {
         ipcConnected.set(true)
         jarvisState.set("idle")
+        lastError.set("")
         reconnectAttempt = 0
         startHeartbeat()
         flushPendingCommands()

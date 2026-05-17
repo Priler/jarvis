@@ -52,7 +52,6 @@ describe("normalizeSettingsValues", () => {
         const result = normalizeSettingsValues({
             microphone:        "2",
             wakeWordEngine:    "rustpotter",
-            sttEngine:         "vosk",
             voskModel:         "vosk-model-ru",
             noiseSuppression:  "rnnoise",
             vad:               "silero",
@@ -61,7 +60,6 @@ describe("normalizeSettingsValues", () => {
         })
         expect(result.microphone).toBe("2")
         expect(result.wakeWordEngine).toBe("rustpotter")
-        expect(result.sttEngine).toBe("vosk")
         expect(result.voskModel).toBe("vosk-model-ru")
         expect(result.noiseSuppression).toBe("rnnoise")
         expect(result.vad).toBe("silero")

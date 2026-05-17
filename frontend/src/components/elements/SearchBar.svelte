@@ -50,6 +50,7 @@
             type="text"
             name="q"
             placeholder={t('search-placeholder')}
+            aria-label={t('search-placeholder')}
             autocomplete="off"
             minlength="1"
             maxlength="200"

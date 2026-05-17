@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte"
-    import { jarvisRamUsage, tStore, audioDevices, loadAudioDevices, settingsSnapshot, loadSettingsSnapshot } from "@/stores"
+    import { isJarvisRunning, jarvisRamUsage, tStore, audioDevices, loadAudioDevices, settingsSnapshot, loadSettingsSnapshot } from "@/stores"
 
     $: t = $tStore
 
@@ -92,7 +92,7 @@
         </svg>
         <div class="footer-status-text">
             <div class="footer-status-label">{t('stats-resources')}</div>
-            <div class="footer-status-value">{$jarvisRamUsage ? `RAM ${$jarvisRamUsage}mb` : '—'}</div>
+            <div class="footer-status-value">{$isJarvisRunning ? `RAM ${$jarvisRamUsage}MB` : '—'}</div>
         </div>
     </div>
 
@@ -126,9 +126,9 @@
 .footer-status-icon {
     width: 16px;
     height: 16px;
-    color: rgba(0, 229, 255, 0.82);
+    color: var(--status-online);
     opacity: 0.88;
-    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.12));
+    filter: drop-shadow(0 0 6px var(--accent-glow-sm));
     flex-shrink: 0;
 }
 

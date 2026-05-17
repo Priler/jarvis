@@ -1,5 +1,6 @@
 import { writable, derived } from "svelte/store"
 import { getTranslations, getCurrentLanguage, setLanguageInvoke, getSupportedLangs } from "./api"
+import { addToast } from "./toast"
 
 // stores
 export const translations = writable<Record<string, string>>({})
@@ -24,6 +25,7 @@ export async function loadTranslations() {
         document.documentElement.lang = lang
     } catch (err: unknown) {
         console.error("Failed to load translations:", err)
+        addToast("Failed to load translations — UI text may be unavailable", "error")
     }
 }
 
@@ -36,6 +38,7 @@ export async function setLanguage(lang: string) {
         document.documentElement.lang = lang
     } catch (err: unknown) {
         console.error("Failed to set language:", err)
+        addToast("Failed to change language", "error")
     }
 }
 

@@ -196,6 +196,7 @@
     padding-right: 12px;
     padding-bottom: 1rem;
     overflow-y: auto;
+    /* 80px = commands-header height (30px input) + margins (16+10) + commands-header gap overhead */
     max-height: calc(100vh - var(--header-h) - 80px);
 }
 

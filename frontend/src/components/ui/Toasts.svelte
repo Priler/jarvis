@@ -4,6 +4,10 @@
     import { tStore } from "@/stores"
 
     $: t = $tStore
+
+    const reducedMotion = typeof window !== 'undefined'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : false
 </script>
 
 <div class="hud-toasts" aria-live="assertive" aria-atomic="false">
@@ -11,8 +15,8 @@
         <div
             class="hud-toast hud-toast--{toast.type}"
             role="alert"
-            in:fly={{ y: -10, duration: 220, opacity: 0 }}
-            out:fly={{ y: -8,  duration: 160, opacity: 0 }}
+            in:fly={reducedMotion ? { duration: 0 } : { y: -10, duration: 220, opacity: 0 }}
+            out:fly={reducedMotion ? { duration: 0 } : { y: -8,  duration: 160, opacity: 0 }}
         >
             <span class="hud-msg">{toast.message}</span>
             <button

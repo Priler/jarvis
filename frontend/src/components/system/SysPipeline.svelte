@@ -2,12 +2,14 @@
     import { onDestroy } from "svelte"
     import { jarvisState, lastExecutedCommand, isJarvisRunning } from "@/stores"
 
-    const STAGES = [
-        { id: 'WAKE',     label: 'WAKE' },
-        { id: 'STT',      label: 'STT'  },
-        { id: 'INTENT',   label: 'INTENT' },
-        { id: 'EXEC',     label: 'EXEC' },
-        { id: 'RESPONSE', label: 'RESP' },
+    export let t: (key: string, fallback?: string) => string
+
+    $: STAGES = [
+        { id: 'WAKE',     label: t('pipeline-wake',     'WAKE')   },
+        { id: 'STT',      label: t('pipeline-stt',      'STT')    },
+        { id: 'INTENT',   label: t('pipeline-intent',   'INTENT') },
+        { id: 'EXEC',     label: t('pipeline-exec',     'EXEC')   },
+        { id: 'RESPONSE', label: t('pipeline-response', 'RESP')   },
     ]
 
     const RESPONSE_ACTIVE_MS = 2000
@@ -78,13 +80,13 @@
     text-transform: uppercase;
     color: rgba(255,255,255,0.22);
     padding: 5px 8px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     transition: color 260ms ease, background 260ms ease, opacity 260ms ease, text-shadow 260ms ease;
 
     &.active {
-        color: rgba(0,229,255,0.92);
-        background: rgba(0,229,255,0.06);
-        text-shadow: 0 0 10px rgba(0,229,255,0.12);
+        color: var(--accent);
+        background: var(--accent-glow-sm);
+        text-shadow: 0 0 10px var(--accent-glow-sm);
         animation: pipeline-pulse 2.2s ease-in-out infinite;
     }
 

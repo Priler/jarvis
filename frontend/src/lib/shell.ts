@@ -1,7 +1,5 @@
-import { showInFolder } from "./lib/api"
-import { addToast } from "./lib/toast"
-
-// ### UTILITY FUNCTIONS
+import { showInFolder } from "./api"
+import { addToast } from "./toast"
 
 export function showInExplorer(path: string): void {
     showInFolder(path)

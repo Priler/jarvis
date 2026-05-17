@@ -1,14 +1,16 @@
 <script lang="ts">
     import { runtimeEvents } from "@/stores"
 
+    export let t: (key: string, fallback?: string) => string
+
     $: events = $runtimeEvents
 </script>
 
 {#if events.length === 0}
     <div class="sys-empty">
         <span class="sys-empty-icon">◌</span>
-        <span class="sys-empty-title">NO RUNTIME EVENTS</span>
-        <span class="sys-empty-hint">Start JARVIS to see activity</span>
+        <span class="sys-empty-title">{t('system-no-events', 'NO RUNTIME EVENTS')}</span>
+        <span class="sys-empty-hint">{t('system-no-events-hint', 'Start JARVIS to see activity')}</span>
     </div>
 {:else}
     <div class="events-list">

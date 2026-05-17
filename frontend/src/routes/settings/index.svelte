@@ -100,7 +100,6 @@
                 voiceVal,
                 microphone:            selectedMicrophone,
                 wakeWordEngine:        selectedWakeWordEngine,
-                sttEngine:             "",
                 intentEngine:          selectedIntentRecognitionEngine,
                 slotEngine:            selectedSlotExtractionEngine,
                 glinerModel:           selectedGlinerModel,
@@ -183,17 +182,17 @@
     </div>
 {:else}
 <div class="settings-layout">
-    <nav class="settings-nav">
-        <button class="nav-item" class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
+    <nav class="settings-nav" role="tablist">
+        <button class="nav-item" role="tab" aria-selected={activeTab === 'general'} class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
             {t('settings-general')}
         </button>
-        <button class="nav-item" class:active={activeTab === 'devices'} on:click={() => activeTab = 'devices'}>
+        <button class="nav-item" role="tab" aria-selected={activeTab === 'devices'} class:active={activeTab === 'devices'} on:click={() => activeTab = 'devices'}>
             {t('settings-devices')}
         </button>
-        <button class="nav-item" class:active={activeTab === 'neural'} on:click={() => activeTab = 'neural'}>
+        <button class="nav-item" role="tab" aria-selected={activeTab === 'neural'} class:active={activeTab === 'neural'} on:click={() => activeTab = 'neural'}>
             {t('settings-neural-networks')}
         </button>
-        <button class="nav-item" class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
+        <button class="nav-item" role="tab" aria-selected={activeTab === 'about'} class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
             {t('settings-about')}
         </button>
     </nav>
@@ -273,7 +272,7 @@
 
 .settings-skeleton {
     height: 80px;
-    border-radius: 10px;
+    border-radius: var(--r-xl);
     background: linear-gradient(90deg,
         rgba(255,255,255,0.03) 0%,
         rgba(255,255,255,0.06) 50%,
