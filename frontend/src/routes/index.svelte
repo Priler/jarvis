@@ -60,7 +60,7 @@
 
             {#if !processRunning}
                 <div class="offline-badge">
-                    <span class="offline-icon">⚠</span>
+                    <span class="offline-icon" aria-hidden="true">⚠</span>
                     <span class="offline-text">{t('assistant-not-running')}</span>
                     <small>{t('assistant-offline-hint')}</small>
                 </div>

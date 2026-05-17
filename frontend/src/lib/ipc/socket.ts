@@ -17,10 +17,12 @@ let ws: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 let heartbeatTimeoutTimer: ReturnType<typeof setTimeout> | null = null
+let processingTimeoutTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectAttempt = 0
 let manualDisconnect = false
 let enabled = false
 let pendingTextCommands: string[] = []
+let _cmdSeq = 0
 
 export function enableIpc() {
     enabled = true
@@ -92,6 +94,7 @@ export function disconnectIpc() {
     reconnectAttempt = 0
     pendingTextCommands = []
     stopHeartbeat()
+    clearProcessingTimeout()
 
     if (reconnectTimer) {
         clearTimeout(reconnectTimer)
@@ -132,6 +135,24 @@ function stopHeartbeat() {
     }
 }
 
+const PROCESSING_TIMEOUT_MS = 60_000
+
+function startProcessingTimeout() {
+    clearProcessingTimeout()
+    processingTimeoutTimer = setTimeout(() => {
+        console.warn("[IPC] processing timeout — forcing idle after 60s")
+        processingTimeoutTimer = null
+        jarvisState.set("idle")
+    }, PROCESSING_TIMEOUT_MS)
+}
+
+function clearProcessingTimeout() {
+    if (processingTimeoutTimer) {
+        clearTimeout(processingTimeoutTimer)
+        processingTimeoutTimer = null
+    }
+}
+
 // ### EVENT HANDLING ###
 
 function handleEvent(data: IpcMessage) {
@@ -140,23 +161,28 @@ function handleEvent(data: IpcMessage) {
     switch (data.event) {
         case "wake_word_detected":
         case "listening":
+            clearProcessingTimeout()
             jarvisState.set("listening")
             break
 
         case "speech_recognized":
             lastRecognizedText.set(data.text)
             jarvisState.set("processing")
+            startProcessingTimeout()
             break
 
         case "command_executed":
-            lastExecutedCommand.set(data.id)
+            clearProcessingTimeout()
+            lastExecutedCommand.set({ id: data.id, seq: ++_cmdSeq })
             break
 
         case "idle":
+            clearProcessingTimeout()
             jarvisState.set("idle")
             break
 
         case "error":
+            clearProcessingTimeout()
             lastError.set(data.message || "Unknown error")
             break
 
@@ -165,6 +191,7 @@ function handleEvent(data: IpcMessage) {
             break
 
         case "stopping":
+            clearProcessingTimeout()
             jarvisState.set("disconnected")
             break
 

@@ -209,8 +209,8 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: rgba(0,229,255,0.82);
-        box-shadow: 0 0 8px rgba(0,229,255,0.16);
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent-glow-lg);
         opacity: 0;
         transition: opacity 140ms ease;
     }

@@ -1,5 +1,12 @@
 export type JarvisState = "disconnected" | "idle" | "listening" | "processing"
 
+/** Identifies a command execution event. seq increments on every event to force
+ *  Svelte store subscribers to fire even when the same command runs twice in a row. */
+export interface ExecutedCommand {
+    id:  string
+    seq: number
+}
+
 export type IpcMessage =
     | { event: "wake_word_detected" }
     | { event: "listening" }

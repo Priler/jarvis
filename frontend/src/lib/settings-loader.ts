@@ -4,7 +4,7 @@ import type { VoiceMeta, SelectOption } from "@/types"
 import type { SettingsValues } from "./settings"
 
 const LANGUAGE_NAMES: Record<string, string> = {
-    us: 'English', ru: 'Русский', uk: 'Українська',
+    us: 'English', ru: 'Русский', ua: 'Українська',
     de: 'German',  fr: 'French',  es: 'Spanish',
 }
 

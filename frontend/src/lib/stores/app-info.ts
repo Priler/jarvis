@@ -16,7 +16,11 @@ export const appInfo = writable<AppInfo>({
     logFilePath:       ""
 })
 
+let _loaded = false
+
 export async function loadAppInfo() {
+    if (_loaded) return
+    _loaded = true
     const results = await Promise.allSettled([
         getAuthorName(),
         getTgOfficialLink(),

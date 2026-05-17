@@ -2,7 +2,7 @@
     import { onMount, onDestroy } from "svelte"
     import { listen } from "@tauri-apps/api/event"
     import { playSound } from "@/lib/api"
-    import { assistantVoice, jarvisState } from "@/stores"
+    import { assistantVoice } from "@/stores"
 
     let voiceVal = "jarvis-og"
     const unsubVoice = assistantVoice.subscribe(value => {
@@ -30,15 +30,7 @@
             }
         })
 
-        const unlistenGreet = await listen("assistant-greet", () => {
-            jarvisState.set("listening")
-        })
-
-        const unlistenWaiting = await listen("assistant-waiting", () => {
-            jarvisState.set("idle")
-        })
-
-        unlisteners = [unlistenAudio, unlistenGreet, unlistenWaiting]
+        unlisteners = [unlistenAudio]
     })
 
     onDestroy(() => {

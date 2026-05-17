@@ -2,7 +2,7 @@
     import { onMount, onDestroy } from "svelte"
     import { goto } from "@roxi/routify"
     import { listOllamaModels } from "@/lib/api"
-    import { appInfo, assistantVoice, currentLanguage, setLanguage, tStore, audioDevices, loadAudioDevices, invalidateSettingsSnapshot } from "@/stores"
+    import { appInfo, assistantVoice, currentLanguage, setLanguage, tStore, audioDevices, loadAudioDevices, invalidateSettingsSnapshot, getSupportedLanguages } from "@/stores"
     import { addToast } from "@/lib/toast"
     import { saveSettingsValues } from "@/lib/settings"
     import { loadSettingsPageData } from "@/lib/settings-loader"
@@ -17,6 +17,7 @@
     $: t = $tStore
 
     type SettingsTab = "general" | "devices" | "neural" | "about"
+    const TAB_ORDER: SettingsTab[] = ["general", "devices", "neural", "about"]
     let activeTab: SettingsTab = "general"
     let loading = true
 
@@ -44,7 +45,11 @@
     let ollamaError = ""
     let ollamaModelsLoaded = false
 
-    const languages = [
+    const LANGUAGE_NAMES: Record<string, string> = {
+        ru: 'Русский', en: 'English', ua: 'Українська',
+        de: 'German',  fr: 'French',  es: 'Spanish',
+    }
+    let languages: { code: string; name: string }[] = [
         { code: "ru", name: "Русский" },
         { code: "en", name: "English" },
         { code: "ua", name: "Українська" },
@@ -52,6 +57,17 @@
 
     async function selectLanguage(code: string) {
         await setLanguage(code)
+    }
+
+    function handleTabNav(e: KeyboardEvent) {
+        const idx = TAB_ORDER.indexOf(activeTab)
+        if (e.key === 'ArrowRight') {
+            e.preventDefault()
+            activeTab = TAB_ORDER[(idx + 1) % TAB_ORDER.length]
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault()
+            activeTab = TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]
+        }
     }
 
     async function loadOllamaModels() {
@@ -128,6 +144,11 @@
 
     onMount(async () => {
         try {
+            const codes = await getSupportedLanguages()
+            languages = codes.map(code => ({ code, name: LANGUAGE_NAMES[code] ?? code }))
+        } catch { /* keep fallback defaults */ }
+
+        try {
             await loadAudioDevices()
         } catch {
             addToast(t('error-load-audio') || "Failed to load audio devices", "error")
@@ -182,22 +203,25 @@
     </div>
 {:else}
 <div class="settings-layout">
-    <nav class="settings-nav" role="tablist">
-        <button class="nav-item" role="tab" aria-selected={activeTab === 'general'} class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
+    <nav class="settings-nav" role="tablist" on:keydown={handleTabNav}>
+        <button class="nav-item" role="tab" id="tab-general" aria-selected={activeTab === 'general'} aria-controls="panel-settings" class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
             {t('settings-general')}
         </button>
-        <button class="nav-item" role="tab" aria-selected={activeTab === 'devices'} class:active={activeTab === 'devices'} on:click={() => activeTab = 'devices'}>
+        <button class="nav-item" role="tab" id="tab-devices" aria-selected={activeTab === 'devices'} aria-controls="panel-settings" class:active={activeTab === 'devices'} on:click={() => activeTab = 'devices'}>
             {t('settings-devices')}
         </button>
-        <button class="nav-item" role="tab" aria-selected={activeTab === 'neural'} class:active={activeTab === 'neural'} on:click={() => activeTab = 'neural'}>
+        <button class="nav-item" role="tab" id="tab-neural" aria-selected={activeTab === 'neural'} aria-controls="panel-settings" class:active={activeTab === 'neural'} on:click={() => activeTab = 'neural'}>
             {t('settings-neural-networks')}
         </button>
-        <button class="nav-item" role="tab" aria-selected={activeTab === 'about'} class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
+        <button class="nav-item" role="tab" id="tab-about" aria-selected={activeTab === 'about'} aria-controls="panel-settings" class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
             {t('settings-about')}
         </button>
     </nav>
 
-    <div class="settings-content">
+    <div class="settings-content"
+         id="panel-settings"
+         role="tabpanel"
+         aria-labelledby="tab-{activeTab}">
         {#if activeTab === 'general'}
             <TabGeneral
                 {t}

@@ -22,7 +22,7 @@ export function startEventTracking(): void {
     })))
 
     unsubs.push(lastExecutedCommand.subscribe(skipFirst(cmd => {
-        if (cmd) addRuntimeEvent('COMMAND EXECUTED', cmd)
+        if (cmd) addRuntimeEvent('COMMAND EXECUTED', cmd.id)
     })))
 
     unsubs.push(lastError.subscribe(skipFirst(err => {

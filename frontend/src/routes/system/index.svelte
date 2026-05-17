@@ -4,8 +4,6 @@
     import { isJarvisRunning, ipcConnected, tStore, settingsSnapshot } from "@/stores"
     import { DB_KEYS } from "@/lib/db-keys"
     import { ENGINE_DEFAULTS } from "@/lib/engine-options"
-    import { addToast } from "@/lib/toast"
-
     import SysOverview  from "@/components/system/SysOverview.svelte"
     import SysPipeline  from "@/components/system/SysPipeline.svelte"
     import SysTelemetry from "@/components/system/SysTelemetry.svelte"
@@ -36,19 +34,16 @@
     $: pipelineStatus = ($isJarvisRunning && $ipcConnected) ? 'active' : ($isJarvisRunning ? 'loading' : 'offline')
 
     onMount(async () => {
-        try {
-            const [vosk, intent, llm] = await Promise.all([
-                dbRead(DB_KEYS.voskModel),
-                dbRead(DB_KEYS.intentEngine),
-                dbRead(DB_KEYS.ollamaModel),
-            ])
-            sttModel     = vosk   || t('settings-auto-detect', 'Auto-detect')
-            intentEngine = intent || 'none'
-            llmModel     = llm    || ""
-        } catch (err: unknown) {
-            console.error("System: failed to load models", err)
-            addToast("Failed to load system configuration", "error")
-        }
+        const settled = await Promise.allSettled([
+            dbRead(DB_KEYS.voskModel),
+            dbRead(DB_KEYS.intentEngine),
+            dbRead(DB_KEYS.ollamaModel),
+        ])
+        const val = (r: PromiseSettledResult<string>) =>
+            r.status === 'fulfilled' ? r.value : ""
+        sttModel     = val(settled[0]) || t('settings-auto-detect', 'Auto-detect')
+        intentEngine = val(settled[1]) || 'none'
+        llmModel     = val(settled[2]) || ""
     })
 </script>
 

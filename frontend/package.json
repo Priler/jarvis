@@ -16,15 +16,17 @@
     "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-fs": "^2",
-    "@tauri-apps/plugin-shell": "^2",
-    "radix-icons-svelte": "^1.2.1"
+    "@tauri-apps/plugin-shell": "^2"
   },
   "devDependencies": {
     "@roxi/routify": "^3.6.4",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@tauri-apps/cli": "^2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/svelte": "^5.3.1",
     "@tsconfig/svelte": "^5.0.6",
     "@types/node": "^25.0.3",
+    "happy-dom": "^20.9.0",
     "sass": "^1.97.1",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.0",

@@ -56,7 +56,7 @@
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.055);
     border-left: 2px solid var(--hud-accent);
-    border-radius: 4px;
+    border-radius: var(--r-sm);
 
     font-size: 11px;
     font-weight: 500;

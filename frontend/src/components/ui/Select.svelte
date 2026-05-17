@@ -41,9 +41,9 @@
             const listRect    = listEl.getBoundingClientRect()
             const triggerRect = triggerEl.getBoundingClientRect()
             const scrollParent = getScrollParent(triggerEl)
-            const containerBottom = scrollParent instanceof Window
-                ? scrollParent.innerHeight
-                : scrollParent.getBoundingClientRect().bottom
+            const containerBottom = typeof (scrollParent as any).getBoundingClientRect !== 'function'
+                ? (scrollParent as Window & typeof globalThis).innerHeight
+                : (scrollParent as Element).getBoundingClientRect().bottom
 
             if (listRect.bottom > containerBottom && triggerRect.top >= listRect.height + 8) {
                 dropUp = true
@@ -171,7 +171,7 @@
                 </li>
             {/each}
             {#if data.length > MAX_VISIBLE}
-                <li class="select-item select-item--overflow" role="option" aria-disabled="true">
+                <li class="select-item select-item--overflow" role="option" aria-selected="false" aria-disabled="true">
                     <span>… and {data.length - MAX_VISIBLE} more</span>
                 </li>
             {/if}
@@ -292,7 +292,7 @@
     justify-content: space-between;
     min-height: 36px;
     padding: 0 14px;
-    border-radius: 4px;
+    border-radius: var(--r-sm);
     font-family: var(--font);
     font-size: 0.82rem;
     color: rgba(220,235,245,0.82);
@@ -306,10 +306,10 @@
     }
 
     &.selected {
-        color: #00e5ff;
+        color: var(--accent);
         background: rgba(0,229,255,0.08);
 
-        svg { color: #00e5ff; }
+        svg { color: var(--accent); }
     }
 
     &.focused.selected {

@@ -44,7 +44,9 @@
         <div class="warn-panel">
             <p class="warn-panel-text">{t('settings-picovoice-warning')}</p>
             <p class="warn-panel-text">{t('settings-picovoice-key-desc')} <a href="https://console.picovoice.ai/" target="_blank" rel="noopener noreferrer" class="warn-link">Picovoice Console</a>.</p>
+            <label class="field-label" for="picovoice-key-input">{t('settings-picovoice-key')}</label>
             <input
+                id="picovoice-key-input"
                 class="field-input picovoice-key-input"
                 type="password"
                 placeholder={t('settings-picovoice-key')}
@@ -72,7 +74,11 @@
     <span class="section-label">{t('settings-intent-engine')}</span>
     <p class="section-desc">{t('settings-intent-engine-desc')}</p>
     <Select
-        data={INTENT_ENGINE_OPTIONS}
+        data={INTENT_ENGINE_OPTIONS.map(o =>
+            o.value === 'none' ? { ...o, label: t('settings-disabled') } :
+            o.value === 'intent-classifier' ? { ...o, label: t('settings-intent-classifier') || o.label } :
+            o
+        )}
         bind:value={selectedIntentRecognitionEngine}
     />
 </div>
@@ -127,6 +133,7 @@
             class:on={gainNormalizerEnabled}
             on:click={() => gainNormalizerEnabled = !gainNormalizerEnabled}
             aria-pressed={gainNormalizerEnabled}
+            aria-label={t('settings-gain-normalizer')}
         >
             <span class="toggle-thumb"></span>
         </button>
@@ -137,6 +144,7 @@
 <div class="settings-section">
     <span class="section-label">{t('settings-ollama', 'OLLAMA')}</span>
     <p class="section-desc">{t('settings-ollama-desc')}</p>
+    <label class="field-label" for="ollama-url-input">{t('settings-ollama-url') || 'Ollama URL'}</label>
     <div class="ollama-url-row">
         <input
             id="ollama-url-input"
@@ -167,7 +175,7 @@
 .warn-panel {
     margin-top: 12px;
     padding: 14px;
-    border-radius: 8px;
+    border-radius: var(--r-lg);
     background: rgba(255,190,90,0.04);
     border: 1px solid rgba(255,190,90,0.14);
 }
@@ -201,7 +209,7 @@
     position: relative;
     width: 38px;
     height: 22px;
-    border-radius: 10px;
+    border-radius: var(--r-xl);
     border: 1px solid rgba(255,255,255,0.12);
     background: rgba(255,255,255,0.06);
     cursor: pointer;
