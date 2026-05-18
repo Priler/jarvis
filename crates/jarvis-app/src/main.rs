@@ -10,6 +10,7 @@ use jarvis_core::{
     i18n, voices, models,
     APP_CONFIG_DIR, APP_LOG_DIR, COMMANDS_LIST, DB,
 };
+use parking_lot::RwLock;
 
 // include log
 #[macro_use]
@@ -25,6 +26,7 @@ mod app;
 mod tray;
 
 static SHOULD_STOP: AtomicBool = AtomicBool::new(false);
+static MUTED: AtomicBool = AtomicBool::new(false);
 
 fn main() -> Result<(), String> {
     // initialize directories
@@ -101,7 +103,7 @@ fn main() -> Result<(), String> {
         ipc::set_sandbox_warnings(sandbox_full);
     }
 
-    COMMANDS_LIST.set(cmds).unwrap();
+    COMMANDS_LIST.set(RwLock::new(cmds)).unwrap();
 
     // init audio
     if audio::init().is_err() {
@@ -122,7 +124,8 @@ fn main() -> Result<(), String> {
 
     // init intent-recognition engine
     rt.block_on(async {
-        if let Err(e) = intent::init(COMMANDS_LIST.get().unwrap()).await {
+        let cmds_guard = COMMANDS_LIST.get().unwrap().read();
+        if let Err(e) = intent::init(&*cmds_guard).await {
             error!("Failed to initialize intent classifier: {}", e);
             app::close(1);
         }
@@ -156,6 +159,9 @@ fn main() -> Result<(), String> {
     // channel for text commands (manually written in the GUI)
     let (text_cmd_tx, text_cmd_rx) = mpsc::channel::<String>();
 
+    // runtime handle for async operations inside the sync action handler
+    let action_rt = Arc::clone(&rt);
+
     ipc::set_action_handler(move |action| {
         match action {
             IpcAction::Stop => {
@@ -164,11 +170,35 @@ fn main() -> Result<(), String> {
             }
             IpcAction::ReloadCommands => {
                 info!("Received reload commands request");
-                // TODO: implement reload
+                let rt_clone = Arc::clone(&action_rt);
+                std::thread::spawn(move || {
+                    match commands::parse_commands() {
+                        Ok(new_cmds) => {
+                            let result = rt_clone.block_on(intent::reload(&new_cmds));
+                            if let Err(e) = result {
+                                error!("Intent reload failed: {}", e);
+                                ipc::send(IpcEvent::Error {
+                                    message: format!("Reload failed: {}", e),
+                                });
+                                return;
+                            }
+                            if let Some(lock) = COMMANDS_LIST.get() {
+                                *lock.write() = new_cmds;
+                                info!("Commands reloaded successfully");
+                            }
+                        }
+                        Err(e) => {
+                            error!("Failed to parse commands on reload: {}", e);
+                            ipc::send(IpcEvent::Error {
+                                message: format!("Reload failed: {}", e),
+                            });
+                        }
+                    }
+                });
             }
             IpcAction::SetMuted { muted } => {
-                info!("Received mute request: {}", muted);
-                // TODO: implement mute
+                info!("Muted: {}", muted);
+                MUTED.store(muted, Ordering::SeqCst);
             }
             IpcAction::TextCommand { text } => {
                 info!("Received text command: {}", text);
@@ -234,6 +264,10 @@ fn main() -> Result<(), String> {
 
 pub fn should_stop() -> bool {
     SHOULD_STOP.load(Ordering::SeqCst)
+}
+
+pub fn is_muted() -> bool {
+    MUTED.load(Ordering::SeqCst)
 }
 
 fn generate_ipc_token() -> String {

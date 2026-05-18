@@ -3,14 +3,13 @@ use std::sync::Arc;
 use std::fs;
 
 use once_cell::sync::OnceCell;
+use parking_lot::RwLock;
 
-use crate::commands::JCommandsList;
+use crate::commands::{self, JCommandsList};
 use crate::i18n;
 use crate::APP_CONFIG_DIR;
 use crate::models::embedding::EmbeddingModel;
 
-// no outer Mutex needed - state is immutable after init.
-// the embedding model has its own internal Mutex.
 static CLASSIFIER: OnceCell<EmbeddingClassifierState> = OnceCell::new();
 
 struct IntentVector {
@@ -20,12 +19,8 @@ struct IntentVector {
 
 struct EmbeddingClassifierState {
     model: Arc<EmbeddingModel>,
-    intents: Vec<IntentVector>,
+    intents: RwLock<Vec<IntentVector>>,
 }
-
-// model is Arc (Send+Sync), intents are read-only after init
-unsafe impl Send for EmbeddingClassifierState {}
-unsafe impl Sync for EmbeddingClassifierState {}
 
 const CACHE_FILE: &str = "embedding_intents.json";
 const HASH_FILE: &str = "embedding_hash.txt";
@@ -38,12 +33,41 @@ pub fn init_with_model(model: Arc<EmbeddingModel>, commands: &[JCommandsList]) -
 
     info!("Initializing embedding classifier...");
 
-    let current_hash = crate::commands::commands_hash(commands);
+    let intents = load_or_build_intents(&model, commands)?;
+    info!("Embedding classifier ready with {} intents", intents.len());
+
+    CLASSIFIER.set(EmbeddingClassifierState { model, intents: RwLock::new(intents) })
+        .map_err(|_| "Classifier already set".to_string())?;
+
+    Ok(())
+}
+
+/// Reload intent vectors from updated command list without recreating the model.
+pub fn reload(commands: &[JCommandsList]) -> Result<(), String> {
+    let state = CLASSIFIER.get().ok_or("Embedding classifier not initialized")?;
+    info!("Reloading embedding classifier with {} command packs...", commands.len());
+    let new_intents = build_intent_vectors(&state.model, commands)?;
+    // Update cache
+    let current_hash = commands::commands_hash(commands);
+    if let Some(config_dir) = APP_CONFIG_DIR.get() {
+        let cache_path = config_dir.join(CACHE_FILE);
+        let hash_path = config_dir.join(HASH_FILE);
+        if let Ok(json) = serde_json::to_string(&intents_to_cache(&new_intents)) {
+            let _ = fs::write(&cache_path, json);
+            let _ = fs::write(&hash_path, &current_hash);
+        }
+    }
+    *state.intents.write() = new_intents;
+    info!("Embedding classifier reloaded");
+    Ok(())
+}
+
+fn load_or_build_intents(model: &EmbeddingModel, commands: &[JCommandsList]) -> Result<Vec<IntentVector>, String> {
+    let current_hash = commands::commands_hash(commands);
     let config_dir = APP_CONFIG_DIR.get().ok_or("Config dir not set")?;
     let hash_path = config_dir.join(HASH_FILE);
     let cache_path = config_dir.join(CACHE_FILE);
 
-    // check if cached vectors are still valid
     let should_retrain = if hash_path.exists() && cache_path.exists() {
         let stored_hash = fs::read_to_string(&hash_path).unwrap_or_default();
         stored_hash.trim() != current_hash
@@ -51,29 +75,19 @@ pub fn init_with_model(model: Arc<EmbeddingModel>, commands: &[JCommandsList]) -
         true
     };
 
-    let intents = if should_retrain {
+    if should_retrain {
         info!("Building intent vectors from commands...");
-        let intents = build_intent_vectors(&model, commands)?;
-        
-        // cache to disk
+        let intents = build_intent_vectors(model, commands)?;
         if let Ok(json) = serde_json::to_string(&intents_to_cache(&intents)) {
             let _ = fs::write(&cache_path, json);
             let _ = fs::write(&hash_path, &current_hash);
             info!("Intent vectors cached");
         }
-        
-        intents
+        Ok(intents)
     } else {
         info!("Loading cached intent vectors...");
-        load_cached_intents(&cache_path)?
-    };
-
-    info!("Embedding classifier ready with {} intents", intents.len());
-
-    CLASSIFIER.set(EmbeddingClassifierState { model, intents })
-        .map_err(|_| "Classifier already set".to_string())?;
-
-    Ok(())
+        load_cached_intents(&cache_path)
+    }
 }
 
 fn build_intent_vectors(
@@ -130,39 +144,34 @@ fn build_intent_vectors(
 
 pub fn classify(text: &str) -> Result<(String, f64), String> {
     let state = CLASSIFIER.get().ok_or("Classifier not initialized")?;
-    
-    // only the embedding model needs locking, intents are read-only
+
     let embeddings = state.model.embedding.lock().embed(vec![text], None)
         .map_err(|e| format!("Failed to embed query: {}", e))?;
-    
+
     let mut query_vec = embeddings.into_iter().next()
         .ok_or("Empty embedding result")?;
 
-    // normalize query
     let norm: f32 = query_vec.iter().map(|v| v * v).sum::<f32>().sqrt();
     if norm > 0.0 {
-        for val in &mut query_vec {
-            *val /= norm;
-        }
+        for val in &mut query_vec { *val /= norm; }
     }
 
-    // cosine similarity - track index, clone only the winner
+    let intents = state.intents.read();
     let mut best_idx: usize = 0;
     let mut best_score: f64 = -1.0;
 
-    for (i, intent) in state.intents.iter().enumerate() {
+    for (i, intent) in intents.iter().enumerate() {
         let score: f64 = query_vec.iter()
             .zip(intent.vector.iter())
             .map(|(a, b)| (*a as f64) * (*b as f64))
             .sum();
-
         if score > best_score {
             best_score = score;
             best_idx = i;
         }
     }
 
-    let best_id = state.intents[best_idx].id.clone();
+    let best_id = intents[best_idx].id.clone();
     debug!("Embedding classify: '{}' -> '{}' ({:.2}%)", text, best_id, best_score * 100.0);
 
     Ok((best_id, best_score))

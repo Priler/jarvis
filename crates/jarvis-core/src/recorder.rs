@@ -45,12 +45,12 @@ pub fn init() -> Result<(), ()> {
             }
         }
         RecorderType::PortAudio => {
-            info!("Initializing PortAudio recording backend");
-            todo!();
+            error!("PortAudio recorder backend is not implemented");
+            return Err(());
         }
         RecorderType::Cpal => {
-            info!("Initializing CPAL recording backend");
-            todo!();
+            error!("CPAL recorder backend is not implemented");
+            return Err(());
         }
     }
 
@@ -110,11 +110,9 @@ pub fn read_microphone(frame_buffer: &mut [i16]) {
         RecorderType::PvRecorder => {
             pvrecorder::read_microphone(frame_buffer);
         }
-        RecorderType::PortAudio => {
-            todo!();
-        }
-        RecorderType::Cpal => {
-            panic!("Cpal should be used via callback assignment");
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented — filling with silence", RECORDER_TYPE.get());
+            frame_buffer.fill(0);
         }
     }
 }
@@ -131,11 +129,9 @@ pub fn start_recording() -> Result<(), ()> {
                 FRAME_LENGTH.get().unwrap().to_owned(),
             );
         }
-        RecorderType::PortAudio => {
-            todo!();
-        }
-        RecorderType::Cpal => {
-            todo!();
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented", RECORDER_TYPE.get());
+            return Err(());
         }
     }
 }
@@ -146,11 +142,9 @@ pub fn stop_recording() -> Result<(), ()> {
     }
     match RECORDER_TYPE.get().unwrap() {
         RecorderType::PvRecorder => pvrecorder::stop_recording(),
-        RecorderType::PortAudio => {
-            todo!();
-        }
-        RecorderType::Cpal => {
-            todo!();
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented", RECORDER_TYPE.get());
+            Err(())
         }
     }
 }
@@ -176,16 +170,8 @@ pub fn get_selected_microphone_index() -> i32 {
 pub fn get_audio_devices() -> Vec<String> {
     match RECORDER_TYPE.get() {
         Some(RecorderType::PvRecorder) => pvrecorder::list_audio_devices(),
-        Some(RecorderType::PortAudio) => {
-            todo!();
-        }
-        Some(RecorderType::Cpal) => {
-            todo!();
-        }
-        None => {
-            // not initialized yet, default to pvrecorder
-            pvrecorder::list_audio_devices()
-        }
+        Some(RecorderType::PortAudio) | Some(RecorderType::Cpal) => vec![],
+        None => pvrecorder::list_audio_devices(),
     }
 }
 
@@ -195,15 +181,7 @@ pub fn get_audio_device_name(idx: i32) -> String {
     }
     match RECORDER_TYPE.get() {
         Some(RecorderType::PvRecorder) => pvrecorder::get_audio_device_name(idx),
-        Some(RecorderType::PortAudio) => {
-            todo!();
-        }
-        Some(RecorderType::Cpal) => {
-            todo!();
-        }
-        None => {
-            // not initialized yet, default to pvrecorder
-            pvrecorder::get_audio_device_name(idx)
-        }
+        Some(RecorderType::PortAudio) | Some(RecorderType::Cpal) => String::new(),
+        None => pvrecorder::get_audio_device_name(idx),
     }
 }

@@ -30,3 +30,44 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+  rust:
+    name: Rust — check, clippy, test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install system dependencies (Ubuntu)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            libssl-dev pkg-config \
+            libpulse-dev libasound2-dev \
+            libgtk-3-dev libwebkit2gtk-4.1-dev \
+            libappindicator3-dev librsvg2-dev patchelf \
+            libglib2.0-dev
+
+      - name: cargo check (workspace)
+        run: cargo check --workspace
+
+      - name: cargo clippy (jarvis-core, no warnings)
+        run: cargo clippy -p jarvis-core -- -D warnings
+
+      - name: cargo test (jarvis-core)
+        run: cargo test -p jarvis-core --features lua

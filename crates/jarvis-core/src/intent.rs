@@ -53,6 +53,15 @@ pub async fn init(commands: &Vec<JCommandsList>) -> Result<(), String> {
     Ok(())
 }
 
+/// Reload the active intent backend with updated commands (no app restart required).
+pub async fn reload(commands: &[JCommandsList]) -> Result<(), String> {
+    match BACKEND.get().map(|s| s.as_str()) {
+        Some("none") | None => Ok(()),
+        Some("intent-classifier") => intentclassifier::reload(commands).await,
+        Some(_) => embeddingclassifier::reload(commands),
+    }
+}
+
 pub async fn classify(text: &str) -> Option<(String, f64)> {
     match BACKEND.get()?.as_str() {
         "none" => None,

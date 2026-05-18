@@ -123,6 +123,16 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
 
                 if vosk_wake || rustpotter_wake {
                     // WAKE WORD DETECTED!
+                    if crate::is_muted() {
+                        info!("[MUTED] Wake word detected but muted — ignoring");
+                        stt::reset_wake_recognizer();
+                        audio_processing::reset();
+                        vad_state = VadState::WaitingForVoice;
+                        silence_frames = 0;
+                        audio_buffer.clear();
+                        continue 'wake_word;
+                    }
+
                     info!("Wake word activated!");
                     info!("[IPC] → WakeWordDetected");
                     ipc::send(IpcEvent::WakeWordDetected);
@@ -393,23 +403,24 @@ fn process_text_command(text: &str, rt: &tokio::runtime::Runtime) {
 
 // Execute command, returns true if chaining should continue
 fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
-    let commands_list = match COMMANDS_LIST.get() {
-        Some(c) => c,
+    let commands_lock = match COMMANDS_LIST.get() {
+        Some(lock) => lock,
         None => {
             ipc::send(IpcEvent::Error { message: "Commands not loaded".to_string() });
             ipc::send(IpcEvent::Idle);
             return false;
         }
     };
+    let commands_list = commands_lock.read();
     
-    let cmd_result = if let Some((intent_id, confidence)) = 
-        rt.block_on(intent::classify(text)) 
+    let cmd_result = if let Some((intent_id, confidence)) =
+        rt.block_on(intent::classify(text))
     {
         info!("Intent recognized: {} (confidence: {:.2})", intent_id, confidence);
-        intent::get_command_by_intent(commands_list, &intent_id)
+        intent::get_command_by_intent(&*commands_list, &intent_id)
     } else {
         info!("Intent not recognized, trying levenshtein fallback...");
-        commands::fetch_command(text, commands_list)
+        commands::fetch_command(text, &*commands_list)
     };
     
     if let Some((cmd_path, cmd_config)) = cmd_result {
