@@ -39,6 +39,9 @@ pub enum IpcEvent {
 
     // One or more Lua commands have sandbox = "full" (arbitrary shell access)
     SandboxWarning { commands: Vec<String> },
+
+    // A slow initialization step is in progress (e.g. loading STT model)
+    Loading { component: String },
 }
 
 // Actions sent from GUI to jarvis-app

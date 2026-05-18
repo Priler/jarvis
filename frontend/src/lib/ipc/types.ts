@@ -27,6 +27,7 @@ export type IpcMessage =
     | { event: "reveal_window" }
     | { event: "confirmation_required"; id: string; description: string; cmd: string }
     | { event: "sandbox_warning"; commands: string[] }
+    | { event: "loading"; component: string }
 
 export type IpcOutgoing =
     | { action: "stop" }

@@ -1,4 +1,4 @@
-use crate::config;
+use crate::{config, keychain};
 use serde::{Deserialize, Serialize};
 
 use crate::config::structs::SpeechToTextEngine;
@@ -61,7 +61,7 @@ impl Settings {
             "noise_suppression"         => Some(format!("{:?}", self.noise_suppression)),
             "gain_normalizer"           => Some(self.gain_normalizer.to_string()),
             "language"                  => Some(self.language.clone()),
-            "api_key__picovoice"        => Some(self.api_keys.picovoice.clone()),
+            "api_key__picovoice"        => keychain::get_api_key("picovoice").ok(),
             "ollama_url"                => Some(self.ollama.url.clone()),
             "ollama_model"              => Some(self.ollama.model.clone()),
             _ => None,
@@ -119,7 +119,9 @@ impl Settings {
                 self.language = val.to_string();
             }
             "api_key__picovoice" => {
-                self.api_keys.picovoice = val.to_string();
+                keychain::set_api_key("picovoice", val)
+                    .map_err(|e| format!("failed to store API key in OS keyring: {}", e))?;
+                // Do not store in the Settings struct — key lives only in keyring.
             }
             "ollama_url" => {
                 self.ollama.url = val.to_string();
@@ -190,6 +192,11 @@ impl Default for Settings {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiKeys {
+    // SEC-6: key is stored in the OS keyring, not in the JSON settings file.
+    // skip_serializing ensures new saves never write the key to disk.
+    // The field is still deserializable so existing JSON files can be migrated
+    // on first load (see db::init_settings migration step).
+    #[serde(skip_serializing, default)]
     pub picovoice: String,
 }
 

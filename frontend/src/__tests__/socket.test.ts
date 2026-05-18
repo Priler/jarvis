@@ -51,7 +51,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 vi.stubGlobal("WebSocket", MockWebSocket)
 
-import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings } from "@/lib/ipc/stores"
+import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings, loadingComponent } from "@/lib/ipc/stores"
 import { connectIpc, disconnectIpc, enableIpc, sendTextCommand, sendConfirmResult, setIpcToken, stopJarvisApp, reloadCommands } from "@/lib/ipc/socket"
 
 function connect(port?: number) {
@@ -68,6 +68,7 @@ beforeEach(() => {
     lastError.set("")
     pendingConfirmation.set(null)
     sandboxWarnings.set([])
+    loadingComponent.set(null)
     setIpcToken(null)
 })
 
@@ -350,6 +351,28 @@ describe("sandbox_warning event", () => {
         sandboxWarnings.set(["old"])
         MockWebSocket.last!.msg({ event: "sandbox_warning", commands: ["new1", "new2"] })
         expect(get(sandboxWarnings)).toEqual(["new1", "new2"])
+    })
+})
+
+describe("loading event", () => {
+    beforeEach(() => connect())
+
+    it("sets loadingComponent on loading event", () => {
+        MockWebSocket.last!.msg({ event: "loading", component: "stt" })
+        expect(get(loadingComponent)).toBe("stt")
+    })
+
+    it("clears loadingComponent on idle event", () => {
+        MockWebSocket.last!.msg({ event: "loading", component: "intent" })
+        expect(get(loadingComponent)).toBe("intent")
+        MockWebSocket.last!.msg({ event: "idle" })
+        expect(get(loadingComponent)).toBeNull()
+    })
+
+    it("updates loadingComponent when multiple loading events arrive", () => {
+        MockWebSocket.last!.msg({ event: "loading", component: "stt" })
+        MockWebSocket.last!.msg({ event: "loading", component: "audio" })
+        expect(get(loadingComponent)).toBe("audio")
     })
 })
 

@@ -61,7 +61,7 @@ jobs:
             libpulse-dev libasound2-dev \
             libgtk-3-dev libwebkit2gtk-4.1-dev \
             libappindicator3-dev librsvg2-dev patchelf \
-            libglib2.0-dev
+            libglib2.0-dev libsecret-1-dev
 
       - name: cargo check (workspace)
         run: cargo check --workspace

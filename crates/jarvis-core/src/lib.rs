@@ -8,6 +8,7 @@ use std::path::PathBuf;
 extern crate log;
 
 pub mod time;
+pub mod keychain;
 
 pub mod audio;
 pub mod commands;

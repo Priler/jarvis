@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import { getCurrentWindow } from "@tauri-apps/api/window"
-import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings } from "./stores"
+import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings, loadingComponent } from "./stores"
 import type { IpcMessage, IpcOutgoing } from "./types"
 import { parseIpcMessage, computeReconnectDelay } from "./utils"
 
@@ -189,6 +189,7 @@ function handleEvent(data: IpcMessage) {
         case "idle":
             clearProcessingTimeout()
             jarvisState.set("idle")
+            loadingComponent.set(null)
             break
 
         case "error":
@@ -223,6 +224,10 @@ function handleEvent(data: IpcMessage) {
         case "sandbox_warning":
             sandboxWarnings.set(data.commands)
             console.warn("[IPC] Commands with full sandbox access:", data.commands)
+            break
+
+        case "loading":
+            loadingComponent.set(data.component || null)
             break
     }
 }

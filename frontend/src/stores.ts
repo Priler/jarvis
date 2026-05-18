@@ -7,6 +7,7 @@ export {
     lastError,
     pendingConfirmation,
     sandboxWarnings,
+    loadingComponent,
     connectIpc,
     enableIpc,
     disableIpc,

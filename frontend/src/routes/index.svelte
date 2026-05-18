@@ -10,7 +10,8 @@
     import {
         isJarvisRunning,
         updateJarvisStats,
-        tStore
+        tStore,
+        loadingComponent
     } from "@/stores"
 
     $: t = $tStore
@@ -61,7 +62,12 @@
                 <ArcReactor />
             </div>
 
-            {#if !processRunning}
+            {#if $loadingComponent}
+                <div class="loading-badge" aria-live="polite">
+                    <span class="loading-spinner" aria-hidden="true"></span>
+                    <span class="loading-text">{$loadingComponent}&hellip;</span>
+                </div>
+            {:else if !processRunning}
                 <div class="offline-badge">
                     <span class="offline-icon" aria-hidden="true">⚠</span>
                     <span class="offline-text">{t('assistant-not-running')}</span>
@@ -114,6 +120,40 @@
 
 .reactor-wrapper {
     transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+.loading-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin-top: -2.5rem;
+    white-space: nowrap;
+}
+
+.loading-spinner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--accent-rgb), 0.25);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.8;
 }
 
 .offline-badge {

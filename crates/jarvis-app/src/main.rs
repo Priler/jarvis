@@ -69,82 +69,21 @@ fn main() -> Result<(), String> {
         app::close(1);
     }
 
-    // init models registry (scans available AI models)
-    if let Err(e) = models::init() {
-        warn!("Models registry init failed: {}", e);
-    }
-
-    // init stt engine
-    if stt::init().is_err() {
-        // @TODO. Allow continuing even without STT, if commands is using keywords or smthng?
-        app::close(1); // cannot continue without stt
-    }
-
-    // init commands
-    info!("Initializing commands.");
-    let cmds = match commands::parse_commands() {
-        Ok(c) => c,
-        Err(e) => {
-            warn!("Failed to parse commands: {}. Starting with empty command list.", e);
-            Vec::new()
-        }
-    };
-    info!("Commands initialized. Count: {}, List: {:?}", cmds.len(), commands::list_paths(&cmds));
-
-    // SEC-3: warn about Lua commands with unrestricted sandbox access
-    let sandbox_full: Vec<String> = cmds
-        .iter()
-        .flat_map(|cl| cl.commands.iter())
-        .filter(|c| c.cmd_type == "lua" && c.sandbox == "full")
-        .map(|c| c.id.clone())
-        .collect();
-    if !sandbox_full.is_empty() {
-        warn!("[SEC] Lua commands with sandbox=full (arbitrary shell access): {:?}", sandbox_full);
-        ipc::set_sandbox_warnings(sandbox_full);
-    }
-
-    COMMANDS_LIST.set(RwLock::new(cmds)).unwrap();
-
-    // init audio
-    if audio::init().is_err() {
-        // @TODO. Allow continuing even without audio?
-        app::close(1); // cannot continue without audio
-    }
-
-    // init wake-word engine
-    if let Err(e) = listener::init() {
-        error!("Wake-word engine init failed: {}", e);
-        app::close(1);
-    }
-
     // shared async runtime for intent classification, IPC, etc.
+    // Created early so the IPC action handler can use it before heavy init.
     let rt = Arc::new(
         tokio::runtime::Runtime::new().expect("Failed to create tokio runtime")
     );
 
-    // init intent-recognition engine
-    rt.block_on(async {
-        let cmds_guard = COMMANDS_LIST.get().unwrap().read();
-        if let Err(e) = intent::init(&*cmds_guard).await {
-            error!("Failed to initialize intent classifier: {}", e);
-            app::close(1);
-        }
-    });
+    // --- PERF-2: start IPC server early so the GUI can connect and receive
+    // Loading events while slow components (STT, intent) are initialising. ---
 
-    // init slots parsing engine
-    slots::init().map_err(|e| error!("Slot extraction init failed: {}", e)).ok();
-
-    // init audio processing
-    info!("Initializing audio processing...");
-    if let Err(e) = audio_processing::init() {
-        warn!("Audio processing init failed: {}", e);
-    }
-
-    // init IPC
+    // init IPC broadcast channel
     info!("Initializing IPC...");
     ipc::init();
 
     // SEC-7: generate per-session IPC auth token and write to config dir
+    // Must be set BEFORE start_server() so the auth check works from first client.
     let ipc_token = generate_ipc_token();
     if let Some(config_dir) = APP_CONFIG_DIR.get() {
         let token_path = config_dir.join("ipc_token");
@@ -245,12 +184,89 @@ fn main() -> Result<(), String> {
         }
     });
 
-    // start WebSocket server on the shared runtime
+    // start WebSocket server on the shared runtime — do this NOW so GUI can connect
     let ipc_rt = Arc::clone(&rt);
     std::thread::spawn(move || {
         ipc_rt.block_on(ipc::start_server());
     });
-    
+    // Give the server a moment to bind before broadcasting Loading events.
+    std::thread::sleep(std::time::Duration::from_millis(50));
+
+    // --- Slow initialization with Loading events ---
+
+    // init models registry (scans available AI models)
+    if let Err(e) = models::init() {
+        warn!("Models registry init failed: {}", e);
+    }
+
+    // init stt engine — Vosk model load can take several seconds
+    info!("Initializing STT engine...");
+    ipc::send(IpcEvent::Loading { component: "stt".to_string() });
+    if stt::init().is_err() {
+        // @TODO. Allow continuing even without STT, if commands is using keywords or smthng?
+        app::close(1); // cannot continue without stt
+    }
+
+    // init commands
+    info!("Initializing commands.");
+    let cmds = match commands::parse_commands() {
+        Ok(c) => c,
+        Err(e) => {
+            warn!("Failed to parse commands: {}. Starting with empty command list.", e);
+            Vec::new()
+        }
+    };
+    info!("Commands initialized. Count: {}, List: {:?}", cmds.len(), commands::list_paths(&cmds));
+
+    // SEC-3: warn about Lua commands with unrestricted sandbox access
+    let sandbox_full: Vec<String> = cmds
+        .iter()
+        .flat_map(|cl| cl.commands.iter())
+        .filter(|c| c.cmd_type == "lua" && c.sandbox == "full")
+        .map(|c| c.id.clone())
+        .collect();
+    if !sandbox_full.is_empty() {
+        warn!("[SEC] Lua commands with sandbox=full (arbitrary shell access): {:?}", sandbox_full);
+        // Broadcast to any already-connected clients as well as future ones.
+        ipc::send(IpcEvent::SandboxWarning { commands: sandbox_full.clone() });
+        ipc::set_sandbox_warnings(sandbox_full);
+    }
+
+    COMMANDS_LIST.set(RwLock::new(cmds)).unwrap();
+
+    // init audio
+    ipc::send(IpcEvent::Loading { component: "audio".to_string() });
+    if audio::init().is_err() {
+        // @TODO. Allow continuing even without audio?
+        app::close(1); // cannot continue without audio
+    }
+
+    // init wake-word engine
+    ipc::send(IpcEvent::Loading { component: "listener".to_string() });
+    if let Err(e) = listener::init() {
+        error!("Wake-word engine init failed: {}", e);
+        app::close(1);
+    }
+
+    // init intent-recognition engine
+    ipc::send(IpcEvent::Loading { component: "intent".to_string() });
+    rt.block_on(async {
+        let cmds_guard = COMMANDS_LIST.get().unwrap().read();
+        if let Err(e) = intent::init(&*cmds_guard).await {
+            error!("Failed to initialize intent classifier: {}", e);
+            app::close(1);
+        }
+    });
+
+    // init slots parsing engine
+    slots::init().map_err(|e| error!("Slot extraction init failed: {}", e)).ok();
+
+    // init audio processing
+    info!("Initializing audio processing...");
+    if let Err(e) = audio_processing::init() {
+        warn!("Audio processing init failed: {}", e);
+    }
+
     // start the app (in the background thread)
     let app_rt = Arc::clone(&rt);
     std::thread::spawn(move || {
