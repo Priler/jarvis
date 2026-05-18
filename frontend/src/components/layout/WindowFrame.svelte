@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     align-self: stretch;
-    border-left: 1px solid rgba(255,255,255,0.04);
+    border-left: 1px solid rgba(var(--white-rgb), 0.04);
     padding: 0 2px;
     -webkit-app-region: no-drag;
     flex-shrink: 0;
@@ -71,15 +71,15 @@
     background: transparent;
     border: none;
     border-radius: 2px;
-    color: rgba(255,255,255,0.32);
+    color: rgba(var(--white-rgb), 0.32);
     cursor: pointer;
     transition: background 140ms ease, color 140ms ease;
     -webkit-app-region: no-drag;
     flex-shrink: 0;
 
     &:hover {
-        background: rgba(255,255,255,0.05);
-        color: rgba(255,255,255,0.85);
+        background: rgba(var(--white-rgb), 0.05);
+        color: rgba(var(--white-rgb), 0.85);
     }
 
     &--close:hover {

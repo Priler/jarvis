@@ -78,12 +78,12 @@
 .btn-secondary {
     background: transparent;
     border: 1px solid var(--border);
-    color: rgba(255,255,255,0.5);
+    color: rgba(var(--white-rgb), 0.5);
 
     &:hover:not(:disabled) {
-        border-color: rgba(255,255,255,0.16);
-        color: rgba(255,255,255,0.75);
-        background: rgba(255,255,255,0.04);
+        border-color: rgba(var(--white-rgb), 0.16);
+        color: rgba(var(--white-rgb), 0.75);
+        background: rgba(var(--white-rgb), 0.04);
     }
 
     &:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -92,15 +92,15 @@
 /* ── Ghost — minimal, dim ── */
 .btn-ghost {
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.38);
+    border: 1px solid rgba(var(--white-rgb), 0.07);
+    color: rgba(var(--white-rgb), 0.38);
     opacity: 0.55;
 
     &:hover:not(:disabled) {
         opacity: 1;
-        border-color: rgba(255,255,255,0.08);
-        color: rgba(255,255,255,0.55);
-        background: rgba(255,255,255,0.025);
+        border-color: rgba(var(--white-rgb), 0.08);
+        color: rgba(var(--white-rgb), 0.55);
+        background: rgba(var(--white-rgb), 0.025);
     }
 
     &:disabled { cursor: not-allowed; }

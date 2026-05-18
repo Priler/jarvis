@@ -89,8 +89,8 @@
     justify-content: space-between;
     padding: 0 0 0 20px;
     background: linear-gradient(180deg, rgba(11,15,22,0.98) 0%, rgba(7,10,15,0.96) 100%);
-    box-shadow: inset 0 1px 0 rgba(0,229,255,0.08),
-                inset 0 -10px 18px rgba(0,0,0,0.16);
+    box-shadow: inset 0 1px 0 rgba(var(--accent-rgb), 0.08),
+                inset 0 -10px 18px rgba(var(--black-rgb), 0.16);
     -webkit-app-region: drag;
     position: relative;
     flex-shrink: 0;
@@ -126,7 +126,7 @@
         transform: translateY(-50%);
         width: 46px;
         height: 46px;
-        background: radial-gradient(circle, rgba(0,229,255,0.10), transparent 70%);
+        background: radial-gradient(circle, rgba(var(--accent-rgb), 0.10), transparent 70%);
         border-radius: 50%;
         pointer-events: none;
     }
@@ -135,7 +135,7 @@
 }
 
 .logo-icon {
-    filter: drop-shadow(0 0 8px rgba(0,229,255,0.12));
+    filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.12));
     flex-shrink: 0;
 }
 
@@ -191,7 +191,7 @@
     padding: 0;
     background: transparent;
     border: none;
-    color: rgba(255,255,255,0.55);
+    color: rgba(var(--white-rgb), 0.55);
     font-family: var(--font);
     font-size: 13px;
     font-weight: 600;
@@ -215,10 +215,10 @@
         transition: opacity 140ms ease;
     }
 
-    &:hover { color: rgba(255,255,255,0.88); }
+    &:hover { color: rgba(var(--white-rgb), 0.88); }
 
     &:focus-visible {
-        outline: 2px solid rgba(0,229,255,0.55);
+        outline: 2px solid rgba(var(--accent-rgb), 0.55);
         outline-offset: -2px;
         border-radius: 2px;
     }
@@ -238,7 +238,7 @@
     left: -30%;
     width: 30%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0,229,255,0.28), transparent);
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.28), transparent);
     animation: scan-sweep 8s linear infinite;
     pointer-events: none;
 }

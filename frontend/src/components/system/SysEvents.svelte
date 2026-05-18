@@ -68,11 +68,11 @@
     gap: 3px;
     padding: 10px 14px;
     border-radius: var(--r-lg);
-    background: rgba(255,255,255,0.018);
-    border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(var(--white-rgb), 0.018);
+    border: 1px solid rgba(var(--white-rgb), 0.04);
     transition: var(--ease);
 
-    &:hover { background: rgba(0,229,255,0.018); border-color: rgba(0,229,255,0.07); }
+    &:hover { background: rgba(var(--accent-rgb), 0.018); border-color: rgba(var(--accent-rgb), 0.07); }
 }
 
 .event-title {

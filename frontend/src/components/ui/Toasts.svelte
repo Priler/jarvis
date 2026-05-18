@@ -54,7 +54,7 @@
     background: rgba(5, 9, 15, 0.90);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.055);
+    border: 1px solid rgba(var(--white-rgb), 0.055);
     border-left: 2px solid var(--hud-accent);
     border-radius: var(--r-sm);
 
@@ -64,8 +64,8 @@
     white-space: nowrap;
 
     box-shadow:
-        0 0 24px rgba(0,0,0,0.65),
-        0 0 0 1px rgba(0,0,0,0.5),
+        0 0 24px rgba(var(--black-rgb), 0.65),
+        0 0 0 1px rgba(var(--black-rgb), 0.5),
         0 0 14px var(--hud-glow);
 
     pointer-events: auto;
@@ -83,9 +83,9 @@
     }
 
     &--info {
-        --hud-accent: rgba(0, 229, 255, 0.75);
-        --hud-glow:   rgba(0, 229, 255, 0.07);
-        color: rgba(0, 229, 255, 0.88);
+        --hud-accent: rgba(var(--accent-rgb), 0.75);
+        --hud-glow:   rgba(var(--accent-rgb), 0.07);
+        color: rgba(var(--accent-rgb), 0.88);
     }
 }
 

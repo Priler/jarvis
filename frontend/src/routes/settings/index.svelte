@@ -301,9 +301,9 @@
     height: 80px;
     border-radius: var(--r-xl);
     background: linear-gradient(90deg,
-        rgba(255,255,255,0.03) 0%,
-        rgba(255,255,255,0.06) 50%,
-        rgba(255,255,255,0.03) 100%
+        rgba(var(--white-rgb), 0.03) 0%,
+        rgba(var(--white-rgb), 0.06) 50%,
+        rgba(var(--white-rgb), 0.03) 100%
     );
     background-size: 200% 100%;
     animation: skeleton-sweep 1.6s ease-in-out infinite;
@@ -332,8 +332,8 @@
     height: 38px;
     border-radius: var(--r-lg);
     overflow: hidden;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(var(--white-rgb), 0.02);
+    border: 1px solid rgba(var(--white-rgb), 0.05);
     position: relative;
     margin-bottom: 12px;
 }
@@ -348,8 +348,8 @@
     padding: 0 16px;
     background: transparent;
     border: none;
-    border-right: 1px solid rgba(255,255,255,0.04);
-    color: rgba(255,255,255,0.35);
+    border-right: 1px solid rgba(var(--white-rgb), 0.04);
+    color: rgba(var(--white-rgb), 0.35);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -362,7 +362,7 @@
 
     &:hover {
         background: rgba(var(--accent-rgb),0.035);
-        color: rgba(255,255,255,0.65);
+        color: rgba(var(--white-rgb), 0.65);
     }
 
     &.active {
@@ -387,7 +387,7 @@
     gap: 12px;
     padding: 18px 0 24px;
     flex-shrink: 0;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(var(--white-rgb), 0.05);
 
     & > :global(*) { width: 100%; }
 }

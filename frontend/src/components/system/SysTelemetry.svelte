@@ -37,8 +37,8 @@
     gap: 8px;
     padding: 14px 16px;
     border-radius: var(--r-lg);
-    background: rgba(255,255,255,0.022);
-    border: 1px solid rgba(255,255,255,0.048);
+    background: rgba(var(--white-rgb), 0.022);
+    border: 1px solid rgba(var(--white-rgb), 0.048);
 }
 
 .telemetry-key {

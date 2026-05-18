@@ -124,7 +124,7 @@
         height: 16px;
         background: var(--accent);
         border-radius: 2px;
-        box-shadow: 0 0 8px rgba(0,229,255,0.35);
+        box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.35);
     }
 }
 

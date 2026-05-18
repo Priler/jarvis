@@ -61,8 +61,8 @@
     align-items: center;
     padding: 16px 18px;
     border-radius: var(--r-xl);
-    background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
-    border: 1px solid rgba(255,255,255,0.055);
+    background: linear-gradient(180deg, rgba(var(--white-rgb), 0.025), rgba(var(--white-rgb), 0.012));
+    border: 1px solid rgba(var(--white-rgb), 0.055);
 }
 
 .pipeline {
@@ -78,7 +78,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.22);
+    color: rgba(var(--white-rgb), 0.22);
     padding: 5px 8px;
     border-radius: var(--r-sm);
     transition: color 260ms ease, background 260ms ease, opacity 260ms ease, text-shadow 260ms ease;
@@ -91,14 +91,14 @@
     }
 
     &.dim {
-        color: rgba(255,255,255,0.22);
+        color: rgba(var(--white-rgb), 0.22);
         opacity: 0.38;
     }
 }
 
 .pipeline-sep {
     font-size: 10px;
-    color: rgba(255,255,255,0.12);
+    color: rgba(var(--white-rgb), 0.12);
     padding: 0 4px;
     flex-shrink: 0;
     user-select: none;

@@ -218,8 +218,8 @@
     width: 38px;
     height: 22px;
     border-radius: var(--r-xl);
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(var(--white-rgb), 0.12);
+    background: rgba(var(--white-rgb), 0.06);
     cursor: pointer;
     transition: background 200ms ease, border-color 200ms ease;
     flex-shrink: 0;
@@ -237,7 +237,7 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.4);
+    background: rgba(var(--white-rgb), 0.4);
     transition: transform 200ms ease, background 200ms ease;
 }
 
@@ -255,7 +255,7 @@
 .field-input {
     flex: 1;
     height: 40px;
-    background: rgba(255,255,255,0.025);
+    background: rgba(var(--white-rgb), 0.025);
     border: 1px solid var(--border);
     border-radius: var(--r-md);
     color: rgba(230,245,255,0.92);

@@ -524,7 +524,7 @@ name = "build-rpw"
 version = "0.1.0"
 dependencies = [
  "hound",
- "rustpotter",
+ "rustpotter 3.0.2 (git+https://github.com/Priler/rustpotter)",
 ]
 
 [[package]]
@@ -3334,7 +3334,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rodio",
- "rustpotter",
+ "rustpotter 3.0.2 (git+https://github.com/Priler/rustpotter?rev=f0d5c4d6b63aa1ebb6e0e81089993e4ae7aef3d8)",
  "seqdiff",
  "serde",
  "serde_json",
@@ -5306,7 +5306,7 @@ dependencies = [
 [[package]]
 name = "pv_recorder"
 version = "1.2.7"
-source = "git+https://github.com/Priler/pvrecorder#33dfcdf7ae121dd4ff5b1b1ed61eda43e5f85b7f"
+source = "git+https://github.com/Priler/pvrecorder?rev=33dfcdf7ae121dd4ff5b1b1ed61eda43e5f85b7f#33dfcdf7ae121dd4ff5b1b1ed61eda43e5f85b7f"
 dependencies = [
  "libc",
  "libloading 0.8.9",
@@ -5958,6 +5958,20 @@ dependencies = [
  "ring",
  "rustls-pki-types",
  "untrusted",
+]
+
+[[package]]
+name = "rustpotter"
+version = "3.0.2"
+source = "git+https://github.com/Priler/rustpotter?rev=f0d5c4d6b63aa1ebb6e0e81089993e4ae7aef3d8#f0d5c4d6b63aa1ebb6e0e81089993e4ae7aef3d8"
+dependencies = [
+ "candle-core",
+ "candle-nn",
+ "ciborium",
+ "hound",
+ "rubato",
+ "rustfft",
+ "serde",
 ]
 
 [[package]]

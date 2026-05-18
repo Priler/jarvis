@@ -63,7 +63,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(var(--black-rgb), 0.55);
     backdrop-filter: blur(4px);
 }
 
@@ -79,7 +79,7 @@
     gap: 14px;
     box-shadow:
         0 0 0 1px rgba(var(--color-warning-rgb), 0.08),
-        0 24px 48px rgba(0, 0, 0, 0.55),
+        0 24px 48px rgba(var(--black-rgb), 0.55),
         0 0 32px rgba(var(--color-warning-rgb), 0.06);
 }
 
@@ -117,8 +117,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(var(--black-rgb), 0.3);
+    border: 1px solid rgba(var(--white-rgb), 0.06);
     border-radius: var(--r-md);
     padding: 8px 10px;
     overflow: hidden;
@@ -136,7 +136,7 @@
 .cmd-text {
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(var(--white-rgb), 0.6);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -164,13 +164,13 @@
 }
 
 .btn-deny {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.45);
+    background: rgba(var(--white-rgb), 0.04);
+    border-color: rgba(var(--white-rgb), 0.08);
+    color: rgba(var(--white-rgb), 0.45);
 
     &:hover {
-        background: rgba(255, 255, 255, 0.07);
-        color: rgba(255, 255, 255, 0.7);
+        background: rgba(var(--white-rgb), 0.07);
+        color: rgba(var(--white-rgb), 0.7);
     }
 }
 

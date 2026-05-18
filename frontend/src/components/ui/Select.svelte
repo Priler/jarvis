@@ -231,7 +231,7 @@
     text-align: left;
 
     &:hover {
-        background: rgba(0,229,255,0.025);
+        background: rgba(var(--accent-rgb), 0.025);
         border-color: var(--border-hover);
     }
 
@@ -242,7 +242,7 @@
     }
 
     &[aria-expanded="true"] {
-        border-color: rgba(0,229,255,0.4);
+        border-color: rgba(var(--accent-rgb), 0.4);
         background: var(--bg-hover);
     }
 
@@ -275,7 +275,7 @@
     right: 0;
     z-index: 40;
     background: rgba(8,12,18,0.98);
-    border: 1px solid rgba(0,229,255,0.18);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
     border-radius: var(--r-md);
     padding: 4px;
     margin: 0;
@@ -283,14 +283,14 @@
     max-height: 220px;
     overflow-y: auto;
     outline: none;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,229,255,0.06);
+    box-shadow: 0 12px 32px rgba(var(--black-rgb), 0.35), 0 0 0 1px rgba(var(--accent-rgb), 0.06);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 
     &.drop-up {
         top: auto;
         bottom: calc(100% + 4px);
-        box-shadow: 0 -12px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,229,255,0.06);
+        box-shadow: 0 -12px 32px rgba(var(--black-rgb), 0.35), 0 0 0 1px rgba(var(--accent-rgb), 0.06);
     }
 }
 
@@ -309,19 +309,19 @@
     user-select: none;
 
     &.focused {
-        background: rgba(0,229,255,0.06);
+        background: rgba(var(--accent-rgb), 0.06);
         color: var(--text);
     }
 
     &.selected {
         color: var(--accent);
-        background: rgba(0,229,255,0.08);
+        background: rgba(var(--accent-rgb), 0.08);
 
         svg { color: var(--accent); }
     }
 
     &.focused.selected {
-        background: rgba(0,229,255,0.10);
+        background: rgba(var(--accent-rgb), 0.10);
     }
 
     &--overflow {

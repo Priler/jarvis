@@ -139,9 +139,9 @@
     width: 30px;
     height: 30px;
     background: transparent;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(var(--white-rgb), 0.07);
     border-radius: var(--r-md);
-    color: rgba(255,255,255,0.35);
+    color: rgba(var(--white-rgb), 0.35);
     cursor: pointer;
     transition: var(--ease);
 
@@ -163,7 +163,7 @@
     font-style: italic;
 
     &.error-state {
-        color: rgba(255, 90, 90, 0.75);
+        color: rgba(var(--color-error-rgb), 0.75);
         font-style: normal;
         gap: 12px;
         flex-direction: column;
@@ -174,9 +174,9 @@
     margin-top: 4px;
     padding: 6px 16px;
     background: transparent;
-    border: 1px solid rgba(255, 90, 90, 0.4);
+    border: 1px solid rgba(var(--color-error-rgb), 0.4);
     border-radius: 6px;
-    color: rgba(255, 90, 90, 0.75);
+    color: rgba(var(--color-error-rgb), 0.75);
     font-family: var(--font);
     font-size: 12px;
     font-weight: 600;
@@ -185,8 +185,8 @@
     transition: border-color 140ms ease, color 140ms ease;
 
     &:hover {
-        border-color: rgba(255, 90, 90, 0.7);
-        color: rgba(255, 90, 90, 1);
+        border-color: rgba(var(--color-error-rgb), 0.7);
+        color: rgba(var(--color-error-rgb), 1);
     }
 }
 
@@ -202,15 +202,15 @@
 }
 
 .command-card {
-    background: rgba(255,255,255,0.018);
-    border: 1px solid rgba(255,255,255,0.045);
+    background: rgba(var(--white-rgb), 0.018);
+    border: 1px solid rgba(var(--white-rgb), 0.045);
     border-radius: var(--r-md);
     padding: 10px 14px;
     transition: var(--ease);
 
     &:hover {
-        background: rgba(0,229,255,0.018);
-        border-color: rgba(0,229,255,0.08);
+        background: rgba(var(--accent-rgb), 0.018);
+        border-color: rgba(var(--accent-rgb), 0.08);
     }
 }
 
@@ -224,7 +224,7 @@
 .cmd-id {
     font-size: 0.78rem;
     font-weight: 600;
-    color: rgba(255,255,255,0.75);
+    color: rgba(var(--white-rgb), 0.75);
     font-family: var(--font-mono);
     letter-spacing: 0.3px;
 }
@@ -265,11 +265,11 @@
 
 .phrase-chip {
     font-size: 0.67rem;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(var(--white-rgb), 0.03);
+    border: 1px solid rgba(var(--white-rgb), 0.06);
     border-radius: var(--r-sm);
     padding: 2px 7px;
-    color: rgba(255,255,255,0.38);
+    color: rgba(var(--white-rgb), 0.38);
     font-style: italic;
     opacity: 0.78;
 }
