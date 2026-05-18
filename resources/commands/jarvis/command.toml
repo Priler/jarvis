@@ -1,6 +1,8 @@
 [[commands]]
 id = "jarvis_reboot"
 type = "cli"
+confirm = true
+description = "Перезагрузка компьютера"
 cli_cmd = "shutdown"
 cli_args = ["/r", "/t", "0"]
 sounds.ru = ["ok1", "ok2", "ok3"]

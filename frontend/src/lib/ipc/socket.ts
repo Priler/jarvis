@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import { getCurrentWindow } from "@tauri-apps/api/window"
-import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError } from "./stores"
+import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings } from "./stores"
 import type { IpcMessage, IpcOutgoing } from "./types"
 import { parseIpcMessage, computeReconnectDelay } from "./utils"
 
@@ -14,6 +14,7 @@ const HEARTBEAT_TIMEOUT_MS  = 5000
 const PENDING_COMMANDS_MAX  = 20
 
 let ws: WebSocket | null = null
+let _ipcToken: string | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 let heartbeatTimeoutTimer: ReturnType<typeof setTimeout> | null = null
@@ -23,6 +24,11 @@ let manualDisconnect = false
 let enabled = false
 let pendingTextCommands: string[] = []
 let _cmdSeq = 0
+
+/** Store the IPC auth token fetched from jarvis-gui at startup. */
+export function setIpcToken(token: string | null) {
+    _ipcToken = token
+}
 
 export function enableIpc() {
     enabled = true
@@ -46,6 +52,10 @@ export function connectIpc(port: number = IPC_PORT) {
     ws = new WebSocket(`ws://127.0.0.1:${port}`)
 
     ws.onopen = () => {
+        // Send auth token as very first message if configured
+        if (_ipcToken) {
+            ws?.send(JSON.stringify({ action: "auth", token: _ipcToken } satisfies IpcOutgoing))
+        }
         ipcConnected.set(true)
         jarvisState.set("idle")
         lastError.set("")
@@ -205,6 +215,15 @@ function handleEvent(data: IpcMessage) {
         case "reveal_window":
             revealWindow()
             break
+
+        case "confirmation_required":
+            pendingConfirmation.set({ id: data.id, description: data.description, cmd: data.cmd })
+            break
+
+        case "sandbox_warning":
+            sandboxWarnings.set(data.commands)
+            console.warn("[IPC] Commands with full sandbox access:", data.commands)
+            break
     }
 }
 
@@ -222,6 +241,10 @@ export function stopJarvisApp() {
 
 export function reloadCommands() {
     return sendAction({ action: "reload_commands" })
+}
+
+export function sendConfirmResult(id: string, approved: boolean): boolean {
+    return sendAction({ action: "confirm_result", id, approved })
 }
 
 export function sendTextCommand(text: string): boolean {

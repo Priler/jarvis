@@ -426,6 +426,23 @@ fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
             None
         };
 
+        // Require GUI confirmation for dangerous CLI commands
+        if commands::requires_confirmation(&cmd_config) {
+            let cmd_str = if cmd_config.cli_args.is_empty() {
+                cmd_config.cli_cmd.clone()
+            } else {
+                format!("{} {}", cmd_config.cli_cmd, cmd_config.cli_args.join(" "))
+            };
+            commands::store_pending_command(cmd_path, &cmd_config);
+            ipc::send(IpcEvent::ConfirmationRequired {
+                id: cmd_config.id.clone(),
+                description: cmd_config.description.clone(),
+                cmd: cmd_str,
+            });
+            ipc::send(IpcEvent::Idle);
+            return false;
+        }
+
         match commands::execute_command(&cmd_path, &cmd_config, Some(&text), extracted_slots.as_ref()) {
             Ok(chain) => {
                 info!("[COMMAND] Executed successfully: {}", cmd_config.id);

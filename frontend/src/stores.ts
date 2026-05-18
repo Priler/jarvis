@@ -5,11 +5,15 @@ export {
     lastRecognizedText,
     lastExecutedCommand,
     lastError,
+    pendingConfirmation,
+    sandboxWarnings,
     connectIpc,
     enableIpc,
     disableIpc,
     disconnectIpc,
     sendTextCommand,
+    sendConfirmResult,
+    setIpcToken,
     stopJarvisApp,
     reloadCommands
 } from "./lib/ipc"

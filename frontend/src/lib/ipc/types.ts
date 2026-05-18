@@ -7,6 +7,13 @@ export interface ExecutedCommand {
     seq: number
 }
 
+/** Pending CLI confirmation request from jarvis-app. */
+export interface PendingConfirmation {
+    id: string
+    description: string
+    cmd: string
+}
+
 export type IpcMessage =
     | { event: "wake_word_detected" }
     | { event: "listening" }
@@ -18,8 +25,12 @@ export type IpcMessage =
     | { event: "stopping" }
     | { event: "pong" }
     | { event: "reveal_window" }
+    | { event: "confirmation_required"; id: string; description: string; cmd: string }
+    | { event: "sandbox_warning"; commands: string[] }
 
 export type IpcOutgoing =
     | { action: "stop" }
     | { action: "reload_commands" }
     | { action: "text_command"; text: string }
+    | { action: "auth"; token: string }
+    | { action: "confirm_result"; id: string; approved: boolean }

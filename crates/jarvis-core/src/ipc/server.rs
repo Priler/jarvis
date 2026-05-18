@@ -15,6 +15,16 @@ pub const IPC_ADDR: &str = "127.0.0.1";
 
 static BROADCAST_TX: OnceCell<broadcast::Sender<IpcEvent>> = OnceCell::new();
 static ACTION_HANDLER: OnceCell<Arc<RwLock<Option<Box<dyn Fn(IpcAction) + Send + Sync>>>>> = OnceCell::new();
+static AUTH_TOKEN: OnceCell<String> = OnceCell::new();
+static SANDBOX_WARNINGS: OnceCell<Vec<String>> = OnceCell::new();
+
+pub fn set_auth_token(token: String) {
+    AUTH_TOKEN.set(token).ok();
+}
+
+pub fn set_sandbox_warnings(ids: Vec<String>) {
+    SANDBOX_WARNINGS.set(ids).ok();
+}
 
 // Initialize the IPC broadcast channel
 pub fn init() -> broadcast::Sender<IpcEvent> {
@@ -122,6 +132,42 @@ async fn handle_client(
     };
 
     let (mut ws_tx, mut ws_rx) = ws_stream.split();
+
+    // --- Auth handshake (only when an auth token is configured) ---
+    if let Some(expected) = AUTH_TOKEN.get() {
+        match ws_rx.next().await {
+            Some(Ok(Message::Text(text))) => {
+                match serde_json::from_str::<IpcAction>(&text) {
+                    Ok(IpcAction::Auth { token }) if token == *expected => {
+                        info!("IPC: Client {} authenticated", peer_addr);
+                    }
+                    _ => {
+                        warn!("IPC: Client {} auth failed — closing", peer_addr);
+                        let _ = ws_tx.close().await;
+                        return;
+                    }
+                }
+            }
+            _ => {
+                warn!("IPC: Client {} sent invalid auth handshake — closing", peer_addr);
+                let _ = ws_tx.close().await;
+                return;
+            }
+        }
+    }
+
+    // --- Send sandbox warnings to newly-connected client ---
+    if let Some(warnings) = SANDBOX_WARNINGS.get() {
+        if !warnings.is_empty() {
+            let event = IpcEvent::SandboxWarning { commands: warnings.clone() };
+            if let Ok(json) = serde_json::to_string(&event) {
+                if ws_tx.send(Message::Text(json.into())).await.is_err() {
+                    info!("IPC: Client {} disconnected during sandbox warning send", peer_addr);
+                    return;
+                }
+            }
+        }
+    }
 
     loop {
         tokio::select! {

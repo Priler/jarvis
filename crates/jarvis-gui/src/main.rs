@@ -67,6 +67,7 @@ fn main() {
             // fs
             tauri_commands::get_log_file_path,
             tauri_commands::show_in_folder,
+            tauri_commands::read_ipc_token,
 
             // sys
             tauri_commands::get_current_ram_usage,

@@ -51,6 +51,10 @@ pub struct JCommand {
     #[serde(default)]
     pub timeout: u64,
 
+    // Require GUI confirmation before executing (CLI/AHK commands only)
+    #[serde(default)]
+    pub confirm: bool,
+
     // Multi-language sounds
     #[serde(default)]
     pub sounds: HashMap<String, Vec<String>>,
@@ -89,6 +93,7 @@ impl Clone for JCommand {
             script: self.script.clone(),
             sandbox: self.sandbox.clone(),
             timeout: self.timeout.clone(),
+            confirm: self.confirm,
 
             sounds: self.sounds.clone(),
             phrases: self.phrases.clone(),

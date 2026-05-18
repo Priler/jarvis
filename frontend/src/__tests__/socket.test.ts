@@ -51,8 +51,8 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 vi.stubGlobal("WebSocket", MockWebSocket)
 
-import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError } from "@/lib/ipc/stores"
-import { connectIpc, disconnectIpc, enableIpc, sendTextCommand, stopJarvisApp, reloadCommands } from "@/lib/ipc/socket"
+import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings } from "@/lib/ipc/stores"
+import { connectIpc, disconnectIpc, enableIpc, sendTextCommand, sendConfirmResult, setIpcToken, stopJarvisApp, reloadCommands } from "@/lib/ipc/socket"
 
 function connect(port?: number) {
     connectIpc(port)
@@ -66,6 +66,9 @@ beforeEach(() => {
     lastRecognizedText.set("")
     lastExecutedCommand.set(null)
     lastError.set("")
+    pendingConfirmation.set(null)
+    sandboxWarnings.set([])
+    setIpcToken(null)
 })
 
 afterEach(() => {
@@ -314,6 +317,75 @@ describe("reloadCommands", () => {
 
     it("returns false when disconnected", () => {
         expect(reloadCommands()).toBe(false)
+    })
+})
+
+describe("confirmation_required event", () => {
+    beforeEach(() => connect())
+
+    it("sets pendingConfirmation store on confirmation_required event", () => {
+        MockWebSocket.last!.msg({
+            event: "confirmation_required",
+            id: "jarvis_reboot",
+            description: "Перезагрузка компьютера",
+            cmd: "shutdown /r /t 0",
+        })
+        const p = get(pendingConfirmation)
+        expect(p).not.toBeNull()
+        expect(p?.id).toBe("jarvis_reboot")
+        expect(p?.description).toBe("Перезагрузка компьютера")
+        expect(p?.cmd).toBe("shutdown /r /t 0")
+    })
+})
+
+describe("sandbox_warning event", () => {
+    beforeEach(() => connect())
+
+    it("sets sandboxWarnings store on sandbox_warning event", () => {
+        MockWebSocket.last!.msg({ event: "sandbox_warning", commands: ["dangerous_cmd"] })
+        expect(get(sandboxWarnings)).toEqual(["dangerous_cmd"])
+    })
+
+    it("replaces previous sandbox warnings", () => {
+        sandboxWarnings.set(["old"])
+        MockWebSocket.last!.msg({ event: "sandbox_warning", commands: ["new1", "new2"] })
+        expect(get(sandboxWarnings)).toEqual(["new1", "new2"])
+    })
+})
+
+describe("sendConfirmResult", () => {
+    it("sends confirm_result action with approved=true and returns true when connected", () => {
+        connect()
+        const result = sendConfirmResult("jarvis_reboot", true)
+        expect(result).toBe(true)
+        const last = JSON.parse(MockWebSocket.last!.sent.at(-1)!)
+        expect(last).toMatchObject({ action: "confirm_result", id: "jarvis_reboot", approved: true })
+    })
+
+    it("sends confirm_result action with approved=false", () => {
+        connect()
+        sendConfirmResult("jarvis_reboot", false)
+        const last = JSON.parse(MockWebSocket.last!.sent.at(-1)!)
+        expect(last).toMatchObject({ action: "confirm_result", id: "jarvis_reboot", approved: false })
+    })
+
+    it("returns false when disconnected", () => {
+        expect(sendConfirmResult("jarvis_reboot", true)).toBe(false)
+    })
+})
+
+describe("auth token", () => {
+    it("does not send auth message when no token is set", () => {
+        connect()
+        const sent = MockWebSocket.last!.sent.map(s => JSON.parse(s))
+        expect(sent.some(s => s.action === "auth")).toBe(false)
+    })
+
+    it("sends auth message as first message when token is set", () => {
+        setIpcToken("test-secret-token")
+        connect()
+        const first = JSON.parse(MockWebSocket.last!.sent[0])
+        expect(first).toMatchObject({ action: "auth", token: "test-secret-token" })
     })
 })
 

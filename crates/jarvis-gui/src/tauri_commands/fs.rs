@@ -5,6 +5,20 @@ use std::path::PathBuf;
 
 use std::process::Command;
 
+use jarvis_core::APP_CONFIG_DIR;
+
+/// Read the per-session IPC auth token written by jarvis-app on startup.
+#[tauri::command]
+pub fn read_ipc_token() -> Result<String, String> {
+    let config_dir = APP_CONFIG_DIR
+        .get()
+        .ok_or_else(|| "Config dir not initialized".to_string())?;
+    let token_path = config_dir.join("ipc_token");
+    std::fs::read_to_string(&token_path)
+        .map(|s| s.trim().to_string())
+        .map_err(|e| format!("IPC token not available: {}", e))
+}
+
 // taken from https://github.com/tauri-apps/tauri/issues/4062#issuecomment-1338048169
 #[tauri::command]
 pub fn show_in_folder(path: String) {

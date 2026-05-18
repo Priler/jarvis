@@ -4,8 +4,9 @@
     import routes from "../.routify/routes.default.js"
     import Events from "./Events.svelte"
     import Toasts from "@/components/ui/Toasts.svelte"
+    import ConfirmOverlay from "@/components/ui/ConfirmOverlay.svelte"
 
-    import { disconnectIpc, stopStatsPolling } from "@/stores"
+    import { disconnectIpc, stopStatsPolling, pendingConfirmation, sendConfirmResult } from "@/stores"
     import { stopEventTracking } from "@/lib/stores/event-tracker"
     import { criticalInit, deferredInit } from "@/lib/bootstrap"
 
@@ -22,6 +23,22 @@
         stopStatsPolling()
         stopEventTracking()
     })
+
+    function handleConfirmApprove() {
+        const p = $pendingConfirmation
+        if (p) {
+            sendConfirmResult(p.id, true)
+            pendingConfirmation.set(null)
+        }
+    }
+
+    function handleConfirmDeny() {
+        const p = $pendingConfirmation
+        if (p) {
+            sendConfirmResult(p.id, false)
+            pendingConfirmation.set(null)
+        }
+    }
 </script>
 
 {#if !ready}
@@ -33,6 +50,11 @@
     <Events />
 {/if}
 <Toasts />
+<ConfirmOverlay
+    pending={$pendingConfirmation}
+    on:approve={handleConfirmApprove}
+    on:deny={handleConfirmDeny}
+/>
 
 <style>
 .app-init {

@@ -1,10 +1,11 @@
 import { loadTranslations } from "./i18n"
-import { enableIpc } from "./ipc"
+import { enableIpc, setIpcToken } from "./ipc"
 import { loadVoiceSetting } from "./stores/voice"
 import { loadAppInfo } from "./stores/app-info"
 import { loadSettingsSnapshot } from "./stores/settings-cache"
 import { startStatsPolling } from "./stores/runtime"
 import { startEventTracking } from "./stores/event-tracker"
+import { invoke } from "@tauri-apps/api/core"
 
 /**
  * Critical init — must complete before the UI is meaningfully usable.
@@ -13,6 +14,16 @@ import { startEventTracking } from "./stores/event-tracker"
  */
 export async function criticalInit(): Promise<void> {
     await loadTranslations()
+
+    // Fetch per-session IPC auth token written by jarvis-app at startup.
+    // If not available (jarvis-app not yet running), proceed without auth.
+    try {
+        const token = await invoke<string>("read_ipc_token")
+        if (token) setIpcToken(token)
+    } catch {
+        // Token file not present — jarvis-app not started yet, connect without auth
+    }
+
     enableIpc()
 }
 

@@ -1,4 +1,4 @@
-export { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError } from "./stores"
-export { enableIpc, disableIpc, connectIpc, disconnectIpc, sendTextCommand, stopJarvisApp, reloadCommands } from "./socket"
-export type { JarvisState, ExecutedCommand } from "./types"
+export { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings } from "./stores"
+export { enableIpc, disableIpc, connectIpc, disconnectIpc, sendTextCommand, sendConfirmResult, setIpcToken, stopJarvisApp, reloadCommands } from "./socket"
+export type { JarvisState, ExecutedCommand, PendingConfirmation } from "./types"
 export { parseIpcMessage, computeReconnectDelay } from "./utils"

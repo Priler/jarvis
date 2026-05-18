@@ -33,6 +33,12 @@ pub enum IpcEvent {
 
     // request GUI to reveal/focus window
     RevealWindow,
+
+    // CLI command requires user confirmation before executing
+    ConfirmationRequired { id: String, description: String, cmd: String },
+
+    // One or more Lua commands have sandbox = "full" (arbitrary shell access)
+    SandboxWarning { commands: Vec<String> },
 }
 
 // Actions sent from GUI to jarvis-app
@@ -41,16 +47,22 @@ pub enum IpcEvent {
 pub enum IpcAction {
     // Request graceful shutdown
     Stop,
-    
+
     // Reload commands from disk
     ReloadCommands,
-    
+
     // Ping to check connection
     Ping,
-    
+
     // Mute/unmute listening
     SetMuted { muted: bool },
 
     // Execute text command
     TextCommand { text: String },
+
+    // Authenticate with IPC server token
+    Auth { token: String },
+
+    // Confirm or deny a pending CLI command execution
+    ConfirmResult { id: String, approved: bool },
 }

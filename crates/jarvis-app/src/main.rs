@@ -6,7 +6,7 @@ use std::sync::mpsc;
 // include core
 use jarvis_core::{
     audio, audio_processing, commands, config, db, listener, recorder, stt, intent,
-    ipc::{self, IpcAction},
+    ipc::{self, IpcAction, IpcEvent},
     i18n, voices, models,
     APP_CONFIG_DIR, APP_LOG_DIR, COMMANDS_LIST, DB,
 };
@@ -88,6 +88,19 @@ fn main() -> Result<(), String> {
         }
     };
     info!("Commands initialized. Count: {}, List: {:?}", cmds.len(), commands::list_paths(&cmds));
+
+    // SEC-3: warn about Lua commands with unrestricted sandbox access
+    let sandbox_full: Vec<String> = cmds
+        .iter()
+        .flat_map(|cl| cl.commands.iter())
+        .filter(|c| c.cmd_type == "lua" && c.sandbox == "full")
+        .map(|c| c.id.clone())
+        .collect();
+    if !sandbox_full.is_empty() {
+        warn!("[SEC] Lua commands with sandbox=full (arbitrary shell access): {:?}", sandbox_full);
+        ipc::set_sandbox_warnings(sandbox_full);
+    }
+
     COMMANDS_LIST.set(cmds).unwrap();
 
     // init audio
@@ -128,6 +141,18 @@ fn main() -> Result<(), String> {
     info!("Initializing IPC...");
     ipc::init();
 
+    // SEC-7: generate per-session IPC auth token and write to config dir
+    let ipc_token = generate_ipc_token();
+    if let Some(config_dir) = APP_CONFIG_DIR.get() {
+        let token_path = config_dir.join("ipc_token");
+        if let Err(e) = std::fs::write(&token_path, &ipc_token) {
+            warn!("Failed to write IPC token: {}", e);
+        } else {
+            info!("IPC token written to {:?}", token_path);
+        }
+    }
+    ipc::set_auth_token(ipc_token);
+
     // channel for text commands (manually written in the GUI)
     let (text_cmd_tx, text_cmd_rx) = mpsc::channel::<String>();
 
@@ -154,7 +179,39 @@ fn main() -> Result<(), String> {
             IpcAction::Ping => {
                 // handled internally by server
             }
-            _ => {}
+            IpcAction::Auth { .. } => {
+                // handled in the IPC server before routing to this handler
+            }
+            IpcAction::ConfirmResult { id, approved } => {
+                info!("Confirm result for command '{}': approved={}", id, approved);
+                if let Some(pending) = commands::take_pending_command() {
+                    if pending.id == id && approved {
+                        let id_clone = id.clone();
+                        std::thread::spawn(move || {
+                            match commands::execute_command(&pending.cmd_path, &pending.cmd, None, None) {
+                                Ok(_) => {
+                                    info!("[COMMAND] Confirmed command '{}' executed", id_clone);
+                                    ipc::send(IpcEvent::CommandExecuted {
+                                        id: id_clone.clone(),
+                                        success: true,
+                                    });
+                                }
+                                Err(e) => {
+                                    error!("[COMMAND] Confirmed command '{}' failed: {}", id_clone, e);
+                                    ipc::send(IpcEvent::CommandExecuted {
+                                        id: id_clone.clone(),
+                                        success: false,
+                                    });
+                                    ipc::send(IpcEvent::Error { message: e });
+                                }
+                            }
+                            ipc::send(IpcEvent::Idle);
+                        });
+                    } else {
+                        info!("Confirmation denied or ID mismatch for '{}'", id);
+                    }
+                }
+            }
         }
     });
 
@@ -177,6 +234,12 @@ fn main() -> Result<(), String> {
 
 pub fn should_stop() -> bool {
     SHOULD_STOP.load(Ordering::SeqCst)
+}
+
+fn generate_ipc_token() -> String {
+    use rand::Rng;
+    let bytes: [u8; 32] = rand::thread_rng().gen();
+    bytes.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
 fn parse_audio_test_arg() -> Option<String> {

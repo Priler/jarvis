@@ -4,12 +4,51 @@ use std::fs;
 use std::time::Duration;
 use std::process::{Child, Command};
 
+use once_cell::sync::Lazy;
+use parking_lot::Mutex;
 use seqdiff::ratio;
 
 mod structs;
 pub use structs::*;
 
 use crate::{config, i18n, APP_DIR};
+
+// CLI commands that always require confirmation regardless of the `confirm` flag.
+// These are programs that can cause irreversible system-level changes.
+const ALWAYS_CONFIRM_CMDS: &[&str] = &[
+    "shutdown", "format", "diskpart", "reg", "del", "rmdir", "rd", "cipher",
+];
+
+pub struct PendingConfirm {
+    pub id: String,
+    pub cmd_path: PathBuf,
+    pub cmd: JCommand,
+}
+
+static PENDING_CONFIRM: Lazy<Mutex<Option<PendingConfirm>>> = Lazy::new(|| Mutex::new(None));
+
+pub fn requires_confirmation(cmd: &JCommand) -> bool {
+    if cmd.cmd_type != "cli" {
+        return false;
+    }
+    let cli_lower = cmd.cli_cmd.to_lowercase();
+    cmd.confirm
+        || ALWAYS_CONFIRM_CMDS
+            .iter()
+            .any(|&c| cli_lower == c || cli_lower.starts_with(&format!("{} ", c)))
+}
+
+pub fn store_pending_command(path: &PathBuf, cmd: &JCommand) {
+    *PENDING_CONFIRM.lock() = Some(PendingConfirm {
+        id: cmd.id.clone(),
+        cmd_path: path.clone(),
+        cmd: cmd.clone(),
+    });
+}
+
+pub fn take_pending_command() -> Option<PendingConfirm> {
+    PENDING_CONFIRM.lock().take()
+}
 
 #[cfg(feature = "lua")]
 use crate::lua::{self, SandboxLevel, CommandContext};
