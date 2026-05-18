@@ -40,7 +40,7 @@ export {
 export { appInfo, loadAppInfo } from "./lib/stores/app-info"
 
 // Audio input devices
-export { audioDevices, loadAudioDevices } from "./lib/stores/audio"
+export { audioDevices, loadAudioDevices, invalidateAudioDevices } from "./lib/stores/audio"
 
 // Runtime events log
 export { runtimeEvents, addRuntimeEvent } from "./lib/stores/events"

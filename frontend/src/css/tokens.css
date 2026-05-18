@@ -49,6 +49,7 @@
     --header-border:    1px solid rgba(255,255,255,0.04);
 
     /* Semantic colors */
+    --color-warning-rgb: 255, 190, 90;
     --color-warning:    rgba(255, 190, 90, 0.92);
     --status-online:    rgba(0, 229, 255, 0.82);
     --status-ready:     rgba(0, 229, 255, 0.65);

@@ -4,6 +4,7 @@ import type { Writable } from "svelte/store"
 
 describe("loadAudioDevices", () => {
     let loadAudioDevices: () => Promise<void>
+    let invalidateAudioDevices: () => void
     let audioDevices: Writable<string[]>
     let mockGetDevices: ReturnType<typeof vi.fn>
 
@@ -13,6 +14,7 @@ describe("loadAudioDevices", () => {
         vi.doMock("@/lib/api", () => ({ getAudioDevices: mockGetDevices }))
         const mod = await import("@/lib/stores/audio")
         loadAudioDevices = mod.loadAudioDevices
+        invalidateAudioDevices = mod.invalidateAudioDevices
         audioDevices = mod.audioDevices as Writable<string[]>
     })
 
@@ -46,5 +48,29 @@ describe("loadAudioDevices", () => {
         mockGetDevices.mockRejectedValue(new Error("fail"))
         await loadAudioDevices().catch(() => {})
         expect(get(audioDevices)).toEqual([])
+    })
+})
+
+describe("invalidateAudioDevices", () => {
+    let loadAudioDevices: () => Promise<void>
+    let invalidateAudioDevices: () => void
+    let mockGetDevices: ReturnType<typeof vi.fn>
+
+    beforeEach(async () => {
+        vi.resetModules()
+        mockGetDevices = vi.fn()
+        vi.doMock("@/lib/api", () => ({ getAudioDevices: mockGetDevices }))
+        const mod = await import("@/lib/stores/audio")
+        loadAudioDevices = mod.loadAudioDevices
+        invalidateAudioDevices = mod.invalidateAudioDevices
+    })
+
+    it("allows loadAudioDevices to call API again after invalidation", async () => {
+        mockGetDevices.mockResolvedValue(["Mic 1"])
+        await loadAudioDevices()
+        invalidateAudioDevices()
+        mockGetDevices.mockResolvedValue(["Mic 1", "Mic 2"])
+        await loadAudioDevices()
+        expect(mockGetDevices).toHaveBeenCalledTimes(2)
     })
 })

@@ -107,8 +107,8 @@
 .beta-panel {
     padding: 12px;
     border-radius: var(--r-xl);
-    background: rgba(255,190,90,0.032);
-    border: 1px solid rgba(255,190,90,0.10);
+    background: rgba(var(--color-warning-rgb), 0.032);
+    border: 1px solid rgba(var(--color-warning-rgb), 0.10);
     margin-bottom: 8px;
 }
 
@@ -123,8 +123,8 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: rgba(255,190,90,0.9);
-    box-shadow: 0 0 6px rgba(255,190,90,0.5);
+    background: rgba(var(--color-warning-rgb), 0.9);
+    box-shadow: 0 0 6px rgba(var(--color-warning-rgb), 0.5);
     flex-shrink: 0;
 }
 
@@ -133,12 +133,12 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: rgba(255,190,90,0.92);
+    color: rgba(var(--color-warning-rgb), 0.92);
 }
 
 .beta-panel-body {
     font-size: 0.72rem;
-    color: rgba(255,190,90,0.7);
+    color: rgba(var(--color-warning-rgb), 0.7);
     line-height: 1.45;
     margin: 0 0 3px;
 }
@@ -154,9 +154,14 @@
     font-size: inherit;
     font-family: inherit;
     cursor: pointer;
-    color: rgba(255,190,90,0.9);
+    color: rgba(var(--color-warning-rgb), 0.9);
     text-decoration: underline;
     text-underline-offset: 2px;
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
 }
 
 .about-section {

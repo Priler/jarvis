@@ -130,10 +130,11 @@
     <div class="toggle-row">
         <button
             type="button"
+            role="switch"
             class="toggle-btn"
             class:on={gainNormalizerEnabled}
             on:click={() => gainNormalizerEnabled = !gainNormalizerEnabled}
-            aria-pressed={gainNormalizerEnabled}
+            aria-checked={gainNormalizerEnabled}
             aria-label={t('settings-gain-normalizer')}
         >
             <span class="toggle-thumb"></span>
@@ -177,13 +178,13 @@
     margin-top: 12px;
     padding: 14px;
     border-radius: var(--r-lg);
-    background: rgba(255,190,90,0.04);
-    border: 1px solid rgba(255,190,90,0.14);
+    background: rgba(var(--color-warning-rgb), 0.04);
+    border: 1px solid rgba(var(--color-warning-rgb), 0.14);
 }
 
 .warn-panel-text {
     font-size: 0.72rem;
-    color: rgba(255,190,90,0.82);
+    color: rgba(var(--color-warning-rgb), 0.82);
     line-height: 1.5;
     margin: 0 0 4px;
 }
@@ -195,7 +196,7 @@
     font-size: inherit;
     font-family: inherit;
     cursor: pointer;
-    color: rgba(255,190,90,0.9);
+    color: rgba(var(--color-warning-rgb), 0.9);
     text-decoration: underline;
     text-underline-offset: 2px;
 }

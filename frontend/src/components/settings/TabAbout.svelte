@@ -22,7 +22,7 @@
         <span class="beta-panel-title">{t('settings-beta-title')}</span>
     </div>
     <p class="beta-panel-body">{t('settings-beta-desc')}</p>
-    <p class="beta-panel-body">{t('settings-beta-feedback')} <button class="beta-panel-link" on:click={() => openUrl(feedbackLink)}>{t('settings-beta-bot')}</button>.</p>
+    <p class="beta-panel-body">{t('settings-beta-feedback')} <button class="beta-panel-link" disabled={!feedbackLink} on:click={() => openUrl(feedbackLink)}>{t('settings-beta-bot')}</button>.</p>
     <Button size="sm" class="btn-logs" disabled={!logFilePath} on:click={() => logFilePath && showInExplorer(logFilePath)}>
         {t('settings-open-logs')}
     </Button>

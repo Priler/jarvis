@@ -4,6 +4,10 @@ import { getAudioDevices } from "@/lib/api"
 export const audioDevices = writable<string[]>([])
 let _loaded = false
 
+export function invalidateAudioDevices(): void {
+    _loaded = false
+}
+
 export async function loadAudioDevices() {
     if (_loaded) return
     _loaded = true

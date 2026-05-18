@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte"
+    import { get } from "svelte/store"
     import { goto } from "@roxi/routify"
     import { listOllamaModels } from "@/lib/api"
-    import { appInfo, assistantVoice, currentLanguage, setLanguage, tStore, audioDevices, loadAudioDevices, invalidateSettingsSnapshot, getSupportedLanguages } from "@/stores"
+    import { appInfo, assistantVoice, currentLanguage, setLanguage, tStore, audioDevices, loadAudioDevices, invalidateAudioDevices, invalidateSettingsSnapshot, getSupportedLanguages } from "@/stores"
     import { addToast } from "@/lib/toast"
     import { saveSettingsValues } from "@/lib/settings"
     import { loadSettingsPageData } from "@/lib/settings-loader"
@@ -28,7 +29,7 @@
     let availableGlinerModels: SelectOption[] = []
     let saveButtonDisabled = false
 
-    let voiceVal = ""
+    let voiceVal = get(assistantVoice)
     let selectedMicrophone = ""
     let selectedWakeWordEngine = ""
     let selectedIntentRecognitionEngine: IntentEngine = "none"
@@ -86,8 +87,6 @@
         }
     }
 
-    const unsubVoice = assistantVoice.subscribe(value => { voiceVal = value })
-
     let feedbackLink = ""
     let logFilePath = ""
     let tgLink = ""
@@ -135,7 +134,6 @@
     }
 
     onDestroy(() => {
-        unsubVoice()
         unsubAppInfo()
     })
 
@@ -233,6 +231,14 @@
                 {t}
                 {availableMicrophones}
                 bind:selectedMicrophone
+                on:refresh={async () => {
+                    invalidateAudioDevices()
+                    try { await loadAudioDevices() } catch { /* toast shown inside */ }
+                    availableMicrophones = [
+                        { label: t('settings-mic-default'), value: "-1" },
+                        ...$audioDevices.map((name, idx) => ({ label: name, value: String(idx) }))
+                    ]
+                }}
             />
         {:else if activeTab === 'neural'}
             <TabNeural

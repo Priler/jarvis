@@ -5,10 +5,7 @@
     import { assistantVoice } from "@/stores"
     import { DEFAULT_VOICE_ID } from "@/lib/engine-options"
 
-    let voiceVal = DEFAULT_VOICE_ID
-    const unsubVoice = assistantVoice.subscribe(value => {
-        voiceVal = value || DEFAULT_VOICE_ID
-    })
+    $: voiceVal = $assistantVoice || DEFAULT_VOICE_ID
 
     const SAFE_NAME = /^[a-zA-Z0-9_-]+$/
 
@@ -35,7 +32,6 @@
     })
 
     onDestroy(() => {
-        unsubVoice()
         unlisteners.forEach(fn => fn())
     })
 </script>
