@@ -19,6 +19,7 @@ mod log;
 
 // include app
 mod app;
+mod stt_worker;
 
 // include tray
 // @TODO. macOS currently not supported for tray functionality.
