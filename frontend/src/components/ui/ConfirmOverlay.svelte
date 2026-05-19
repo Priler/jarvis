@@ -2,6 +2,7 @@
     import { createEventDispatcher } from "svelte"
     import { fly, fade } from "svelte/transition"
     import type { PendingConfirmation } from "@/lib/ipc/types"
+    import { tStore } from "@/lib/i18n"
 
     export let pending: PendingConfirmation | null = null
 
@@ -17,9 +18,14 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if pending}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="overlay-backdrop" transition:fade={{ duration: 150 }} on:click={() => dispatch("deny")}>
+    <div
+        class="overlay-backdrop"
+        role="none"
+        transition:fade={{ duration: 150 }}
+        on:click={() => dispatch("deny")}
+        on:keydown={(e) => e.key === "Escape" && dispatch("deny")}
+    >
         <div
             class="overlay-panel"
             role="alertdialog"
@@ -31,13 +37,13 @@
         >
             <div class="confirm-icon" aria-hidden="true">⚠</div>
 
-            <h2 class="confirm-title" id="confirm-title">Подтверждение команды</h2>
+            <h2 class="confirm-title" id="confirm-title">{$tStore('confirm-overlay-title')}</h2>
 
             <div class="confirm-body" id="confirm-body">
                 {#if pending.description}
                     <p class="confirm-description">{pending.description}</p>
                 {/if}
-                <div class="confirm-cmd" aria-label="Команда">
+                <div class="confirm-cmd" aria-label={$tStore('confirm-overlay-cmd-label')}>
                     <span class="cmd-label">CMD</span>
                     <code class="cmd-text">{pending.cmd}</code>
                 </div>
@@ -45,10 +51,10 @@
 
             <div class="confirm-actions">
                 <button class="btn-deny" on:click={() => dispatch("deny")}>
-                    Отмена
+                    {$tStore('settings-cancel')}
                 </button>
                 <button class="btn-approve" on:click={() => dispatch("approve")}>
-                    Выполнить
+                    {$tStore('confirm-overlay-execute')}
                 </button>
             </div>
         </div>

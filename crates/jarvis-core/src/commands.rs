@@ -14,9 +14,13 @@ pub use structs::*;
 use crate::{config, i18n, APP_DIR};
 
 // CLI commands that always require confirmation regardless of the `confirm` flag.
-// These are programs that can cause irreversible system-level changes.
+// Includes destructive system tools AND shell interpreters that can run arbitrary code.
 const ALWAYS_CONFIRM_CMDS: &[&str] = &[
+    // destructive system tools
     "shutdown", "format", "diskpart", "reg", "del", "rmdir", "rd", "cipher",
+    // shell interpreters — can execute arbitrary code via arguments
+    "cmd", "powershell", "pwsh", "sh", "bash", "zsh", "fish",
+    "wscript", "cscript", "mshta", "rundll32", "regsvr32",
 ];
 
 pub struct PendingConfirm {
@@ -411,6 +415,19 @@ mod tests {
     fn cmd_starting_with_dangerous_prefix_but_no_space_is_safe() {
         // "deleteme" is not the same as "del" and does not start with "del "
         assert!(!requires_confirmation(&cli_cmd("deleteme", false)));
+    }
+
+    #[test]
+    fn shell_interpreters_always_need_confirmation() {
+        for prog in &["cmd", "powershell", "pwsh", "sh", "bash", "wscript", "cscript", "mshta", "rundll32"] {
+            assert!(requires_confirmation(&cli_cmd(prog, false)), "{prog} should require confirmation");
+        }
+    }
+
+    #[test]
+    fn shell_interpreter_case_insensitive() {
+        assert!(requires_confirmation(&cli_cmd("PowerShell", false)));
+        assert!(requires_confirmation(&cli_cmd("CMD", false)));
     }
 
     // --- fetch_command ---

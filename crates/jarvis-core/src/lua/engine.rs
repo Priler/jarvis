@@ -79,7 +79,7 @@ impl LuaEngine {
         
         // sandbox-controlled APIs
         if self.sandbox.allows_http() {
-            api::http::register(&self.lua, &jarvis)?;
+            api::http::register(&self.lua, &jarvis, self.sandbox)?;
         }
         
         if self.sandbox.allows_state() {

@@ -148,6 +148,11 @@ settings-gliner-model-desc =
     Smaller quantized models (int8, uint8) are faster but less accurate.
 settings-gliner-models-hint = No GLiNER models found.
 
+# CONFIRM OVERLAY
+confirm-overlay-title = Command Confirmation
+confirm-overlay-execute = Execute
+confirm-overlay-cmd-label = Command
+
 # ETC
 search-error-not-running = Assistant is not running
 search-error-failed = Failed to execute command

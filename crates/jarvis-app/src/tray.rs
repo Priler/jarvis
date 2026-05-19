@@ -75,8 +75,6 @@ pub fn init_blocking(settings: SettingsManager) {
             std::thread::sleep(std::time::Duration::from_millis(50));
         }
     }
-
-    info!("Tray initialized.");
 }
 
 fn handle_menu_event(event: &MenuEvent, settings: &SettingsManager, tray_state: &menu::TrayState) {

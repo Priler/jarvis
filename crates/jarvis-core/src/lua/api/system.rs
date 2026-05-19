@@ -50,20 +50,18 @@ pub fn register(lua: &Lua, jarvis: &Table, sandbox: SandboxLevel) -> mlua::Resul
     })?;
     system.set("open", open_fn)?;
 
-    // jarvis.system.exec(cmd, args?) - only in full sandbox
+    // jarvis.system.exec(program, args?) - only in full sandbox.
+    // SEC-1: program is passed directly to the OS, never through cmd.exe or sh,
+    // so shell metacharacters (& | ; < >) in `program` or `args` are inert.
+    // Use the `args` table for arguments rather than embedding them in `program`.
     if sandbox.allows_exec() {
-        let exec_fn = lua.create_function(|lua, (cmd, args): (String, Option<Table>)| {
-            let mut command = if cfg!(target_os = "windows") {
-                let mut c = Command::new("cmd");
-                c.args(["/C", &cmd]);
-                c
-            } else {
-                let mut c = Command::new("sh");
-                c.args(["-c", &cmd]);
-                c
-            };
+        let exec_fn = lua.create_function(|lua, (program, args): (String, Option<Table>)| {
+            if program.trim().is_empty() {
+                return Err(mlua::Error::runtime("exec: program name must not be empty"));
+            }
 
-            // add extra args if provided
+            let mut command = Command::new(&program);
+
             if let Some(args_table) = args {
                 for pair in args_table.sequence_values::<String>() {
                     if let Ok(arg) = pair {

@@ -148,6 +148,11 @@ settings-gliner-model-desc =
     Квантизированные модели (int8, uint8) быстрее, но менее точны.
 settings-gliner-models-hint = Модели GLiNER не найдены.
 
+# CONFIRM OVERLAY
+confirm-overlay-title = Подтверждение команды
+confirm-overlay-execute = Выполнить
+confirm-overlay-cmd-label = Команда
+
 # ETC
 search-error-not-running = Ассистент не запущен
 search-error-failed = Не удалось выполнить команду

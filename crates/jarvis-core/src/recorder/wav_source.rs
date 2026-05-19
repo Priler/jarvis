@@ -145,3 +145,100 @@ fn resample_linear(samples: &[i16], from_rate: u32, to_rate: u32) -> Vec<i16> {
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn to_mono_stereo_averages_channels() {
+        // L=100 R=-100 → average 0; L=200 R=400 → average 300
+        let stereo = vec![100i16, -100, 200, 400];
+        let mono = to_mono(&stereo, 2);
+        assert_eq!(mono, vec![0, 300]);
+    }
+
+    #[test]
+    fn to_mono_already_mono_is_passthrough() {
+        let input = vec![1i16, 2, 3];
+        assert_eq!(to_mono(&input, 1), input);
+    }
+
+    #[test]
+    fn resample_linear_empty_returns_empty() {
+        assert!(resample_linear(&[], 8000, 16000).is_empty());
+    }
+
+    #[test]
+    fn resample_linear_same_rate_is_passthrough() {
+        let input = vec![10i16, 20, 30, 40];
+        assert_eq!(resample_linear(&input, 16000, 16000), input);
+    }
+
+    #[test]
+    fn resample_linear_doubles_sample_count_on_2x_upsample() {
+        let input = vec![0i16, 1000];
+        let out = resample_linear(&input, 8000, 16000);
+        // 2 samples @ 8kHz → ~4 samples @ 16kHz
+        assert_eq!(out.len(), 4);
+    }
+
+    #[test]
+    fn resample_linear_halves_sample_count_on_2x_downsample() {
+        let input = vec![0i16, 500, 1000, 1500, 2000, 2500, 3000, 3500];
+        let out = resample_linear(&input, 16000, 8000);
+        assert_eq!(out.len(), 4);
+    }
+
+    #[test]
+    fn wav_source_load_splits_into_correct_frame_count() {
+        // Write a small 16-bit 16kHz mono WAV to a temp file
+        let path = std::env::temp_dir().join("jarvis_test_wav_source.wav");
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 16000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let samples: Vec<i16> = (0..1024).map(|i| (i as i16).wrapping_mul(32)).collect();
+        {
+            let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+            for &s in &samples {
+                writer.write_sample(s).unwrap();
+            }
+        }
+
+        let frame_len = 512;
+        let source = WavSource::load(path.to_str().unwrap(), frame_len, 16000).unwrap();
+        // 1024 samples / 512 frame_len = exactly 2 frames
+        assert_eq!(source.total_frames, 2);
+
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn wav_source_frames_have_correct_length() {
+        let path = std::env::temp_dir().join("jarvis_test_wav_frame_len.wav");
+        let spec = hound::WavSpec {
+            channels: 1,
+            sample_rate: 16000,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        {
+            let mut writer = hound::WavWriter::create(&path, spec).unwrap();
+            // Write 300 samples — less than one full frame of 512
+            for i in 0..300i16 {
+                writer.write_sample(i).unwrap();
+            }
+        }
+
+        let frame_len = 512;
+        let mut source = WavSource::load(path.to_str().unwrap(), frame_len, 16000).unwrap();
+        assert_eq!(source.total_frames, 1);
+        let frame = source.next_frame().unwrap();
+        assert_eq!(frame.len(), frame_len); // zero-padded to frame_len
+
+        let _ = std::fs::remove_file(&path);
+    }
+}

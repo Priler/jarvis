@@ -82,7 +82,7 @@ fn main() -> Result<(), String> {
     info!("Initializing IPC...");
     ipc::init();
 
-    // SEC-7: generate per-session IPC auth token and write to config dir
+    // SEC-7: generate per-session IPC auth token and write to config dir.
     // Must be set BEFORE start_server() so the auth check works from first client.
     let ipc_token = generate_ipc_token();
     if let Some(config_dir) = APP_CONFIG_DIR.get() {
@@ -90,6 +90,14 @@ fn main() -> Result<(), String> {
         if let Err(e) = std::fs::write(&token_path, &ipc_token) {
             warn!("Failed to write IPC token: {}", e);
         } else {
+            // SEC-7: restrict token file to owner-only on Unix (mode 0600)
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Err(e) = std::fs::set_permissions(&token_path, std::fs::Permissions::from_mode(0o600)) {
+                    warn!("Failed to set IPC token file permissions: {}", e);
+                }
+            }
             info!("IPC token written to {:?}", token_path);
         }
     }

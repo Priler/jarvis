@@ -4,32 +4,60 @@ use mlua::{Lua, Table, Value};
 use std::collections::HashMap;
 use std::time::Duration;
 
-pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
+use crate::lua::sandbox::SandboxLevel;
+
+// SEC-4: Standard sandbox may only reach localhost to prevent data exfiltration.
+// Full sandbox is unrestricted (operator has explicitly enabled it).
+fn is_allowed_url(url: &str, sandbox: SandboxLevel) -> bool {
+    if sandbox.allows_exec() {
+        return true; // full sandbox: any URL
+    }
+    let lower = url.to_lowercase();
+    lower.starts_with("http://localhost")
+        || lower.starts_with("http://127.0.0.1")
+        || lower.starts_with("https://localhost")
+        || lower.starts_with("https://127.0.0.1")
+}
+
+pub fn register(lua: &Lua, jarvis: &Table, sandbox: SandboxLevel) -> mlua::Result<()> {
     let http = lua.create_table()?;
-    
+
     // jarvis.http.get(url, headers?)
-    let get_fn = lua.create_function(|lua, (url, headers): (String, Option<Table>)| {
+    let get_fn = lua.create_function(move |lua, (url, headers): (String, Option<Table>)| {
+        if !is_allowed_url(&url, sandbox) {
+            return Err(mlua::Error::runtime(format!(
+                "HTTP blocked: '{}' is not a localhost URL (standard sandbox only allows localhost)", url
+            )));
+        }
         http_request(lua, "GET", &url, None, headers)
     })?;
     http.set("get", get_fn)?;
-    
+
     // jarvis.http.post(url, body, headers?)
-    let post_fn = lua.create_function(|lua, (url, body, headers): (String, Option<String>, Option<Table>)| {
+    let post_fn = lua.create_function(move |lua, (url, body, headers): (String, Option<String>, Option<Table>)| {
+        if !is_allowed_url(&url, sandbox) {
+            return Err(mlua::Error::runtime(format!(
+                "HTTP blocked: '{}' is not a localhost URL", url
+            )));
+        }
         http_request(lua, "POST", &url, body, headers)
     })?;
     http.set("post", post_fn)?;
-    
+
     // jarvis.http.post_json(url, data, headers?)
-    let post_json_fn = lua.create_function(|lua, (url, data, headers): (String, Table, Option<Table>)| {
-        // convert Lua table to JSON string
+    let post_json_fn = lua.create_function(move |lua, (url, data, headers): (String, Table, Option<Table>)| {
+        if !is_allowed_url(&url, sandbox) {
+            return Err(mlua::Error::runtime(format!(
+                "HTTP blocked: '{}' is not a localhost URL", url
+            )));
+        }
         let json_value = table_to_json(lua, data)?;
         let body = serde_json::to_string(&json_value)
             .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
-        // add content-type header
+
         let mut header_map: HashMap<String, String> = HashMap::new();
         header_map.insert("Content-Type".to_string(), "application/json".to_string());
-        
+
         if let Some(h) = headers {
             for pair in h.pairs::<String, String>() {
                 if let Ok((k, v)) = pair {
@@ -37,22 +65,27 @@ pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
                 }
             }
         }
-        
+
         http_request_with_headers(lua, "POST", &url, Some(body), header_map)
     })?;
     http.set("post_json", post_json_fn)?;
-    
+
     // jarvis.http.json(url) - GET + parse JSON
-    let json_fn = lua.create_function(|lua, url: String| {
+    let json_fn = lua.create_function(move |lua, url: String| {
+        if !is_allowed_url(&url, sandbox) {
+            return Err(mlua::Error::runtime(format!(
+                "HTTP blocked: '{}' is not a localhost URL", url
+            )));
+        }
         let client = reqwest::blocking::Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
             .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
+
         let response = client.get(&url)
             .send()
             .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
+
         if response.status().is_success() {
             let json: serde_json::Value = response.json()
                 .map_err(|e| mlua::Error::runtime(e.to_string()))?;
@@ -62,9 +95,9 @@ pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
         }
     })?;
     http.set("json", json_fn)?;
-    
+
     jarvis.set("http", http)?;
-    
+
     Ok(())
 }
 

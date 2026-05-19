@@ -19,48 +19,58 @@ pub fn read_ipc_token() -> Result<String, String> {
         .map_err(|e| format!("IPC token not available: {}", e))
 }
 
-// taken from https://github.com/tauri-apps/tauri/issues/4062#issuecomment-1338048169
+// Reveal a path in the system file manager.
+// SEC-6: path is passed as a discrete argument (never interpolated into a shell string)
+// on all platforms. No .unwrap() — failures are silently swallowed so a bad path
+// never crashes the GUI process.
 #[tauri::command]
 pub fn show_in_folder(path: String) {
-  #[cfg(target_os = "windows")]
-  {
-    Command::new("explorer")
-        .args(["/select,", &path]) // The comma after select is not a typo
-        .spawn()
-        .unwrap();
-  }
-
-  #[cfg(target_os = "linux")]
-  {
-    if path.contains(",") {
-      // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
-      let new_path = match metadata(&path).unwrap().is_dir() {
-        true => path,
-        false => {
-          let mut path2 = PathBuf::from(path);
-          path2.pop();
-          path2.into_os_string().into_string().unwrap()
-        }
-      };
-      Command::new("xdg-open")
-          .arg(&new_path)
-          .spawn()
-          .unwrap();
-    } else {
-      Command::new("dbus-send")
-          .args(["--session", "--dest=org.freedesktop.FileManager1", "--type=method_call",
-                "/org/freedesktop/FileManager1", "org.freedesktop.FileManager1.ShowItems",
-                format!("array:string:\"file://{path}\"").as_str(), "string:\"\""])
-          .spawn()
-          .unwrap();
+    #[cfg(target_os = "windows")]
+    {
+        // /select, and path are separate args; explorer.exe handles special chars fine.
+        let _ = Command::new("explorer")
+            .args(["/select,", &path])
+            .spawn();
     }
-  }
 
-  #[cfg(target_os = "macos")]
-  {
-    Command::new("open")
-        .args(["-R", &path])
-        .spawn()
-        .unwrap();
-  }
+    #[cfg(target_os = "linux")]
+    {
+        if path.contains(',') {
+            // see https://gitlab.freedesktop.org/dbus/dbus/-/issues/76
+            let open_path = match metadata(&path).map(|m| m.is_dir()) {
+                Ok(true) => path,
+                _ => {
+                    let mut p = PathBuf::from(path);
+                    p.pop();
+                    match p.into_os_string().into_string() {
+                        Ok(s) => s,
+                        Err(_) => return,
+                    }
+                }
+            };
+            let _ = Command::new("xdg-open").arg(&open_path).spawn();
+        } else {
+            // SEC-6: escape " in the path so dbus-send's type-annotation parser
+            // cannot be confused by a quote embedded in the file name.
+            let escaped = path.replace('\\', "\\\\").replace('"', "\\\"");
+            let dbus_arg = format!("array:string:\"file://{}\"", escaped);
+            let _ = Command::new("dbus-send")
+                .args([
+                    "--session",
+                    "--dest=org.freedesktop.FileManager1",
+                    "--type=method_call",
+                    "/org/freedesktop/FileManager1",
+                    "org.freedesktop.FileManager1.ShowItems",
+                    &dbus_arg,
+                    "string:\"\"",
+                ])
+                .spawn();
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // -R and path are separate args; no shell involvement.
+        let _ = Command::new("open").args(["-R", &path]).spawn();
+    }
 }

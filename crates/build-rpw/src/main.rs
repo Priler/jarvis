@@ -49,7 +49,7 @@ fn main() {
 
         println!("  Processing: {}", name);
 
-        let wav_bytes = convert_to_16kHz_mono_16bit(path, max_secs)
+        let wav_bytes = convert_to_16khz_mono_16bit(path, max_secs)
             .unwrap_or_else(|e| panic!("Failed to convert {}: {}", name, e));
 
         samples.insert(name, wav_bytes);
@@ -73,7 +73,7 @@ fn main() {
 
 // Convert any WAV (any rate, channels, bit depth) → 16kHz mono 16-bit WAV bytes in memory.
 // max_secs: only keep the first N seconds (trims surrounding silence from training samples).
-fn convert_to_16kHz_mono_16bit(path: &str, max_secs: f32) -> Result<Vec<u8>, String> {
+fn convert_to_16khz_mono_16bit(path: &str, max_secs: f32) -> Result<Vec<u8>, String> {
     let mut reader = hound::WavReader::open(path)
         .map_err(|e| format!("Cannot open WAV: {}", e))?;
     let spec = reader.spec();
