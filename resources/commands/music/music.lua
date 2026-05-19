@@ -2,16 +2,16 @@ local MUSIC_DIR = "F:\\temp\\jarvis_offline\\music"
 local id = jarvis.context.command_id
 
 local function send_media_key(key_code)
-    -- keybd_event is required for VK codes above 127 (media keys 176-179);
-    -- WScript.Shell.SendKeys treats those as Unicode chars, not virtual keys.
-    local cmd = string.format(
-        "powershell -NoProfile -c \"" ..
+    -- keybd_event is required for VK codes above 127 (media keys 176-179).
+    -- exec() takes (program, args_table) — pass powershell as the program
+    -- and the script as a separate -c argument so the OS can find the binary.
+    local script = string.format(
         "Add-Type -TypeDefinition 'using System;using System.Runtime.InteropServices;" ..
-        "public class K{[DllImport(\\\"user32.dll\\\")]public static extern void keybd_event(byte v,byte s,int f,int e);}'; " ..
-        "[K]::keybd_event(%d,0,0,0);[K]::keybd_event(%d,0,2,0)\"",
+        "public class K{[DllImport(\"user32.dll\")]public static extern void keybd_event(byte v,byte s,int f,int e);}'; " ..
+        "[K]::keybd_event(%d,0,0,0);[K]::keybd_event(%d,0,2,0)",
         key_code, key_code
     )
-    jarvis.system.exec(cmd)
+    jarvis.system.exec("powershell", {"-NoProfile", "-NonInteractive", "-c", script})
 end
 
 if id == "music_play" then
@@ -35,19 +35,20 @@ if id == "music_play" then
     jarvis.system.open(track)
 
 elseif id == "music_stop" then
-    -- No \"...\" wrapper: cmd passes \"script\" to PS as a string literal, not as commands.
-    -- Without outer quotes, cmd passes the script verbatim and PS executes it correctly.
-    jarvis.system.exec(
-        "powershell -NoProfile -c " ..
+    -- exec(program, args_table): pass powershell as the program, script as -c arg.
+    -- Concatenating everything into the first argument used to fail with "program not found"
+    -- because Command::new() was looking up the full string as a binary path.
+    jarvis.system.exec("powershell", {
+        "-NoProfile", "-NonInteractive", "-c",
         "Stop-Process -Name Microsoft.Media.Player -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name wmplayer -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name vlc -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name Music.UI -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name AIMP -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name foobar2000 -Force -ErrorAction SilentlyContinue; " ..
+        "Stop-Process -Name wmplayer    -Force -ErrorAction SilentlyContinue; " ..
+        "Stop-Process -Name vlc         -Force -ErrorAction SilentlyContinue; " ..
+        "Stop-Process -Name Music.UI    -Force -ErrorAction SilentlyContinue; " ..
+        "Stop-Process -Name AIMP        -Force -ErrorAction SilentlyContinue; " ..
+        "Stop-Process -Name foobar2000  -Force -ErrorAction SilentlyContinue; " ..
         "Stop-Process -Name PotPlayerMini64 -Force -ErrorAction SilentlyContinue; " ..
-        "Stop-Process -Name winamp -Force -ErrorAction SilentlyContinue"
-    )
+        "Stop-Process -Name winamp      -Force -ErrorAction SilentlyContinue"
+    })
 
 elseif id == "music_pause" then
     send_media_key(179)  -- VK_MEDIA_PLAY_PAUSE

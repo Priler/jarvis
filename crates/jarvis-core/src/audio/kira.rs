@@ -38,13 +38,10 @@ pub fn init() -> Result<(), ()> {
 }
 
 // @TODO. Cache sounds in memory? With a pool of a certain size, for instance.
-pub fn play_sound(filename: &PathBuf) {
-    // load the file
+pub fn play_sound(filename: &PathBuf) -> std::time::Duration {
     match StaticSoundData::from_file(filename) {
         Ok(sound_data) => {
-            // sound_data.duration() can be used in order to sleep, if (for some reason) blocking behaviour is required
-
-            // play it (non-blocking)
+            let duration = sound_data.duration();
             if let Some(manager) = MANAGER.get() {
                 if let Ok(mut audio_manager) = manager.lock() {
                     if let Err(e) = audio_manager.play(sound_data) {
@@ -54,9 +51,11 @@ pub fn play_sound(filename: &PathBuf) {
             } else {
                 warn!("Audio manager not initialized");
             }
+            duration
         }
         Err(err) => {
             warn!("Cannot find sound file: {} (err: {})", filename.display(), err);
+            std::time::Duration::ZERO
         }
     }
 }

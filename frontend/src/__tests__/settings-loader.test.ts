@@ -29,6 +29,7 @@ const SETTINGS_STUB: SettingsValues = {
     microphone: "0", wakeWordEngine: "Rustpotter", intentEngine: "none",
     slotEngine: "None", glinerModel: "", voskModel: "vosk-ru",
     noiseSuppression: "None", vad: "None", gainNormalizerEnabled: false,
+    vadEnergyThreshold: 100,
     apiKeyPicovoice: "", ollamaUrl: "http://localhost:11434", ollamaModel: "",
 }
 

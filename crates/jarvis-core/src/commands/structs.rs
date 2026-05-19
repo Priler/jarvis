@@ -55,6 +55,11 @@ pub struct JCommand {
     #[serde(default)]
     pub confirm: bool,
 
+    // Whether to stay in CommandMode after this command completes.
+    // Lua commands override this via their script return value.
+    #[serde(default)]
+    pub chain: bool,
+
     // Multi-language sounds
     #[serde(default)]
     pub sounds: HashMap<String, Vec<String>>,
@@ -94,6 +99,7 @@ impl Clone for JCommand {
             sandbox: self.sandbox.clone(),
             timeout: self.timeout.clone(),
             confirm: self.confirm,
+            chain: self.chain,
 
             sounds: self.sounds.clone(),
             phrases: self.phrases.clone(),

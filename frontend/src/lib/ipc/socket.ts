@@ -32,7 +32,9 @@ let _errorToastShown = false
 let _watchdogFired = false
 
 // Number of failed reconnect attempts before trying to restart jarvis-app.
-const WATCHDOG_TRIGGER_ATTEMPT = 3
+// jarvis-app startup takes ~4-10s (recorder init), so keep this high enough
+// that we don't kill a still-starting instance.
+const WATCHDOG_TRIGGER_ATTEMPT = 10
 
 /** Store the IPC auth token fetched from jarvis-gui at startup. */
 export function setIpcToken(token: string | null) {
@@ -117,8 +119,14 @@ function scheduleReconnect() {
         })
     }
 
-    reconnectTimer = setTimeout(() => {
+    reconnectTimer = setTimeout(async () => {
         reconnectTimer = null
+        // Re-read token on each reconnect — jarvis-app may have (re)started
+        // and written a new token since the last attempt.
+        try {
+            const token = await invoke<string>("read_ipc_token")
+            if (token) setIpcToken(token)
+        } catch { /* token not yet written, will retry */ }
         connectIpc()
     }, delay)
 }

@@ -235,8 +235,8 @@ pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Optio
     match cmd_config.cmd_type.as_str() {
 
         // BRUH
-        "voice" => Ok(true),
-        
+        "voice" => Ok(cmd_config.chain),
+
         // LUA command
         #[cfg(feature = "lua")]
         "lua" => {
@@ -256,13 +256,13 @@ pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Optio
             };
 
             execute_exe(exe_path.to_str().unwrap(), &cmd_config.exe_args)
-                .map(|_| true)
+                .map(|_| cmd_config.chain)
                 .map_err(|e| format!("AHK process spawn error: {}", e))
         }
-        
+
         "cli" => {
             execute_cli(&cmd_config.cli_cmd, &cmd_config.cli_args)
-                .map(|_| true)
+                .map(|_| cmd_config.chain)
                 .map_err(|e| format!("CLI command error: {}", e))
         }
         

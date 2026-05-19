@@ -5,14 +5,35 @@ use std::process::Command;
 
 use crate::lua::sandbox::SandboxLevel;
 
-/// SEC-9: Only allow known-safe URL schemes through the shell open path to prevent
-/// cmd.exe metacharacter injection on Windows (& | > < etc. in URLs).
+/// SEC-9: Allow known-safe URL schemes and whitelisted local file extensions.
+/// Blocks shell metacharacters by rejecting anything that isn't a recognised
+/// scheme or a local file with a non-executable extension.
 fn is_safe_open_target(target: &str) -> bool {
     let t = target.to_lowercase();
-    t.starts_with("https://")
+
+    // Allow standard URL schemes.
+    if t.starts_with("https://")
         || t.starts_with("http://")
         || t.starts_with("ftp://")
         || t.starts_with("mailto:")
+    {
+        return true;
+    }
+
+    // Allow local files with safe, non-executable extensions.
+    // Executables (.exe, .bat, .ps1, .cmd, .vbs, .js, .msi, …) are intentionally absent.
+    if let Some(ext) = std::path::Path::new(target).extension().and_then(|e| e.to_str()) {
+        return matches!(
+            ext.to_lowercase().as_str(),
+            "mp3" | "wav" | "ogg" | "flac" | "aac" | "m4a"
+                | "mp4" | "mkv" | "avi" | "mov" | "webm"
+                | "pdf" | "txt" | "log" | "md"
+                | "jpg" | "jpeg" | "png" | "gif" | "webp" | "bmp"
+                | "lnk"
+        );
+    }
+
+    false
 }
 
 pub fn register(lua: &Lua, jarvis: &Table, sandbox: SandboxLevel) -> mlua::Result<()> {

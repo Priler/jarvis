@@ -19,12 +19,12 @@
 
 {#if pending}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
         class="overlay-backdrop"
         role="none"
         transition:fade={{ duration: 150 }}
-        on:click={() => dispatch("deny")}
-        on:keydown={(e) => e.key === "Escape" && dispatch("deny")}
+        on:click={(e) => e.target === e.currentTarget && dispatch("deny")}
     >
         <div
             class="overlay-panel"
@@ -33,7 +33,6 @@
             aria-labelledby="confirm-title"
             aria-describedby="confirm-body"
             transition:fly={{ y: 12, duration: 200 }}
-            on:click|stopPropagation
         >
             <div class="confirm-icon" aria-hidden="true">⚠</div>
 

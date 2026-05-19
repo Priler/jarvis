@@ -1,10 +1,33 @@
 use std::sync::mpsc::{Receiver, SyncSender};
-use std::time::SystemTime;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Instant, Duration, SystemTime};
 
 use jarvis_core::{
     audio_buffer::AudioRingBuffer,
-    audio_processing, config, i18n, stt,
+    audio, audio_processing, config, i18n, stt,
 };
+
+// ── Pipeline timing constants ─────────────────────────────────────────────────
+
+/// Ignore any new wake event within this window after a confirmed wake.
+const WAKE_DEBOUNCE_MS: u64 = 2500;
+
+/// After Cooldown clears, keep discarding frames for this long before listening.
+const QUIET_WINDOW_MS: u64 = 1000;
+
+/// Require this many consecutive voice frames before triggering Voice onset.
+/// Filters brief transients, claps, and reverb tails (3 × ~32 ms = ~96 ms).
+const MIN_VOICE_FRAMES_FOR_ONSET: u32 = 3;
+
+/// Timestamp (ms since epoch) of the most recent confirmed wake event.
+static LAST_WAKE_MS: AtomicU64 = AtomicU64::new(0);
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64
+}
 
 // ── Message types ─────────────────────────────────────────────────────────────
 
@@ -45,6 +68,12 @@ enum State {
     CommandMode { first: bool },
     /// Recognition done; waiting for Chain/Idle from the main thread.
     AwaitingChain,
+    /// SttCmd::Idle received; waiting for audio playback + reverb to clear
+    /// before accepting microphone input again.
+    Cooldown,
+    /// Short dead-zone immediately after Cooldown to block residual noise from
+    /// triggering a new Voice onset.
+    QuietWindow,
 }
 
 // ── Worker entry point ────────────────────────────────────────────────────────
@@ -60,6 +89,11 @@ pub fn run(
     let mut state = State::WaitingForVoice;
     let mut silence_frames: u32 = 0;
     let mut cmd_start = SystemTime::now();
+    let mut speaking_drop_count: u32 = 0;
+    // Set to Instant::now() when entering QuietWindow; expires after QUIET_WINDOW_MS.
+    let mut quiet_until = Instant::now();
+    // Consecutive voice frames seen in WaitingForVoice; Voice onset requires MIN_VOICE_FRAMES_FOR_ONSET.
+    let mut consecutive_voice_frames: u32 = 0;
 
     let wake_silence_threshold =
         ((1.5 * sample_rate as f32) / frame_length as f32) as u32;
@@ -78,13 +112,46 @@ pub fn run(
                     State::CommandMode { first: false }
                 }
                 (SttCmd::Idle, State::AwaitingChain) => {
-                    info!("[STT] Returning to idle after command");
+                    // Do NOT transition directly to WaitingForVoice while audio may still
+                    // be playing. Enter Cooldown and let the speaking gate drain; only
+                    // after is_speaking() clears will we flush buffers and start listening.
+                    info!("[STATE] Executing → Cooldown (waiting for audio to clear)");
                     stt::reset_speech_recognizer();
                     silence_frames = 0;
-                    State::WaitingForVoice
+                    State::Cooldown
                 }
                 (_, s) => s,
             };
+        }
+
+        // Speaking gate: discard frames from all states except CommandMode while the
+        // assistant is playing audio.  CommandMode must keep receiving frames so Vosk
+        // can capture the user's command even while the wake-confirmation ding plays.
+        if audio::is_speaking() && !matches!(state, State::CommandMode { .. }) {
+            speaking_drop_count += 1;
+            if speaking_drop_count == 1 {
+                info!("[STT] Speaking gate active — discarding mic frames");
+            }
+            continue;
+        }
+        // Log when the gate clears.
+        if speaking_drop_count > 0 {
+            info!("[STT] Speaking gate cleared after {} dropped frames", speaking_drop_count);
+            speaking_drop_count = 0;
+        }
+
+        // QuietWindow gate: discard frames during the post-cooldown dead zone.
+        if matches!(state, State::QuietWindow) {
+            if Instant::now() < quiet_until {
+                debug!("[VAD] ignored: quiet window active");
+                consecutive_voice_frames = 0;
+                continue;
+            }
+            // Window expired: transition to WaitingForVoice.
+            info!("[STATE] QuietWindow → Idle");
+            state = State::WaitingForVoice;
+            consecutive_voice_frames = 0;
+            continue;
         }
 
         match state {
@@ -92,12 +159,26 @@ pub fn run(
             State::WaitingForVoice => {
                 pre_roll.push(&frame.pcm);
                 if frame.is_voice {
-                    info!("[STT] Voice onset — flushing {} pre-roll frames", pre_roll.len());
-                    for buffered in pre_roll.drain_all() {
-                        let _ = stt::recognize_wake_word(&buffered);
+                    consecutive_voice_frames += 1;
+                    if consecutive_voice_frames < MIN_VOICE_FRAMES_FOR_ONSET {
+                        debug!(
+                            "[VAD] ignored: too short speech ({}/{} consecutive frames)",
+                            consecutive_voice_frames, MIN_VOICE_FRAMES_FOR_ONSET
+                        );
+                    } else {
+                        info!(
+                            "[STATE] Idle → Listening (voice onset after {} frames, flushing {})",
+                            consecutive_voice_frames, pre_roll.len()
+                        );
+                        for buffered in pre_roll.drain_all() {
+                            let _ = stt::recognize_wake_word(&buffered);
+                        }
+                        state = State::VoiceActive;
+                        silence_frames = 0;
+                        consecutive_voice_frames = 0;
                     }
-                    state = State::VoiceActive;
-                    silence_frames = 0;
+                } else {
+                    consecutive_voice_frames = 0;
                 }
             }
 
@@ -121,12 +202,34 @@ pub fn run(
                     });
 
                 if vosk_wake || frame.rustpotter_wake {
+                    // Wake debounce: ignore spurious re-triggers within WAKE_DEBOUNCE_MS.
+                    let now = now_ms();
+                    let last = LAST_WAKE_MS.load(Ordering::Acquire);
+                    if last > 0 && now.saturating_sub(last) < WAKE_DEBOUNCE_MS {
+                        info!(
+                            "[WAKE] ignored: debounce active ({} ms since last wake, need {} ms)",
+                            now.saturating_sub(last), WAKE_DEBOUNCE_MS
+                        );
+                        // Fall back to idle; the user can try again after the debounce window.
+                        state = State::WaitingForVoice;
+                        silence_frames = 0;
+                        consecutive_voice_frames = 0;
+                        stt::reset_wake_recognizer();
+                        stt::reset_speech_recognizer();
+                        continue;
+                    }
+                    LAST_WAKE_MS.store(now, Ordering::Release);
+
                     info!(
                         "[STT] Wake confirmed (vosk={} rustpotter={})",
                         vosk_wake, frame.rustpotter_wake
                     );
                     stt::reset_wake_recognizer();
+                    // Keep speech recognizer running — it already has wake+command audio
+                    // accumulated via dual-feed.  CommandMode { first: true } will strip
+                    // the garbled wake-word artefact from the first transcript.
                     audio_processing::reset();
+                    info!("[STATE] Listening → Recognizing");
                     state = State::CommandMode { first: true };
                     silence_frames = 0;
                     cmd_start = SystemTime::now();
@@ -155,13 +258,24 @@ pub fn run(
                     let contains_wake =
                         wake_phrases.iter().any(|wp| text.contains(*wp));
 
-                    // First recognition after wake often includes the wake word
-                    // itself (mis-transcribed or from pre-roll audio).  Strip it.
+                    // First recognition after wake: the speech recognizer holds audio
+                    // that includes the wake word (dual-feed from VoiceActive).
                     if first && !contains_wake {
                         let words: Vec<&str> = text.split_whitespace().collect();
-                        if words.len() > 1 {
+                        if words.len() == 1 {
+                            // Single-word transcript = garbled wake word alone (user paused
+                            // after "джарвис" waiting for the beep).  Reset and listen for
+                            // the actual command.
+                            info!("[STT] First transcript '{}' is wake-word only — resetting for command", text);
+                            stt::reset_speech_recognizer();
+                            state = State::CommandMode { first: false };
+                            silence_frames = 0;
+                            continue;
+                        } else if words.len() > 1 {
+                            // Multi-word transcript: first word is garbled wake word,
+                            // rest is the command (one-breath style: "джарвис открой…").
                             info!(
-                                "[STT] Stripping likely wake-word artefact '{}' → '{}'",
+                                "[STT] Stripping wake-word artefact '{}' → '{}'",
                                 words[0],
                                 words[1..].join(" ")
                             );
@@ -176,13 +290,15 @@ pub fn run(
                         }
                         text = text.trim().to_string();
                         if text.is_empty() {
-                            // Bare wake-word repeat — reactivate command mode.
-                            info!("[STT] Bare wake word in CommandMode — reactivating");
+                            // Bare wake in CommandMode: the user said the wake word but
+                            // gave no command.  Do NOT reactivate — that would play a second
+                            // reply sound and cause a double-response loop.  Return silently.
+                            info!("[STT] bare wake ignored — no command captured, returning to Cooldown");
                             stt::reset_speech_recognizer();
-                            state = State::CommandMode { first: false };
                             silence_frames = 0;
-                            cmd_start = SystemTime::now();
-                            let _ = event_tx.send(SttEvent::WakeDetected);
+                            state = State::Cooldown;
+                            // Inform the main thread so IPC goes to Idle.
+                            let _ = event_tx.send(SttEvent::CommandTimeout);
                             continue;
                         }
                     }
@@ -199,7 +315,21 @@ pub fn run(
                         continue;
                     }
 
+                    // Reject obvious garbage transcripts before hitting the matcher.
+                    // A valid command requires at least one word that looks like an action
+                    // verb in the active language.  This filters common STT artefacts like
+                    // "стрит тупой" that survive wake-word stripping but have no command intent.
+                    if !has_command_intent(&text, &i18n::get_language()) {
+                        info!("[STT] low-quality command ignored: '{}'", text);
+                        stt::reset_speech_recognizer();
+                        silence_frames = 0;
+                        state = State::Cooldown;
+                        let _ = event_tx.send(SttEvent::CommandTimeout);
+                        continue;
+                    }
+
                     // Good command: send to main thread and wait for chain decision.
+                    info!("[STATE] Recognizing → Executing");
                     let _ = event_tx.send(SttEvent::SpeechRecognized(text));
                     state = State::AwaitingChain;
                     silence_frames = 0;
@@ -231,13 +361,73 @@ pub fn run(
                 }
             }
 
-            // ── 4. Waiting for chain/idle from main thread ────────────────────
+            // ── 4. Post-command cooldown ──────────────────────────────────────
+            // SttCmd::Idle was received. We stay here (speaking gate discards all
+            // frames) until is_speaking() returns false, then flush every buffer
+            // and enter QuietWindow before resuming listening.
+            State::Cooldown => {
+                // is_speaking() must be false here — the gate above continued otherwise.
+                stt::reset_speech_recognizer();
+                stt::reset_wake_recognizer();
+                audio_processing::reset();
+                pre_roll = AudioRingBuffer::new(5.0, frame_length, sample_rate);
+                silence_frames = 0;
+                consecutive_voice_frames = 0;
+                info!("[STT] buffers cleared after cooldown");
+                info!("[STATE] Cooldown → QuietWindow ({}ms dead-zone)", QUIET_WINDOW_MS);
+                quiet_until = Instant::now() + Duration::from_millis(QUIET_WINDOW_MS);
+                state = State::QuietWindow;
+                // QuietWindow is handled by the gate at the top of the loop.
+            }
+
+            // ── 5. Waiting for chain/idle from main thread ────────────────────
             State::AwaitingChain => {
                 // Discard incoming frames while main thread processes the command.
                 // The SttCmd decision is handled at the top of the loop.
             }
+
+            // ── 6. QuietWindow ────────────────────────────────────────────────
+            // Handled fully by the inline gate above (uses `continue`).
+            // This arm is unreachable at runtime but required for exhaustiveness.
+            State::QuietWindow => {}
         }
     }
 
     info!("[STT] Worker thread exiting");
+}
+
+// ── Command quality filter ────────────────────────────────────────────────────
+
+/// Returns true if the stripped transcript is likely a real command rather than
+/// a noise artefact or garbled wake-word tail.
+///
+/// For Russian: requires at least one word from a known set of action verbs.
+/// For other languages: passes everything (threshold-based rejection in the
+/// matcher provides sufficient protection via CMD_RATIO_THRESHOLD).
+fn has_command_intent(text: &str, lang: &str) -> bool {
+    if lang != "ru" {
+        return true;
+    }
+
+    // Words/prefixes that strongly signal a command in Russian.
+    // Short but decisive: stop words and standalone command words are included.
+    const RU_VERBS: &[&str] = &[
+        "открой", "открыть", "закрой", "закрыть",
+        "включи", "включить", "выключи", "выключить",
+        "запусти", "запустить", "останови", "остановить",
+        "поставь", "поставить", "убавь", "прибавь",
+        "воспроизведи", "воспроизвести",
+        "переключи", "переключить",
+        "найди", "найти", "покажи", "показать",
+        "сыграй", "играй",
+        "расскажи", "рассказать",
+        "стоп", "пауза", "дальше", "назад",
+        "следующий", "предыдущий",
+        "создай", "создать", "удали", "удалить",
+        "вычисли", "посчитай",
+        "какая", "сколько", "который", "что",
+    ];
+
+    let lower = text.to_lowercase();
+    RU_VERBS.iter().any(|v| lower.contains(v))
 }

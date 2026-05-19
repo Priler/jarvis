@@ -124,6 +124,11 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
 
     recorder::stop_recording().ok();
     ipc::send(IpcEvent::Stopping);
+
+    if recorder::is_wav_mode() {
+        std::process::exit(0);
+    }
+
     Ok(())
 }
 
@@ -151,9 +156,9 @@ fn handle_stt_event(
             ipc::send(IpcEvent::SpeechRecognized { text: text.clone() });
             let should_chain = execute_command(&text, rt);
             let _ = cmd_tx.send(if should_chain { SttCmd::Chain } else { SttCmd::Idle });
-            if !should_chain {
-                ipc::send(IpcEvent::Idle);
-            } else {
+            // execute_command already sends Idle for all non-chain outcomes;
+            // only send Listening here when chaining continues.
+            if should_chain {
                 ipc::send(IpcEvent::Listening);
             }
         }
@@ -237,15 +242,21 @@ fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
         match commands::execute_command(&cmd_path, &cmd_config, Some(text), extracted_slots.as_ref()) {
             Ok(chain) => {
                 info!("[COMMAND] Executed successfully: {}", cmd_config.id);
+                info!("[STATE] Executing → Speaking");
                 voices::play_random_from(cmd_config.get_sounds(&i18n::get_language()).as_slice());
                 ipc::send(IpcEvent::CommandExecuted {
                     id: cmd_config.id.clone(),
                     success: true,
                 });
+                if !chain {
+                    info!("[STATE] Sent Idle — STT worker will enter Cooldown");
+                    ipc::send(IpcEvent::Idle);
+                }
                 return chain;
             }
             Err(msg) => {
                 error!("Error executing command: {}", msg);
+                info!("[STATE] Executing → Speaking (error)");
                 voices::play_error();
                 ipc::send(IpcEvent::CommandExecuted {
                     id: cmd_config.id.clone(),
