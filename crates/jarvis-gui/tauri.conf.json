@@ -6,13 +6,14 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
+    "beforeBundleCommand": "python ../../post_build.py --sync",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../../frontend/dist/client"
   },
   "app": {
     "withGlobalTauri": false,
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src ws://127.0.0.1:9712; media-src 'self' asset: https://asset.localhost"
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ws://127.0.0.1:9712; media-src 'self' asset: https://asset.localhost"
     },
     "windows": [
       {

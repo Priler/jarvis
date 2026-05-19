@@ -21,7 +21,7 @@
     "@tauri-apps/plugin-shell": "^2"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.0.0",
     "@roxi/routify": "^3.6.4",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@tauri-apps/cli": "^2",
