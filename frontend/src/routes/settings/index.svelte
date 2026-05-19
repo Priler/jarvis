@@ -38,6 +38,7 @@
     let selectedVoskModel = ""
     let selectedNoiseSuppression = ""
     let selectedVad = ""
+    let vadEnergyThreshold = 100
     let gainNormalizerEnabled = false
     let apiKeyPicovoice = ""
     let ollamaUrl = "http://localhost:11434"
@@ -118,6 +119,7 @@
                 voskModel:             selectedVoskModel,
                 noiseSuppression:      selectedNoiseSuppression,
                 vad:                   selectedVad,
+                vadEnergyThreshold,
                 gainNormalizerEnabled,
                 apiKeyPicovoice,
                 ollamaUrl,
@@ -178,6 +180,7 @@
                 selectedVoskModel               = s.voskModel
                 selectedNoiseSuppression        = s.noiseSuppression
                 selectedVad                     = s.vad
+                vadEnergyThreshold              = s.vadEnergyThreshold
                 gainNormalizerEnabled           = s.gainNormalizerEnabled
                 apiKeyPicovoice                 = s.apiKeyPicovoice
                 ollamaUrl                       = s.ollamaUrl
@@ -250,6 +253,7 @@
                 bind:selectedVoskModel
                 bind:selectedNoiseSuppression
                 bind:selectedVad
+                bind:vadEnergyThreshold
                 bind:gainNormalizerEnabled
                 bind:apiKeyPicovoice
                 bind:ollamaUrl

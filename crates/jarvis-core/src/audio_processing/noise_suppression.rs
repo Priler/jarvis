@@ -17,10 +17,12 @@ pub fn init(backend: NoiseSuppressionBackend) {
 
     // fallback if nnnoiseless not compiled in
     #[cfg(not(feature = "nnnoiseless"))]
-    if matches!(backend, NoiseSuppressionBackend::Nnnoiseless) {
+    let backend = if matches!(backend, NoiseSuppressionBackend::Nnnoiseless) {
         warn!("Nnnoiseless not compiled in, falling back to None");
-        backend = NoiseSuppressionBackend::None;
-    }
+        NoiseSuppressionBackend::None
+    } else {
+        backend
+    };
 
     BACKEND.set(backend).ok();
 

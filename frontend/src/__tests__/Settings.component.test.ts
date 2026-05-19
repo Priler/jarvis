@@ -102,6 +102,7 @@ const SETTINGS_DATA = {
         voskModel:             "",
         noiseSuppression:      "none",
         vad:                   "energy",
+        vadEnergyThreshold:    100,
         gainNormalizerEnabled: false,
         apiKeyPicovoice:       "",
         ollamaUrl:             "http://localhost:11434",

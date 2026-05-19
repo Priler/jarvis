@@ -20,6 +20,7 @@
     export let selectedVoskModel: string
     export let selectedNoiseSuppression: string
     export let selectedVad: string
+    export let vadEnergyThreshold: number
     export let gainNormalizerEnabled: boolean
     export let apiKeyPicovoice: string
     export let ollamaUrl: string
@@ -122,6 +123,20 @@
         data={VAD_OPTIONS.map(o => o.value === "None" ? { ...o, label: t('settings-disabled') } : o)}
         bind:value={selectedVad}
     />
+    {#if selectedVad !== "None" && selectedVad !== ""}
+        <div class="sub-field">
+            <label class="field-label" for="vad-threshold-input">{t('settings-vad-threshold', 'Energy threshold')}</label>
+            <input
+                id="vad-threshold-input"
+                class="field-input threshold-input"
+                type="number"
+                min="1"
+                max="32767"
+                step="1"
+                bind:value={vadEnergyThreshold}
+            />
+        </div>
+    {/if}
 </div>
 
 <div class="settings-section">
@@ -276,5 +291,10 @@
 .picovoice-key-input {
     margin-top: 10px;
     width: 100%;
+}
+
+.threshold-input {
+    margin-top: 6px;
+    width: 120px;
 }
 </style>

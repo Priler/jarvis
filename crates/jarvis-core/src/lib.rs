@@ -36,7 +36,6 @@ pub mod models;
 pub use models::vosk_models;
 pub use models::gliner_models;
 
-#[cfg(feature = "jarvis_app")]
 pub mod audio_processing;
 
 #[cfg(feature = "jarvis_app")]

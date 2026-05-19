@@ -72,6 +72,9 @@ jobs:
       - name: cargo clippy (jarvis-app, no warnings)
         run: cargo clippy -p jarvis-app -- -D warnings
 
+      - name: cargo clippy (jarvis-gui, no warnings)
+        run: cargo clippy -p jarvis-gui -- -D warnings
+
       - name: cargo test (jarvis-core)
         run: cargo test -p jarvis-core --no-default-features --features lua
 

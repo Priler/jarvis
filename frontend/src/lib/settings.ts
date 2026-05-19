@@ -18,6 +18,7 @@ export interface SettingsValues {
     apiKeyPicovoice:       string
     ollamaUrl:             string
     ollamaModel:           string
+    vadEnergyThreshold:    number
 }
 
 // ── Normalization helpers (pure — exported for testing) ───────────────────────
@@ -45,6 +46,7 @@ export function normalizeSettingsValues(raw: Record<string, string>): SettingsVa
         apiKeyPicovoice:       raw.apiKeyPicovoice   ?? "",
         ollamaUrl:             raw.ollamaUrl || "http://localhost:11434",
         ollamaModel:           raw.ollamaModel       ?? "",
+        vadEnergyThreshold:    parseFloat(raw.vadEnergyThreshold ?? "") || 100,
     }
 }
 
@@ -64,6 +66,7 @@ export async function loadSettingsValues(): Promise<SettingsValues> {
         dbRead(DB_KEYS.picovoiceApiKey),
         dbRead(DB_KEYS.ollamaUrl),
         dbRead(DB_KEYS.ollamaModel),
+        dbRead(DB_KEYS.vadEnergyThreshold),
     ])
 
     const val = (i: number): string =>
@@ -82,6 +85,7 @@ export async function loadSettingsValues(): Promise<SettingsValues> {
         apiKeyPicovoice:       val(9),
         ollamaUrl:             val(10),
         ollamaModel:           val(11),
+        vadEnergyThreshold:    val(12),
     })
 }
 
@@ -98,8 +102,9 @@ export async function saveSettingsValues(s: SettingsValues & { voiceVal: string 
         dbWrite(DB_KEYS.vad,              s.vad),
         dbWrite(DB_KEYS.gainNormalizer,   s.gainNormalizerEnabled.toString()),
         dbWrite(DB_KEYS.picovoiceApiKey,  s.apiKeyPicovoice),
-        dbWrite(DB_KEYS.ollamaUrl,        s.ollamaUrl),
-        dbWrite(DB_KEYS.ollamaModel,      s.ollamaModel),
+        dbWrite(DB_KEYS.ollamaUrl,          s.ollamaUrl),
+        dbWrite(DB_KEYS.ollamaModel,        s.ollamaModel),
+        dbWrite(DB_KEYS.vadEnergyThreshold, s.vadEnergyThreshold.toString()),
     ])
     const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value === false))
     if (failed.length > 0) throw new Error(`${failed.length} setting(s) rejected by backend`)

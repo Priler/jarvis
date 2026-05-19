@@ -16,6 +16,7 @@ export const DB_KEYS = {
     picovoiceApiKey:    "api_key__picovoice",
     ollamaUrl:          "ollama_url",
     ollamaModel:        "ollama_model",
+    vadEnergyThreshold: "vad_energy_threshold",
 } as const
 
 export type DbKey = typeof DB_KEYS[keyof typeof DB_KEYS]
