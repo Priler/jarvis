@@ -28,6 +28,8 @@ pub struct Settings {
     // audio processing
     pub noise_suppression: NoiseSuppressionBackend,
     pub gain_normalizer: bool,
+    #[serde(default = "default_vad_energy_threshold")]
+    pub vad_energy_threshold: f32,
 
     #[serde(default = "default_language")]
     pub language: String,
@@ -41,6 +43,7 @@ pub struct Settings {
 fn default_intent_backend() -> String { config::DEFAULT_INTENT_BACKEND.to_string() }
 fn default_slots_backend() -> String { config::DEFAULT_SLOTS_BACKEND.to_string() }
 fn default_vad_backend() -> String { config::DEFAULT_VAD_BACKEND.to_string() }
+fn default_vad_energy_threshold() -> f32 { config::VAD_ENERGY_THRESHOLD }
 fn default_language() -> String { crate::i18n::detect_system_language().to_string() }
 
 // ### KEY-VALUE ACCESS
@@ -60,6 +63,7 @@ impl Settings {
             "speech_to_text_engine"     => Some(format!("{:?}", self.speech_to_text_engine)),
             "noise_suppression"         => Some(format!("{:?}", self.noise_suppression)),
             "gain_normalizer"           => Some(self.gain_normalizer.to_string()),
+            "vad_energy_threshold"      => Some(self.vad_energy_threshold.to_string()),
             "language"                  => Some(self.language.clone()),
             "api_key__picovoice"        => keychain::get_api_key("picovoice").ok(),
             "ollama_url"                => Some(self.ollama.url.clone()),
@@ -115,6 +119,14 @@ impl Settings {
                     _ => return Err(format!("expected 'true' or 'false', got: '{}'", val)),
                 };
             }
+            "vad_energy_threshold" => {
+                let v = val.parse::<f32>()
+                    .map_err(|_| format!("invalid float for vad_energy_threshold: '{}'", val))?;
+                if v < 0.0 {
+                    return Err(format!("vad_energy_threshold must be >= 0, got: {}", v));
+                }
+                self.vad_energy_threshold = v;
+            }
             "language" => {
                 self.language = val.to_string();
             }
@@ -148,6 +160,7 @@ impl Settings {
             "speech_to_text_engine",
             "noise_suppression",
             "gain_normalizer",
+            "vad_energy_threshold",
             "language",
             "api_key__picovoice",
             "ollama_url",
@@ -176,6 +189,7 @@ impl Default for Settings {
 
             noise_suppression: config::DEFAULT_NOISE_SUPPRESSION,
             gain_normalizer: config::DEFAULT_GAIN_NORMALIZER,
+            vad_energy_threshold: config::VAD_ENERGY_THRESHOLD,
 
             language: crate::i18n::detect_system_language().to_string(),
 
@@ -277,5 +291,40 @@ mod tests {
     fn get_unknown_key_returns_none() {
         let s = Settings::default();
         assert!(s.get("nonexistent_key").is_none());
+    }
+
+    #[test]
+    fn vad_energy_threshold_default_and_roundtrip() {
+        let mut s = Settings::default();
+        // Default matches config constant
+        assert_eq!(s.vad_energy_threshold, crate::config::VAD_ENERGY_THRESHOLD);
+        // Set and get roundtrip
+        s.set("vad_energy_threshold", "75.5").unwrap();
+        assert_eq!(s.get("vad_energy_threshold").unwrap(), "75.5");
+        assert!((s.vad_energy_threshold - 75.5).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn vad_energy_threshold_rejects_negative() {
+        let mut s = Settings::default();
+        assert!(s.set("vad_energy_threshold", "-1.0").is_err());
+    }
+
+    #[test]
+    fn vad_energy_threshold_rejects_non_float() {
+        let mut s = Settings::default();
+        assert!(s.set("vad_energy_threshold", "fast").is_err());
+    }
+
+    #[test]
+    fn vad_energy_threshold_missing_from_json_uses_default() {
+        let json = r#"{"microphone":-1,"voice":"","wake_word_engine":"Vosk",
+            "intent_backend":"embedding","slots_backend":"gliner","vad_backend":"energy",
+            "gliner_model":"","speech_to_text_engine":"Vosk","vosk_model":"",
+            "noise_suppression":"None","gain_normalizer":false,"language":"en",
+            "api_keys":{"picovoice":""},
+            "ollama":{"url":"http://localhost:11434","model":""}}"#;
+        let s: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(s.vad_energy_threshold, crate::config::VAD_ENERGY_THRESHOLD);
     }
 }

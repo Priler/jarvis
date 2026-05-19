@@ -1,13 +1,9 @@
-use crate::config;
-
-// Simple energy-based VAD
+// Simple energy-based VAD — threshold is loaded from DB at startup via vad::init().
 pub fn detect(input: &[i16]) -> (bool, f32) {
     let rms = calculate_rms(input);
-    let is_voice = rms > config::VAD_ENERGY_THRESHOLD;
-    
-    // normalize confidence to 0-1 range (rough approximation)
-    let confidence = (rms / (config::VAD_ENERGY_THRESHOLD * 2.0)).min(1.0);
-    
+    let threshold = super::energy_threshold();
+    let is_voice = rms > threshold;
+    let confidence = (rms / (threshold * 2.0)).min(1.0);
     (is_voice, confidence)
 }
 

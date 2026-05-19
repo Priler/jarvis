@@ -18,6 +18,27 @@ pub fn load(registry: &ModelRegistry, model_id: &str) -> Result<Arc<EmbeddingMod
     registry.get_or_load::<EmbeddingModel>(model_id, |def| {
         let model_dir = &def.path;
 
+        // Pre-flight: verify all required files exist before attempting to read them.
+        let required = [
+            "model.onnx",
+            "tokenizer.json",
+            "config.json",
+            "special_tokens_map.json",
+            "tokenizer_config.json",
+        ];
+        let missing: Vec<&str> = required.iter()
+            .copied()
+            .filter(|f| !model_dir.join(f).exists())
+            .collect();
+        if !missing.is_empty() {
+            return Err(format!(
+                "Embedding model '{}' is missing files in {}: {}",
+                model_id,
+                model_dir.display(),
+                missing.join(", ")
+            ));
+        }
+
         info!("Loading embedding model from: {}", model_dir.display());
 
         let user_model = UserDefinedEmbeddingModel {

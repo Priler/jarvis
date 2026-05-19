@@ -32,7 +32,7 @@ pub fn init() -> broadcast::Sender<IpcEvent> {
         return tx.clone();
     }
 
-    let (tx, _) = broadcast::channel::<IpcEvent>(32);
+    let (tx, _) = broadcast::channel::<IpcEvent>(256);
     BROADCAST_TX.set(tx.clone()).ok();
     ACTION_HANDLER.set(Arc::new(RwLock::new(None))).ok();
     

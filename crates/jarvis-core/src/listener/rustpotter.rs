@@ -12,6 +12,9 @@ static RUSTPOTTER: OnceCell<Mutex<Rustpotter>> = OnceCell::new();
 // but the pipeline uses a different frame size (512). Leftover samples carry over between calls.
 static REMAINDER: OnceCell<Mutex<Vec<i16>>> = OnceCell::new();
 
+// Cached at init so data_callback never locks RUSTPOTTER just to read the frame size.
+static EXPECTED_FRAME_SIZE: AtomicUsize = AtomicUsize::new(0);
+
 // Diagnostics for [WAKE] logging
 static MAX_SCORE: AtomicU32 = AtomicU32::new(0); // f32::to_bits()
 static FRAME_COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -109,6 +112,11 @@ pub fn init() -> Result<(), ()> {
             }
 
             let _ = RUSTPOTTER.set(Mutex::new(rinstance));
+            // Cache the required frame size so data_callback can read it without locking.
+            if let Some(rp) = RUSTPOTTER.get() {
+                let size = rp.lock().unwrap().get_samples_per_frame();
+                EXPECTED_FRAME_SIZE.store(size, Ordering::Relaxed);
+            }
         }
         Err(msg) => {
             error!("Rustpotter failed to initialize.\nError details: {}", msg);
@@ -242,7 +250,13 @@ pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
     // Rustpotter requires exactly get_samples_per_frame() samples per call (480 at 16kHz/30ms).
     // The pipeline may use a different frame size (512). Buffer incoming samples and extract
     // complete chunks of the expected size, carrying over any remainder between calls.
-    let expected = rustpotter_cell.lock().unwrap().get_samples_per_frame();
+    //
+    // Frame size is read from the atomic cached at init — no lock needed here.
+    let expected = EXPECTED_FRAME_SIZE.load(Ordering::Relaxed);
+    if expected == 0 {
+        return None;
+    }
+
     let chunks: Vec<Vec<i16>> = {
         let mut buf = REMAINDER.get_or_init(|| Mutex::new(Vec::new())).lock().unwrap();
         buf.extend_from_slice(frame_buffer);
@@ -253,8 +267,14 @@ pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
         chunks
     };
 
+    if chunks.is_empty() {
+        return None;
+    }
+
+    // Acquire the Rustpotter lock once for the entire batch of same-tick chunks.
+    let mut rp = rustpotter_cell.lock().unwrap();
     for chunk in &chunks {
-        let detection = rustpotter_cell.lock().unwrap().process_samples::<i16>(chunk);
+        let detection = rp.process_samples::<i16>(chunk);
         if let Some(detection) = detection {
             // Update max score (CAS loop)
             let score_bits = detection.score.to_bits();
