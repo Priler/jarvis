@@ -210,9 +210,9 @@ fn main() -> Result<(), String> {
     // init stt engine — Vosk model load can take several seconds
     info!("Initializing STT engine...");
     ipc::send(IpcEvent::Loading { component: "stt".to_string() });
-    if stt::init().is_err() {
-        // @TODO. Allow continuing even without STT, if commands is using keywords or smthng?
-        app::close(1); // cannot continue without stt
+    if let Err(e) = stt::init() {
+        warn!("STT engine failed to initialize: {}. Voice commands will be unavailable.", e);
+        ipc::send(IpcEvent::Error { message: format!("STT unavailable: {}", e) });
     }
 
     // init commands

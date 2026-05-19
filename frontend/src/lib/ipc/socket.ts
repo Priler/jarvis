@@ -1,8 +1,10 @@
 import { get } from "svelte/store"
 import { getCurrentWindow } from "@tauri-apps/api/window"
+import { invoke } from "@tauri-apps/api/core"
 import { jarvisState, ipcConnected, lastRecognizedText, lastExecutedCommand, lastError, pendingConfirmation, sandboxWarnings, loadingComponent } from "./stores"
 import type { IpcMessage, IpcOutgoing } from "./types"
 import { parseIpcMessage, computeReconnectDelay } from "./utils"
+import { addToast } from "../toast"
 
 // ### CONNECTION ###
 
@@ -26,6 +28,11 @@ let manualDisconnect = false
 let enabled = false
 let pendingTextCommands: string[] = []
 let _cmdSeq = 0
+let _errorToastShown = false
+let _watchdogFired = false
+
+// Number of failed reconnect attempts before trying to restart jarvis-app.
+const WATCHDOG_TRIGGER_ATTEMPT = 3
 
 /** Store the IPC auth token fetched from jarvis-gui at startup. */
 export function setIpcToken(token: string | null) {
@@ -62,6 +69,8 @@ export function connectIpc(port: number = IPC_PORT) {
         jarvisState.set("idle")
         lastError.set("")
         reconnectAttempt = 0
+        _errorToastShown = false
+        _watchdogFired = false
         startHeartbeat()
         flushPendingCommands()
         DEV && console.log("[IPC] connected")
@@ -77,6 +86,10 @@ export function connectIpc(port: number = IPC_PORT) {
 
     ws.onerror = (err) => {
         DEV && console.error("[IPC] error:", err)
+        if (!_errorToastShown) {
+            _errorToastShown = true
+            addToast("Lost connection to jarvis-app", "error")
+        }
     }
 
     ws.onmessage = (event) => {
@@ -95,6 +108,15 @@ function scheduleReconnect() {
     const delay = computeReconnectDelay(reconnectAttempt, RECONNECT_BASE_MS, RECONNECT_MAX_MS)
     reconnectAttempt++
     DEV && console.log(`[IPC] Reconnecting in ${delay / 1000}s (attempt ${reconnectAttempt})...`)
+
+    // Watchdog: after N failures try to restart jarvis-app (once per disconnection session).
+    if (reconnectAttempt === WATCHDOG_TRIGGER_ATTEMPT && !_watchdogFired) {
+        _watchdogFired = true
+        invoke("run_jarvis_app").catch((e) => {
+            DEV && console.warn("[IPC] Watchdog restart failed:", e)
+        })
+    }
+
     reconnectTimer = setTimeout(() => {
         reconnectTimer = null
         connectIpc()

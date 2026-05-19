@@ -24,7 +24,7 @@ pub fn init_vosk() -> Result<(), String> {
     let vosk = models::vosk::load(
         models::registry(),
         &model_id,
-        model_path.to_str().unwrap(),
+        model_path.to_str().ok_or("Vosk model path contains non-UTF-8 characters")?,
     )?;
 
     // language-specific wake grammar

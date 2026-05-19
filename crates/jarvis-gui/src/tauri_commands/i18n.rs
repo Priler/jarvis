@@ -23,7 +23,9 @@ pub fn get_current_language() -> String {
 // Set language and get new translations
 #[tauri::command]
 pub fn set_language(state: tauri::State<'_, AppState>, lang: &str) -> HashMap<String, String> {
-    // update i18n
+    if !i18n::SUPPORTED_LANGUAGES.contains(&lang) {
+        return i18n::get_all_translations();
+    }
     i18n::set_language(lang);
 
     if let Err(e) = state.settings.write("language", lang) {

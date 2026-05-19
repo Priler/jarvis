@@ -76,10 +76,13 @@ pub fn init() -> SettingsManager {
 pub fn save_settings(settings: &structs::Settings) -> Result<(), std::io::Error> {
     let db_file_path = get_db_file_path();
 
-    std::fs::write(
-        &db_file_path,
-        serde_json::to_string_pretty(&settings).unwrap(),
-    )?;
+    let json = serde_json::to_string_pretty(&settings)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    // Write to a temp file then rename atomically to avoid partial writes corrupting settings.
+    let tmp_path = db_file_path.with_extension("tmp");
+    std::fs::write(&tmp_path, &json)?;
+    std::fs::rename(&tmp_path, &db_file_path)?;
 
     info!("Settings saved to: {:#}", db_file_path.display());
     Ok(())

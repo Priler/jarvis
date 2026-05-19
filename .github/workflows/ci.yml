@@ -69,8 +69,14 @@ jobs:
       - name: cargo clippy (jarvis-core, no warnings)
         run: cargo clippy -p jarvis-core -- -D warnings
 
+      - name: cargo clippy (jarvis-app, no warnings)
+        run: cargo clippy -p jarvis-app -- -D warnings
+
       - name: cargo test (jarvis-core)
         run: cargo test -p jarvis-core --no-default-features --features lua
+
+      - name: cargo test (build-rpw)
+        run: cargo test -p build-rpw
 
   rust-windows:
     name: Rust — Windows check & test

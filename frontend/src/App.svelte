@@ -11,10 +11,15 @@
     import { criticalInit, deferredInit } from "@/lib/bootstrap"
 
     let ready = false
+    let initError: string | null = null
 
     onMount(async () => {
-        await criticalInit()
-        ready = true
+        try {
+            await criticalInit()
+            ready = true
+        } catch (err) {
+            initError = err instanceof Error ? err.message : "Initialization failed"
+        }
         deferredInit()
     })
 
@@ -41,7 +46,11 @@
     }
 </script>
 
-{#if !ready}
+{#if initError}
+    <div class="app-init-error" role="alert">
+        <p class="error-message">{initError}</p>
+    </div>
+{:else if !ready}
     <div class="app-init" aria-busy="true" aria-live="polite" aria-label="Initializing">
         <div class="init-dot"></div>
     </div>
@@ -57,6 +66,20 @@
 />
 
 <style>
+.app-init-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg-base);
+}
+
+.error-message {
+    font-size: 0.8rem;
+    color: var(--color-error, #e06c75);
+    opacity: 0.8;
+}
+
 .app-init {
     display: flex;
     align-items: center;
