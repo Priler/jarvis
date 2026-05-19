@@ -6,6 +6,8 @@ import { parseIpcMessage, computeReconnectDelay } from "./utils"
 
 // ### CONNECTION ###
 
+const DEV = import.meta.env.DEV
+
 const IPC_PORT              = 9712
 const RECONNECT_BASE_MS     = 1000
 const RECONNECT_MAX_MS      = 3000
@@ -62,7 +64,7 @@ export function connectIpc(port: number = IPC_PORT) {
         reconnectAttempt = 0
         startHeartbeat()
         flushPendingCommands()
-        console.log("[IPC] connected")
+        DEV && console.log("[IPC] connected")
     }
 
     ws.onclose = () => {
@@ -70,11 +72,11 @@ export function connectIpc(port: number = IPC_PORT) {
         jarvisState.set("disconnected")
         stopHeartbeat()
         scheduleReconnect()
-        console.log("[IPC] disconnected")
+        DEV && console.log("[IPC] disconnected")
     }
 
     ws.onerror = (err) => {
-        console.error("[IPC] error:", err)
+        DEV && console.error("[IPC] error:", err)
     }
 
     ws.onmessage = (event) => {
@@ -82,7 +84,7 @@ export function connectIpc(port: number = IPC_PORT) {
         if (msg) {
             handleEvent(msg)
         } else {
-            console.error("[IPC] failed to parse message:", event.data)
+            DEV && console.error("[IPC] failed to parse message:", event.data)
         }
     }
 }
@@ -92,7 +94,7 @@ function scheduleReconnect() {
 
     const delay = computeReconnectDelay(reconnectAttempt, RECONNECT_BASE_MS, RECONNECT_MAX_MS)
     reconnectAttempt++
-    console.log(`[IPC] Reconnecting in ${delay / 1000}s (attempt ${reconnectAttempt})...`)
+    DEV && console.log(`[IPC] Reconnecting in ${delay / 1000}s (attempt ${reconnectAttempt})...`)
     reconnectTimer = setTimeout(() => {
         reconnectTimer = null
         connectIpc()
@@ -128,7 +130,7 @@ function startHeartbeat() {
         if (get(jarvisState) === "processing") return
         ws.send(JSON.stringify({ action: "ping" }))
         heartbeatTimeoutTimer = setTimeout(() => {
-            console.warn("[IPC] heartbeat timeout — forcing reconnect")
+            DEV && console.warn("[IPC] heartbeat timeout — forcing reconnect")
             ws?.close()
         }, HEARTBEAT_TIMEOUT_MS)
     }, HEARTBEAT_INTERVAL_MS)
@@ -150,7 +152,7 @@ const PROCESSING_TIMEOUT_MS = 60_000
 function startProcessingTimeout() {
     clearProcessingTimeout()
     processingTimeoutTimer = setTimeout(() => {
-        console.warn("[IPC] processing timeout — forcing idle after 60s")
+        DEV && console.warn("[IPC] processing timeout — forcing idle after 60s")
         processingTimeoutTimer = null
         jarvisState.set("idle")
     }, PROCESSING_TIMEOUT_MS)
@@ -166,7 +168,7 @@ function clearProcessingTimeout() {
 // ### EVENT HANDLING ###
 
 function handleEvent(data: IpcMessage) {
-    console.log("IPC: Event", data.event, data)
+    DEV && console.log("IPC: Event", data.event, data)
 
     switch (data.event) {
         case "wake_word_detected":
@@ -223,7 +225,7 @@ function handleEvent(data: IpcMessage) {
 
         case "sandbox_warning":
             sandboxWarnings.set(data.commands)
-            console.warn("[IPC] Commands with full sandbox access:", data.commands)
+            DEV && console.warn("[IPC] Commands with full sandbox access:", data.commands)
             break
 
         case "loading":
@@ -280,6 +282,6 @@ async function revealWindow() {
         await window.unminimize()
         await window.setFocus()
     } catch (err: unknown) {
-        console.error("[IPC] Failed to reveal window:", err)
+        DEV && console.error("[IPC] Failed to reveal window:", err)
     }
 }

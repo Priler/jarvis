@@ -186,7 +186,7 @@ pub const DEFAULT_LUA_SANDBOX: &str = "standard";
 pub const DEFAULT_LUA_TIMEOUT: u64 = 10000; // ms
 
 // ETC
-pub const CMD_RATIO_THRESHOLD: f64 = 75f64;
+pub const CMD_RATIO_THRESHOLD: f64 = 85f64;
 pub const CMS_WAIT_DELAY: std::time::Duration = std::time::Duration::from_secs(15);
 
 // pub const ASSISTANT_GREET_PHRASES: [&str; 3] = ["greet1", "greet2", "greet3"];

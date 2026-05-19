@@ -36,3 +36,40 @@ pub fn delete_api_key(name: &str) -> Result<(), String> {
         Err(e) => Err(format!("keyring delete error: {}", e)),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // These tests hit the real OS keyring (Windows Credential Manager / macOS Keychain /
+    // Linux Secret Service). They are marked #[ignore] so they don't run in headless CI
+    // environments where the keyring daemon may be absent.
+    // Run manually: cargo test -p jarvis-core keychain -- --ignored
+
+    const TEST_KEY: &str = "__jarvis_test_key__";
+
+    #[test]
+    #[ignore]
+    fn set_get_delete_roundtrip() {
+        delete_api_key(TEST_KEY).ok();
+        set_api_key(TEST_KEY, "test-value").unwrap();
+        assert_eq!(get_api_key(TEST_KEY).unwrap(), "test-value");
+        delete_api_key(TEST_KEY).unwrap();
+    }
+
+    #[test]
+    #[ignore]
+    fn delete_absent_key_is_ok() {
+        delete_api_key(TEST_KEY).ok();
+        assert!(delete_api_key(TEST_KEY).is_ok());
+    }
+
+    #[test]
+    #[ignore]
+    fn set_empty_key_deletes_entry() {
+        set_api_key(TEST_KEY, "value").unwrap();
+        set_api_key(TEST_KEY, "").unwrap();
+        // After setting empty string the entry should be gone
+        assert!(get_api_key(TEST_KEY).is_err());
+    }
+}

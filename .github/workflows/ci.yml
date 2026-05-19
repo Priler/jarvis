@@ -70,4 +70,4 @@ jobs:
         run: cargo clippy -p jarvis-core -- -D warnings
 
       - name: cargo test (jarvis-core)
-        run: cargo test -p jarvis-core --features lua
+        run: cargo test -p jarvis-core --no-default-features --features lua

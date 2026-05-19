@@ -214,3 +214,68 @@ impl Default for OllamaConfig {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_microphone_is_minus_one() {
+        assert_eq!(Settings::default().microphone, -1);
+    }
+
+    #[test]
+    fn picovoice_key_is_not_serialized() {
+        let mut s = Settings::default();
+        s.api_keys.picovoice = "secret".to_string();
+        let json = serde_json::to_string(&s).unwrap();
+        assert!(!json.contains("secret"));
+        assert!(!json.contains("picovoice"));
+    }
+
+    #[test]
+    fn picovoice_key_is_deserialized_for_migration() {
+        let json = r#"{"microphone":-1,"voice":"","wake_word_engine":"Vosk",
+            "intent_backend":"embedding","slots_backend":"gliner","vad_backend":"energy",
+            "gliner_model":"","speech_to_text_engine":"Vosk","vosk_model":"",
+            "noise_suppression":"None","gain_normalizer":false,"language":"en",
+            "api_keys":{"picovoice":"oldkey"},
+            "ollama":{"url":"http://localhost:11434","model":""}}"#;
+        let s: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(s.api_keys.picovoice, "oldkey");
+    }
+
+    #[test]
+    fn set_get_microphone_roundtrip() {
+        let mut s = Settings::default();
+        s.set("selected_microphone", "3").unwrap();
+        assert_eq!(s.get("selected_microphone").unwrap(), "3");
+    }
+
+    #[test]
+    fn set_unknown_key_returns_error() {
+        let mut s = Settings::default();
+        assert!(s.set("nonexistent_key", "value").is_err());
+    }
+
+    #[test]
+    fn set_gain_normalizer_true_and_false() {
+        let mut s = Settings::default();
+        s.set("gain_normalizer", "true").unwrap();
+        assert_eq!(s.get("gain_normalizer").unwrap(), "true");
+        s.set("gain_normalizer", "false").unwrap();
+        assert_eq!(s.get("gain_normalizer").unwrap(), "false");
+    }
+
+    #[test]
+    fn set_gain_normalizer_invalid_value_returns_error() {
+        let mut s = Settings::default();
+        assert!(s.set("gain_normalizer", "yes").is_err());
+    }
+
+    #[test]
+    fn get_unknown_key_returns_none() {
+        let s = Settings::default();
+        assert!(s.get("nonexistent_key").is_none());
+    }
+}

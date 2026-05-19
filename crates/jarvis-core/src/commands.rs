@@ -222,13 +222,8 @@ pub fn execute_exe(exe: &str, args: &[String]) -> std::io::Result<Child> {
 }
 
 pub fn execute_cli(cmd: &str, args: &[String]) -> std::io::Result<Child> {
-    debug!("Spawning: cmd /C {} {:?}", cmd, args);
-
-    if cfg!(target_os = "windows") {
-        Command::new("cmd").arg("/C").arg(cmd).args(args).spawn()
-    } else {
-        Command::new("sh").arg("-c").arg(cmd).args(args).spawn()
-    }
+    debug!("Spawning: {} {:?}", cmd, args);
+    Command::new(cmd).args(args).spawn()
 }
 
 pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Option<&str>, _slots: Option<&HashMap<String, SlotValue>>) -> Result<bool, String> {
@@ -261,8 +256,6 @@ pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Optio
                 .map_err(|e| format!("AHK process spawn error: {}", e))
         }
         
-        // CLI command type
-        // @TODO: Consider security restrictions
         "cli" => {
             execute_cli(&cmd_config.cli_cmd, &cmd_config.cli_args)
                 .map(|_| true)
@@ -354,5 +347,123 @@ fn execute_lua_command(
             error!("Lua command {} failed: {}", cmd_config.id, e);
             Err(e.to_string())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cli_cmd(cli_cmd: &str, confirm: bool) -> JCommand {
+        serde_json::from_str(&format!(
+            r#"{{"id":"t","type":"cli","cli_cmd":"{cli_cmd}","confirm":{confirm}}}"#
+        )).unwrap()
+    }
+
+    fn voice_cmd(id: &str, phrase: &str) -> JCommandsList {
+        let json = format!(
+            r#"{{"commands":[{{"id":"{id}","type":"voice","phrases":{{"en":["{phrase}"]}}}}]}}"#
+        );
+        let mut list: JCommandsList = serde_json::from_str(&json).unwrap();
+        list.path = PathBuf::from("/tmp");
+        list
+    }
+
+    // --- requires_confirmation ---
+
+    #[test]
+    fn non_cli_type_never_needs_confirmation() {
+        let cmd: JCommand = serde_json::from_str(r#"{"id":"t","type":"voice"}"#).unwrap();
+        assert!(!requires_confirmation(&cmd));
+    }
+
+    #[test]
+    fn safe_cli_cmd_no_confirmation() {
+        assert!(!requires_confirmation(&cli_cmd("echo", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_shutdown_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("shutdown", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_case_insensitive() {
+        assert!(requires_confirmation(&cli_cmd("SHUTDOWN", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_with_args_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("shutdown /s /f /t 0", false)));
+    }
+
+    #[test]
+    fn confirm_flag_forces_confirmation_for_safe_cmd() {
+        assert!(requires_confirmation(&cli_cmd("notepad", true)));
+    }
+
+    #[test]
+    fn del_cmd_exact_match_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("del", false)));
+    }
+
+    #[test]
+    fn cmd_starting_with_dangerous_prefix_but_no_space_is_safe() {
+        // "deleteme" is not the same as "del" and does not start with "del "
+        assert!(!requires_confirmation(&cli_cmd("deleteme", false)));
+    }
+
+    // --- fetch_command ---
+
+    #[test]
+    fn empty_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("", &lists).is_none());
+    }
+
+    #[test]
+    fn whitespace_only_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("   ", &lists).is_none());
+    }
+
+    #[test]
+    fn no_commands_returns_none() {
+        assert!(fetch_command("say hello", &[]).is_none());
+    }
+
+    #[test]
+    fn exact_phrase_match_returns_command() {
+        let lists = [voice_cmd("greet", "say hello")];
+        let result = fetch_command("say hello", &lists);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().1.id, "greet");
+    }
+
+    #[test]
+    fn phrase_match_is_case_insensitive() {
+        let lists = [voice_cmd("greet", "say hello")];
+        let result = fetch_command("SAY HELLO", &lists);
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn completely_unrelated_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("xyzzy frobozzle quux", &lists).is_none());
+    }
+
+    #[test]
+    fn best_of_multiple_commands_is_returned() {
+        let json = r#"{"commands":[
+            {"id":"a","type":"voice","phrases":{"en":["turn on the lights"]}},
+            {"id":"b","type":"voice","phrases":{"en":["play some music"]}}
+        ]}"#;
+        let mut list: JCommandsList = serde_json::from_str(json).unwrap();
+        list.path = PathBuf::from("/tmp");
+        let lists = [list];
+        let result = fetch_command("play some music", &lists);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().1.id, "b");
     }
 }
