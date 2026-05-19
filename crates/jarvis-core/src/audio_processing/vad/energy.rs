@@ -23,7 +23,7 @@ fn calculate_rms(samples: &[i16]) -> f32 {
 mod tests {
     use super::*;
 
-    // Default threshold is config::VAD_ENERGY_THRESHOLD (100.0) when ENERGY_THRESHOLD_BITS == 0.
+    // Default threshold is config::VAD_ENERGY_THRESHOLD (500.0) when ENERGY_THRESHOLD_BITS == 0.
 
     #[test]
     fn silent_frame_is_not_voice() {
@@ -35,7 +35,7 @@ mod tests {
 
     #[test]
     fn loud_frame_is_voice() {
-        // RMS of constant i16::MAX ≈ 32767, well above threshold 100
+        // RMS of constant i16::MAX ≈ 32767, well above threshold 500
         let frame = vec![i16::MAX; 512];
         let (is_voice, _) = detect(&frame);
         assert!(is_voice);
@@ -43,15 +43,15 @@ mod tests {
 
     #[test]
     fn just_below_threshold_is_not_voice() {
-        // RMS of constant value v equals |v|. threshold = 100.0; v=100 → RMS=100 (not > threshold)
-        let frame = vec![100i16; 512];
+        // RMS of constant value v equals |v|. threshold = 500.0; v=500 → RMS=500 (not > threshold)
+        let frame = vec![500i16; 512];
         let (is_voice, _) = detect(&frame);
         assert!(!is_voice);
     }
 
     #[test]
     fn just_above_threshold_is_voice() {
-        let frame = vec![101i16; 512];
+        let frame = vec![501i16; 512];
         let (is_voice, _) = detect(&frame);
         assert!(is_voice);
     }

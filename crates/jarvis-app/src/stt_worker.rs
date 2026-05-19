@@ -150,7 +150,7 @@ pub fn run(
                 continue;
             }
             // Window expired: transition to WaitingForVoice.
-            info!("[STATE] QuietWindow → Idle");
+            info!("[STATE] QuietWindow → WaitingForVoice");
             state = State::WaitingForVoice;
             consecutive_voice_frames = 0;
             continue;
@@ -344,9 +344,9 @@ pub fn run(
                 } else {
                     silence_frames += 1;
                     if silence_frames > cmd_silence_threshold {
-                        info!("[STT] Command silence timeout → WaitingForVoice");
+                        info!("[STATE] CommandMode → Cooldown (silence timeout normalized)");
                         stt::reset_speech_recognizer();
-                        state = State::WaitingForVoice;
+                        state = State::Cooldown;
                         silence_frames = 0;
                         let _ = event_tx.send(SttEvent::CommandTimeout);
                         continue;
@@ -355,9 +355,9 @@ pub fn run(
 
                 // Wall-clock timeout.
                 if cmd_start.elapsed().map_or(false, |e| e > config::CMS_WAIT_DELAY) {
-                    info!("[STT] Command wall-clock timeout → WaitingForVoice");
+                    info!("[STATE] CommandMode → Cooldown (wall-clock timeout normalized)");
                     stt::reset_speech_recognizer();
-                    state = State::WaitingForVoice;
+                    state = State::Cooldown;
                     silence_frames = 0;
                     let _ = event_tx.send(SttEvent::CommandTimeout);
                 }
