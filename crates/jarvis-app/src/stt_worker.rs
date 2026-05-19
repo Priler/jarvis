@@ -37,6 +37,8 @@ pub struct AudioFrame {
     pub is_voice: bool,
     /// True if Rustpotter fired a wake-word detection on this frame.
     pub rustpotter_wake: bool,
+    /// Raw RMS energy of the frame (before noise suppression thresholding).
+    pub vad_rms: f32,
 }
 
 /// Events sent from the STT worker back to the main thread.
@@ -167,8 +169,8 @@ pub fn run(
                         );
                     } else {
                         info!(
-                            "[STATE] Idle → Listening (voice onset after {} frames, flushing {})",
-                            consecutive_voice_frames, pre_roll.len()
+                            "[STATE] Idle → Listening (voice onset after {} frames, flushing {}, rms~{:.0})",
+                            consecutive_voice_frames, pre_roll.len(), frame.vad_rms
                         );
                         for buffered in pre_roll.drain_all() {
                             let _ = stt::recognize_wake_word(&buffered);

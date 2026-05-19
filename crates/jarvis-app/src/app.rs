@@ -113,6 +113,10 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
             pcm: frame_buffer.clone(),
             is_voice: processed.is_voice,
             rustpotter_wake,
+            vad_rms: {
+                let sum: f64 = frame_buffer.iter().map(|&s| (s as f64).powi(2)).sum();
+                (sum / frame_buffer.len() as f64).sqrt() as f32
+            },
         }).is_err() {
             debug!("[AUDIO] STT worker queue full — dropping frame");
         }
