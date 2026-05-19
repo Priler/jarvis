@@ -78,6 +78,11 @@ jobs:
       - name: cargo test (jarvis-core)
         run: cargo test -p jarvis-core --no-default-features --features lua
 
+      - name: cargo bench (jarvis-core, compile only)
+        run: |
+          cargo bench -p jarvis-core --no-default-features --bench audio_pipeline --no-run
+          cargo bench -p jarvis-core --no-default-features --bench rustpotter --no-run
+
       - name: cargo test (build-rpw)
         run: cargo test -p build-rpw
 

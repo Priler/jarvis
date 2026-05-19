@@ -1,9 +1,11 @@
 mod none;
 
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
 
 use crate::config::structs::NoiseSuppressionBackend;
+
+#[cfg(feature = "nnnoiseless")]
+use parking_lot::Mutex;
 
 static BACKEND: OnceCell<NoiseSuppressionBackend> = OnceCell::new();
 

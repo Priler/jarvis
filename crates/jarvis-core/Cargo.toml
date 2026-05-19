@@ -63,3 +63,19 @@ jarvis_app = [
 intent = ["intent-classifier", "tokio"]
 lua = ["mlua", "reqwest", "winrt-notification"]
 lua_only = ["lua", "tokio"]
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "audio_pipeline"
+harness = false
+
+[[bench]]
+name = "rustpotter"
+harness = false
+
+[[bench]]
+name = "vosk_stt"
+harness = false
+required-features = ["vosk"]

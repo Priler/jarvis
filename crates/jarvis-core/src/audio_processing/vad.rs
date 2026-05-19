@@ -3,9 +3,11 @@ mod energy;
 
 use std::sync::atomic::{AtomicU32, Ordering};
 use once_cell::sync::OnceCell;
-use parking_lot::Mutex;
 
 use crate::{config, DB};
+
+#[cfg(feature = "nnnoiseless")]
+use parking_lot::Mutex;
 
 static BACKEND: OnceCell<String> = OnceCell::new();
 // Cached energy threshold (f32 bits). 0 means "not yet initialized — use config default".
