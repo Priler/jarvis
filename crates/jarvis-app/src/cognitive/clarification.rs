@@ -1,7 +1,108 @@
 #![allow(dead_code)]
 
+use std::time::SystemTime;
 use super::intent::{EnrichedIntent, Urgency};
 use super::domains::Domain;
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64
+}
+
+// Clarification sessions expire after 30 seconds with no response.
+const SESSION_EXPIRY_MS: u64 = 30_000;
+
+// ── Clarification session ─────────────────────────────────────────────────────
+
+/// A single pending clarification request, keyed by session ID.
+#[derive(Debug, Clone)]
+pub struct PendingClarification {
+    pub question: String,
+    pub options: Vec<String>,
+    pub original_text: String,
+}
+
+/// Active clarification session.
+#[derive(Debug)]
+pub struct ClarificationSession {
+    pub id: String,
+    pub pending: PendingClarification,
+    pub created_ms: u64,
+    pub expires_ms: u64,
+    pub rounds: u8,
+}
+
+impl ClarificationSession {
+    pub fn new(id: impl Into<String>, pending: PendingClarification) -> Self {
+        let now = now_ms();
+        Self {
+            id: id.into(),
+            pending,
+            created_ms: now,
+            expires_ms: now + SESSION_EXPIRY_MS,
+            rounds: 1,
+        }
+    }
+
+    pub fn is_expired(&self) -> bool {
+        now_ms() > self.expires_ms
+    }
+
+    pub fn renew(&mut self) {
+        self.expires_ms = now_ms() + SESSION_EXPIRY_MS;
+        self.rounds += 1;
+    }
+}
+
+// ── Clarification resolver ─────────────────────────────────────────────────────
+
+/// Result of resolving a clarification answer.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ResolveOutcome {
+    /// The answer matched an option; resolved command text is returned.
+    Resolved(String),
+    /// Answer did not match any option; session remains open.
+    Unresolved,
+    /// No active session or session expired.
+    NoSession,
+}
+
+pub struct ClarificationResolver;
+
+impl ClarificationResolver {
+    /// Try to match a user's free-form `answer` against the pending options.
+    /// Returns `Resolved(command)` if a match is found.
+    pub fn resolve(session: &ClarificationSession, answer: &str) -> ResolveOutcome {
+        if session.is_expired() {
+            return ResolveOutcome::NoSession;
+        }
+
+        let lower = answer.to_lowercase();
+
+        // Direct option match (case-insensitive substring).
+        for opt in &session.pending.options {
+            if lower.contains(&opt.to_lowercase()) {
+                let command = format!("{} {}", session.pending.original_text, opt);
+                return ResolveOutcome::Resolved(command);
+            }
+        }
+
+        // Ordinal match: "first", "second", "1", "2", etc.
+        let ordinals = [("first", 0usize), ("second", 1), ("third", 2), ("1", 0), ("2", 1), ("3", 2)];
+        for (word, idx) in &ordinals {
+            if lower.contains(word) {
+                if let Some(opt) = session.pending.options.get(*idx) {
+                    let command = format!("{} {}", session.pending.original_text, opt);
+                    return ResolveOutcome::Resolved(command);
+                }
+            }
+        }
+
+        ResolveOutcome::Unresolved
+    }
+}
 
 pub struct ClarificationContext {
     pub question: String,

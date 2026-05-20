@@ -4,7 +4,7 @@ use std::time::{Instant, Duration, SystemTime};
 
 use jarvis_core::{
     audio_buffer::AudioRingBuffer,
-    audio, audio_processing, config, i18n, stt,
+    audio, audio_processing, config, i18n, listener, stt,
 };
 
 use crate::voice_intelligence as vi;
@@ -284,6 +284,8 @@ impl RuntimeCtx {
             ts: now_ms(),
         });
         self.session_resets += 1;
+        info!("[RESET][WAKE S:{}] rustpotter_remainder reason=finalize_wake", self.wake_sid);
+        listener::reset_state();
         audio_processing::reset();
         info!("[AUDIO][WAKE S:{}] pre_roll replaced reason=finalize_wake", self.wake_sid);
         self.pre_roll = AudioRingBuffer::new(5.0, self.frame_length, self.sample_rate);
@@ -444,6 +446,7 @@ impl RuntimeCtx {
         audio::force_clear_speaking();
         FORCED_GATE_RESETS.fetch_add(1, Ordering::Relaxed);
         stt::reset_wake_recognizer();
+        listener::reset_state();
 
         match self.state {
             State::Cooldown => {
@@ -657,7 +660,27 @@ impl RuntimeCtx {
 
 // ── Worker entry point ────────────────────────────────────────────────────────
 
+/// Public entry point.  Wraps `run_inner` in a panic safety net: if any Rust
+/// panic escapes frame processing the worker thread exits cleanly and the app
+/// thread detects the channel disconnect, entering L3 degraded mode.
 pub fn run(
+    frame_rx: Receiver<AudioFrame>,
+    cmd_rx: Receiver<SttCmd>,
+    event_tx: SyncSender<SttEvent>,
+    frame_length: usize,
+    sample_rate: usize,
+) {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        run_inner(frame_rx, cmd_rx, event_tx, frame_length, sample_rate);
+    }));
+    if result.is_err() {
+        error!("[STT] Worker panicked — entering degraded mode");
+        RECOVERY_FAILED.fetch_add(1, Ordering::Relaxed);
+        crate::watchdog::DEGRADED_MODE.store(true, Ordering::Release);
+    }
+}
+
+fn run_inner(
     frame_rx: Receiver<AudioFrame>,
     cmd_rx: Receiver<SttCmd>,
     event_tx: SyncSender<SttEvent>,
@@ -671,6 +694,14 @@ pub fn run(
 
     for frame in &frame_rx {
         LAST_STT_FRAME_MS.store(now_ms(), Ordering::Relaxed);
+
+        // ── Degraded mode gate ─────────────────────────────────────────────────
+        // When the watchdog has entered L3 degraded mode, drain frames without
+        // any recognizer work to keep the channel from filling up.
+        if crate::watchdog::DEGRADED_MODE.load(Ordering::Relaxed) {
+            debug!("[STT][DEGRADED] frame drained — voice processing suspended");
+            continue;
+        }
 
         // ── Chain/Idle from main thread (non-blocking) ────────────────────────
         if let Ok(cmd) = cmd_rx.try_recv() {
@@ -803,12 +834,6 @@ pub fn run(
             // ── 2. Wake word detection ────────────────────────────────────────
             State::VoiceActive => {
                 ctx.live_frames += 1;
-                crate::testing::publish(crate::testing::ValidationEvent::RecognizerFed {
-                    recognizer: "speech",
-                    in_state: "VoiceActive",
-                    ts: now_ms(),
-                });
-                let _ = stt::recognize(&frame.pcm, false);
 
                 let vosk_wake =
                     stt::recognize_wake_word(&frame.pcm).map_or(false, |(text, _)| {
@@ -826,6 +851,8 @@ pub fn run(
                         info!("[RESET][WAKE S:{}] wake_recognizer reason=wake_complete", sid);
                         stt::reset_wake_recognizer();
                         ctx.session_resets += 1;
+                        info!("[RESET][WAKE S:{}] rustpotter_remainder reason=wake_complete", sid);
+                        listener::reset_state();
                         audio_processing::reset();
                         ctx.transition_to(State::CommandMode { first: true }, "wake_confirmed");
                         ctx.silence_frames = 0;
@@ -834,6 +861,8 @@ pub fn run(
                     } else {
                         info!("[RESET] wake_recognizer reason=wake_rejected");
                         stt::reset_wake_recognizer();
+                        info!("[RESET] rustpotter_remainder reason=wake_rejected");
+                        listener::reset_state();
                         info!("[RESET] speech_recognizer reason=wake_rejected");
                         stt::reset_speech_recognizer();
                         ctx.transition_to(State::WaitingForVoice, "wake_rejected");
@@ -848,6 +877,8 @@ pub fn run(
                         ctx.silence_frames = 0;
                         info!("[RESET] wake_recognizer reason=wake_silence_timeout");
                         stt::reset_wake_recognizer();
+                        info!("[RESET] rustpotter_remainder reason=wake_silence_timeout");
+                        listener::reset_state();
                         info!("[RESET] speech_recognizer reason=wake_silence_timeout");
                         stt::reset_speech_recognizer();
                     }
@@ -965,14 +996,14 @@ pub fn run(
                     }
                     text = text.trim().to_string();
 
-                    if text.len() < 5 {
+                    if text.trim().is_empty() {
                         debug!(
-                            "[STT][WAKE S:{}] too-short transcript '{}' — staying in CommandMode",
-                            ctx.wake_sid, text
+                            "[STT][WAKE S:{}] empty transcript after cleanup — staying in CommandMode",
+                            ctx.wake_sid
                         );
                         ctx.transition_to(
                             State::CommandMode { first: false },
-                            "transcript_too_short",
+                            "empty_after_cleanup",
                         );
                         continue;
                     }

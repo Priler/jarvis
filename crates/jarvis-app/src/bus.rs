@@ -11,7 +11,10 @@ pub enum RiskLevel {
     Low,
     Medium,
     High,
+    /// Cannot be confirmed or overridden — unconditional deny (LOLBin, known exploits).
     Critical,
+    /// Policy-level block: action matches a hard-blocked pattern regardless of mode.
+    Blocked,
 }
 
 impl RiskLevel {
@@ -21,6 +24,7 @@ impl RiskLevel {
             RiskLevel::Medium => "medium",
             RiskLevel::High => "high",
             RiskLevel::Critical => "critical",
+            RiskLevel::Blocked => "blocked",
         }
     }
 }

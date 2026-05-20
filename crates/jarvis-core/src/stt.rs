@@ -11,6 +11,8 @@ pub use self::vosk::recognize_speech;
 pub use self::vosk::recognize_speech_with_partial;
 pub use self::vosk::reset_speech_recognizer;
 pub use self::vosk::reset_wake_recognizer;
+pub use self::vosk::reinit_speech_recognizer;
+pub use self::vosk::reinit_wake_recognizer;
 
 static STT_TYPE: OnceCell<SpeechToTextEngine> = OnceCell::new();
 

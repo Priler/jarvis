@@ -22,14 +22,18 @@ mod app;
 mod agents;
 mod bus;
 mod cognitive;
+mod failures;
 mod governance;
+mod health;
 mod perception;
 mod platform;
 mod plugin;
 mod scheduler;
+mod recovery;
 mod stt_worker;
 mod testing;
 mod voice_intelligence;
+mod watchdog;
 mod workflows;
 
 // include tray
@@ -323,6 +327,9 @@ fn main() -> Result<(), String> {
     std::thread::spawn(move || {
         let _ = app::start(text_cmd_rx, &app_rt);
     });
+
+    // start the central watchdog (after all subsystems are fully initialized)
+    watchdog::start();
 
     tray::init_blocking(settings);
 

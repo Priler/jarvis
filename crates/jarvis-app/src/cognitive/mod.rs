@@ -10,19 +10,36 @@ pub mod metrics;
 pub mod state;
 pub mod ai_advisor;
 
+// New cognitive runtime modules
+pub mod task_memory;
+#[cfg(test)]
+mod tests;
+pub mod context_manager;
+pub mod model_runtime;
+pub mod trace;
+pub mod containment;
+pub mod execution_graph;
+pub mod router;
+
 pub use domains::Domain;
 pub use intent::{EnrichedIntent, Entity, EntityKind, Urgency};
 pub use memory::{WorkingMemory, LongTermMemory, ConversationTurn, EpisodicRecord};
-pub use planner::{TaskPlan, PlanStep, StepStatus};
-pub use tools::{ToolRegistry, ToolCapability, LatencyClass};
-pub use clarification::ClarificationEngine;
+pub use planner::{TaskPlan, PlanStep, StepStatus, PlanGraph, PlanEdge, EdgeKind, PlanOrigin, PlanValidator, PlanExecutionBoundary};
+pub use tools::{ToolRegistry, ToolCapability, LatencyClass, ToolDescriptor, RetryPolicy, ToolRouter, ToolRouteDecision};
+pub use clarification::{ClarificationEngine, ClarificationSession, PendingClarification, ClarificationResolver, ResolveOutcome};
 pub use state::CognitiveState;
 pub use ai_advisor::{LocalAiAdvisor, NullAdvisor};
+pub use task_memory::{TaskMemory, PendingTask, TaskStatus};
+pub use context_manager::{ContextManager, ContextSlice, ContextKind};
+pub use model_runtime::{ModelRouter, ModelRuntime, NullRuntime, InferenceRequest, InferenceResponse, InferenceKind};
+pub use trace::CognitiveTrace;
+pub use containment::{HallucinationGuard, ContainmentVerdict};
+pub use router::{SemanticRouter, RouteDecision, RoutingContext};
 
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::time::SystemTime;
-use jarvis_core::APP_CONFIG_DIR;
+use jarvis_core::{APP_CONFIG_DIR, APP_LOG_DIR};
 
 fn now_ms() -> u64 {
     SystemTime::now()
@@ -51,6 +68,11 @@ pub struct CognitiveRuntime {
     pub clarification: ClarificationEngine,
     pub tool_registry: ToolRegistry,
     pub state: CognitiveState,
+    pub task_memory: TaskMemory,
+    pub context_manager: ContextManager,
+    pub model_router: ModelRouter,
+    pub trace: CognitiveTrace,
+    pub tool_router: ToolRouter,
     memory_path: PathBuf,
     ai_advisor: Box<dyn LocalAiAdvisor>,
 }
@@ -71,12 +93,21 @@ impl CognitiveRuntime {
             info!("[COGNITIVE] Preferred domain from history: {}", domain);
         }
 
+        let task_path = APP_CONFIG_DIR.get()
+            .map(|d| d.join("task_memory.json"))
+            .unwrap_or_else(|| PathBuf::from("task_memory.json"));
+
         Self {
             working_memory: WorkingMemory::new(),
             long_term,
             clarification: ClarificationEngine::new(),
             tool_registry: ToolRegistry::new(),
             state: CognitiveState::Idle,
+            task_memory: TaskMemory::new(task_path),
+            context_manager: ContextManager::new(),
+            model_router: ModelRouter::new_null(),
+            trace: CognitiveTrace::new(),
+            tool_router: ToolRouter::new(),
             memory_path,
             ai_advisor: Box::new(NullAdvisor),
         }
@@ -128,6 +159,14 @@ impl CognitiveRuntime {
             .generate_plan(text, &[], &self.working_memory)
             .unwrap_or_else(|| TaskPlan::single(text, text));
 
+        self.trace.log_routing(
+            text,
+            enriched.domain.as_str(),
+            if clarification_needed.is_some() { "clarify" } else { "execute" },
+            enriched.confidence,
+            0,
+        );
+
         metrics::GOAL_ATTEMPTS.fetch_add(1, Ordering::Relaxed);
 
         CognitiveResult {
@@ -160,6 +199,13 @@ impl CognitiveRuntime {
             turn.timestamp_ms,
         );
         self.long_term.save(&self.memory_path);
+
+        self.trace.log_execution(
+            &intent.raw_text,
+            intent.domain.as_str(),
+            success,
+            0,
+        );
 
         if success {
             metrics::GOAL_SUCCESSES.fetch_add(1, Ordering::Relaxed);

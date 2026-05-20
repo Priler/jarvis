@@ -149,6 +149,20 @@ pub fn stop_recording() -> Result<(), ()> {
     }
 }
 
+/// Stop the recorder and immediately restart it on the same device.
+///
+/// Used by the watchdog L2 recovery path when the recorder appears frozen.
+/// A 200 ms gap between stop and start gives the audio driver time to release
+/// the device before re-acquiring it.
+pub fn restart_recording() -> Result<(), ()> {
+    if is_wav_mode() {
+        return Ok(());
+    }
+    stop_recording().ok();
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    start_recording()
+}
+
 pub fn get_selected_microphone_index() -> i32 {
     let idx = DB.get().unwrap().read().microphone;
 

@@ -7,6 +7,7 @@ use jarvis_core::{
     intent, listener, recorder, slots,
     voices, COMMANDS_LIST,
 };
+use std::time::Duration;
 
 use std::sync::atomic::Ordering;
 use std::time::SystemTime;
@@ -85,12 +86,31 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
     loop {
         loop_count = loop_count.wrapping_add(1);
 
-        if should_stop() {
+        if should_stop()
+            || crate::watchdog::WATCHDOG_SHUTDOWN_REQUEST.load(Ordering::Acquire)
+        {
             info!("Stop signal received, shutting down...");
             platform.agents.stop_all();
             voices::play_goodbye();
             ipc_send(IpcEvent::Stopping);
             break;
+        }
+
+        // ── Watchdog-requested recorder restart ───────────────────────────────
+        if crate::watchdog::RECORDER_RESTART_REQUEST.load(Ordering::Acquire) {
+            info!("[APP] Watchdog requested recorder restart — restarting");
+            std::thread::sleep(Duration::from_millis(200));
+            if recorder::start_recording().is_ok() {
+                info!("[APP] Recorder restarted successfully");
+            } else {
+                error!("[APP] Recorder restart failed — entering degraded mode");
+                crate::watchdog::DEGRADED_MODE.store(true, Ordering::Release);
+                ipc_send(IpcEvent::Error {
+                    message: "Microphone device lost and could not be recovered.".to_string(),
+                });
+            }
+            crate::watchdog::RECORDER_RESTART_REQUEST.store(false, Ordering::Release);
+            continue;
         }
 
         // Text commands injected via the GUI text field.
@@ -100,8 +120,19 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
         }
 
         // Drain all pending STT events (non-blocking).
-        while let Ok(event) = event_rx.try_recv() {
-            handle_stt_event(event, &cmd_tx, rt, &mut platform);
+        // Also detect if the STT worker thread died (channel Disconnected).
+        loop {
+            match event_rx.try_recv() {
+                Ok(event) => handle_stt_event(event, &cmd_tx, rt, &mut platform),
+                Err(mpsc::TryRecvError::Empty) => break,
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    if !crate::watchdog::DEGRADED_MODE.load(Ordering::Relaxed) {
+                        error!("[APP] STT worker channel disconnected — worker may have panicked");
+                        crate::recovery::execute_l3_degraded_mode("stt_worker_disconnected");
+                    }
+                    break;
+                }
+            }
         }
 
         // Scheduler tick every ~1.6 s (50 frames × 32 ms).
@@ -300,7 +331,7 @@ fn handle_stt_event(
                     Ok(Some(first_cmd)) => {
                         ipc_send(IpcEvent::CognitionState { state: "executing".to_string() });
                         let before = vi::COMMANDS_MATCHED.load(Ordering::Relaxed);
-                        execute_command(&first_cmd, rt, wake_session_id, cmd_session_id, platform);
+                        execute_command(&first_cmd, rt, wake_session_id, cmd_session_id, platform, "workflow");
                         let step_ok = vi::COMMANDS_MATCHED.load(Ordering::Relaxed) > before;
                         ipc_send(IpcEvent::WorkflowStepCompleted {
                             workflow_id: wf_id.clone(), step: first_cmd, index: 0, total: wf_total, success: step_ok,
@@ -320,7 +351,7 @@ fn handle_stt_event(
             // ── Regular execution ──────────────────────────────────────────────
             ipc_send(IpcEvent::CognitionState { state: "executing".to_string() });
             let before_matched = vi::COMMANDS_MATCHED.load(Ordering::Relaxed);
-            let should_chain = execute_command(&text, rt, wake_session_id, cmd_session_id, platform);
+            let should_chain = execute_command(&text, rt, wake_session_id, cmd_session_id, platform, "voice");
             let exec_success = vi::COMMANDS_MATCHED.load(Ordering::Relaxed) > before_matched;
 
             platform.cognitive.observe(&cog_result.enriched_intent, exec_success);
@@ -363,7 +394,7 @@ fn handle_scheduled_job(
                 id: workflow_id.clone(), name: wf_name.clone(), steps: wf_steps,
             });
             match platform.workflows.trigger(workflow_id) {
-                Ok(Some(cmd)) => { execute_command(&cmd, rt, 0, 0, platform); }
+                Ok(Some(cmd)) => { execute_command(&cmd, rt, 0, 0, platform, "scheduler"); }
                 Ok(None) => {}
                 Err(e) => error!("[SCHEDULER] Workflow trigger failed: {}", e),
             }
@@ -393,7 +424,7 @@ fn process_text_command(text: &str, rt: &tokio::runtime::Runtime, platform: &mut
         ipc_send(IpcEvent::Idle);
         return;
     }
-    execute_command(&filtered, rt, 0, 0, platform);
+    execute_command(&filtered, rt, 0, 0, platform, "text");
 }
 
 /// Execute a matched command. Returns true if chaining should continue.
@@ -404,6 +435,7 @@ fn execute_command(
     wake_sid: u64,
     cmd_sid: u64,
     platform: &mut AppPlatform,
+    source: &str,
 ) -> bool {
     let commands_lock = match COMMANDS_LIST.get() {
         Some(lock) => lock,
@@ -451,6 +483,7 @@ fn execute_command(
             &cmd_config.cmd_type,
             &cmd_config.cli_cmd,
             &cmd_config.sandbox,
+            source,
         );
 
         if !gov.allowed {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::fs;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::process::{Child, Command};
 
 use once_cell::sync::Lazy;
@@ -27,6 +27,7 @@ pub struct PendingConfirm {
     pub id: String,
     pub cmd_path: PathBuf,
     pub cmd: JCommand,
+    pub created_at: Instant,
 }
 
 static PENDING_CONFIRM: Lazy<Mutex<Option<PendingConfirm>>> = Lazy::new(|| Mutex::new(None));
@@ -47,11 +48,28 @@ pub fn store_pending_command(path: &PathBuf, cmd: &JCommand) {
         id: cmd.id.clone(),
         cmd_path: path.clone(),
         cmd: cmd.clone(),
+        created_at: Instant::now(),
     });
 }
 
 pub fn take_pending_command() -> Option<PendingConfirm> {
     PENDING_CONFIRM.lock().take()
+}
+
+/// Expire a pending confirmation that has been waiting longer than `max_age_s` seconds.
+/// Called by the watchdog every interval to GC abandoned confirmations.
+pub fn expire_pending_confirm(max_age_s: u64) {
+    let mut guard = PENDING_CONFIRM.lock();
+    if let Some(ref pending) = *guard {
+        let age_s = pending.created_at.elapsed().as_secs();
+        if age_s >= max_age_s {
+            warn!(
+                "[SESSION_GC] Expired stale pending confirm id='{}' age={}s",
+                pending.id, age_s
+            );
+            *guard = None;
+        }
+    }
 }
 
 #[cfg(feature = "lua")]
@@ -246,15 +264,15 @@ pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Optio
         // AutoHotkey command
         // @TODO: Consider adding ahk source files execution?
         "ahk" => {
-            let exe_path_absolute = Path::new(&cmd_config.exe_path);
-            let exe_path_local = cmd_path.join(&cmd_config.exe_path);
-
-            let exe_path = if exe_path_absolute.exists() {
-                exe_path_absolute
-            } else {
-                exe_path_local.as_path()
-            };
-
+            // SEC-4: reject absolute exe_path and traversal sequences so command.toml
+            // cannot redirect to arbitrary system binaries (e.g. cmd.exe, powershell.exe).
+            let ep = &cmd_config.exe_path;
+            if Path::new(ep).is_absolute() || ep.contains("..") {
+                return Err(format!(
+                    "AHK exe_path must be relative and within the command folder: '{}'", ep
+                ));
+            }
+            let exe_path = cmd_path.join(ep);
             execute_exe(exe_path.to_str().unwrap(), &cmd_config.exe_args)
                 .map(|_| cmd_config.chain)
                 .map_err(|e| format!("AHK process spawn error: {}", e))

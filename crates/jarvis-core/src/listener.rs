@@ -58,3 +58,13 @@ pub fn get_frame_count() -> usize {
         _ => 0,
     }
 }
+
+/// Reset all internal engine state accumulated since the last wake session.
+/// For Rustpotter this clears the rechunking remainder buffer; other engines
+/// are no-ops unless they accumulate internal state.
+pub fn reset_state() {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::reset_remainder(),
+        _ => {}
+    }
+}

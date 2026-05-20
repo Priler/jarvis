@@ -6,8 +6,8 @@ use std::process::Command;
 use crate::lua::sandbox::SandboxLevel;
 
 /// SEC-9: Allow known-safe URL schemes and whitelisted local file extensions.
-/// Blocks shell metacharacters by rejecting anything that isn't a recognised
-/// scheme or a local file with a non-executable extension.
+/// Blocks: UNC paths, path traversal, null bytes, double/embedded executable
+/// extensions (e.g. "invoice.pdf.exe"), and the .lnk shell-link vector.
 fn is_safe_open_target(target: &str) -> bool {
     let t = target.to_lowercase();
 
@@ -20,8 +20,39 @@ fn is_safe_open_target(target: &str) -> bool {
         return true;
     }
 
+    // Block UNC paths — can route to attacker-controlled shares.
+    if t.starts_with("\\\\") || t.starts_with("//") {
+        return false;
+    }
+
+    // Block path traversal sequences.
+    if t.contains("../") || t.contains("..\\") || t.contains("/..") || t.contains("\\..") {
+        return false;
+    }
+
+    // Block null bytes and ASCII control characters.
+    if target.contains('\0') || target.chars().any(|c| (c as u32) < 32) {
+        return false;
+    }
+
+    // Double/embedded executable extension check.
+    // "invoice.pdf.exe" splits to ["invoice","pdf","exe"] — exe found → blocked.
+    // .lnk is included: shell links can point anywhere.
+    const EXEC_EXT: &[&str] = &[
+        "exe", "bat", "cmd", "ps1", "vbs", "js", "msi", "com", "pif",
+        "scr", "cpl", "reg", "msp", "jar", "wsf", "hta", "inf", "msc", "lnk",
+    ];
+    let filename = match std::path::Path::new(target).file_name().and_then(|n| n.to_str()) {
+        Some(f) => f.to_lowercase(),
+        None => return false,
+    };
+    for part in filename.split('.').skip(1) {
+        if EXEC_EXT.contains(&part) {
+            return false;
+        }
+    }
+
     // Allow local files with safe, non-executable extensions.
-    // Executables (.exe, .bat, .ps1, .cmd, .vbs, .js, .msi, …) are intentionally absent.
     if let Some(ext) = std::path::Path::new(target).extension().and_then(|e| e.to_str()) {
         return matches!(
             ext.to_lowercase().as_str(),
@@ -29,7 +60,6 @@ fn is_safe_open_target(target: &str) -> bool {
                 | "mp4" | "mkv" | "avi" | "mov" | "webm"
                 | "pdf" | "txt" | "log" | "md"
                 | "jpg" | "jpeg" | "png" | "gif" | "webp" | "bmp"
-                | "lnk"
         );
     }
 
@@ -262,11 +292,13 @@ pub fn register(lua: &Lua, jarvis: &Table, sandbox: SandboxLevel) -> mlua::Resul
 
     system.set("clipboard", clipboard)?;
 
-    // jarvis.system.env(name) - get environment variable (always available)
-    let env_fn = lua.create_function(|_, name: String| {
-        Ok(std::env::var(&name).ok())
-    })?;
-    system.set("env", env_fn)?;
+    // jarvis.system.env(name) - Standard+ only; Minimal sandbox has no env access.
+    if sandbox.allows_state() {
+        let env_fn = lua.create_function(|_, name: String| {
+            Ok(std::env::var(&name).ok())
+        })?;
+        system.set("env", env_fn)?;
+    }
 
     // jarvis.system.platform - read-only string
     let platform = if cfg!(target_os = "windows") {

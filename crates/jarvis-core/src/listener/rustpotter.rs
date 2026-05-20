@@ -237,6 +237,17 @@ fn resample_linear_16(samples: &[i16], from_rate: u32, to_rate: u32) -> Vec<i16>
     }).collect()
 }
 
+/// Clear the internal rechunking remainder buffer.
+///
+/// Must be called at every wake session boundary (wake confirmed, wake rejected,
+/// wake silence timeout, finalize_wake) to prevent stale audio from bleeding
+/// into the next session and triggering phantom wakes.
+pub fn reset_remainder() {
+    if let Some(buf) = REMAINDER.get() {
+        buf.lock().unwrap().clear();
+    }
+}
+
 pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
     let frame = FRAME_COUNT.fetch_add(1, Ordering::Relaxed);
 

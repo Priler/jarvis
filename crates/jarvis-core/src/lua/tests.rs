@@ -239,4 +239,98 @@ mod tests {
         let result = execute(&script_path, context, SandboxLevel::Standard, Duration::from_secs(5));
         assert!(result.is_ok(), "{:?}", result);
     }
+
+    // ── Security regression tests (S1, S2, S5, S9, S10) ─────────────────────
+
+    // S1: system.open with path traversal must be blocked (Windows only — check is
+    // gated on cfg!(target_os = "windows") in the open_fn).
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn s1_open_path_traversal_blocked() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.lua");
+        fs::write(&script_path, r#"
+            local result = jarvis.system.open("../../../Windows/System32/cmd.exe")
+            if result ~= false then
+                error("Path traversal to exe should be blocked")
+            end
+            return true
+        "#).unwrap();
+        let context = create_test_context(dir.path().to_path_buf());
+        let result = execute(&script_path, context, SandboxLevel::Standard, Duration::from_secs(5));
+        assert!(result.is_ok(), "{:?}", result);
+    }
+
+    // S2: system.open with double extension (disguised executable) must be blocked.
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn s2_open_double_extension_blocked() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.lua");
+        fs::write(&script_path, r#"
+            local result = jarvis.system.open("invoice.pdf.exe")
+            if result ~= false then
+                error("Double-extension exe should be blocked")
+            end
+            return true
+        "#).unwrap();
+        let context = create_test_context(dir.path().to_path_buf());
+        let result = execute(&script_path, context, SandboxLevel::Standard, Duration::from_secs(5));
+        assert!(result.is_ok(), "{:?}", result);
+    }
+
+    // S5: system.env must not be available in Minimal sandbox.
+    #[test]
+    fn s5_env_unavailable_in_minimal_sandbox() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.lua");
+        fs::write(&script_path, r#"
+            local ok = pcall(function() jarvis.system.env("PATH") end)
+            if ok then error("system.env should not exist in minimal sandbox") end
+            return true
+        "#).unwrap();
+        let context = create_test_context(dir.path().to_path_buf());
+        let result = execute(&script_path, context, SandboxLevel::Minimal, Duration::from_secs(5));
+        assert!(result.is_ok(), "{:?}", result);
+    }
+
+    // S9: system.open with a plain executable extension must be blocked.
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn s9_open_executable_extension_blocked() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.lua");
+        fs::write(&script_path, r#"
+            local r1 = jarvis.system.open("malware.exe")
+            local r2 = jarvis.system.open("payload.bat")
+            local r3 = jarvis.system.open("script.ps1")
+            local r4 = jarvis.system.open("link.lnk")
+            if r1 ~= false or r2 ~= false or r3 ~= false or r4 ~= false then
+                error("Executable extensions must be blocked")
+            end
+            return true
+        "#).unwrap();
+        let context = create_test_context(dir.path().to_path_buf());
+        let result = execute(&script_path, context, SandboxLevel::Standard, Duration::from_secs(5));
+        assert!(result.is_ok(), "{:?}", result);
+    }
+
+    // S10: system.open with a safe media extension must be allowed (returns true
+    // because cmd /C start spawns successfully even if the file does not exist).
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn s10_open_safe_media_allowed() {
+        let dir = tempdir().unwrap();
+        let script_path = dir.path().join("test.lua");
+        fs::write(&script_path, r#"
+            local result = jarvis.system.open("music.mp3")
+            if result ~= true then
+                error("Safe media extension should be allowed through the filter")
+            end
+            return true
+        "#).unwrap();
+        let context = create_test_context(dir.path().to_path_buf());
+        let result = execute(&script_path, context, SandboxLevel::Standard, Duration::from_secs(5));
+        assert!(result.is_ok(), "{:?}", result);
+    }
 }
