@@ -19,7 +19,18 @@ mod log;
 
 // include app
 mod app;
+mod agents;
+mod bus;
+mod cognitive;
+mod governance;
+mod perception;
+mod platform;
+mod plugin;
+mod scheduler;
 mod stt_worker;
+mod testing;
+mod voice_intelligence;
+mod workflows;
 
 // include tray
 // @TODO. macOS currently not supported for tray functionality.
@@ -35,6 +46,29 @@ fn main() -> Result<(), String> {
 
     // initialize logging
     log::init_logging()?;
+
+    // ── Replay / validation dispatch ──────────────────────────────────────────
+    if let Some(cmd) = testing::replay::parse_replay_command() {
+        match cmd {
+            testing::replay::ReplayCommand::Single { wav_path, output_path } => {
+                if let Err(e) = testing::replay::setup_single(&wav_path, output_path) {
+                    eprintln!("[REPLAY] {}", e);
+                    std::process::exit(2);
+                }
+                // Falls through to normal startup; app.rs WAV exit calls on_replay_complete().
+            }
+            testing::replay::ReplayCommand::Dir { dir, output_dir } => {
+                let report = testing::harness::run_dir(&dir, &output_dir);
+                testing::replay::print_dir_summary(&report);
+                std::process::exit(if report.failed > 0 { 1 } else { 0 });
+            }
+            testing::replay::ReplayCommand::Batch { yaml_path, output_dir } => {
+                let report = testing::harness::run_batch(&yaml_path, &output_dir);
+                testing::replay::print_dir_summary(&report);
+                std::process::exit(if report.failed > 0 { 1 } else { 0 });
+            }
+        }
+    }
 
     // log some base info
     info!("Starting Jarvis v{} ...", config::APP_VERSION.unwrap());
@@ -82,6 +116,14 @@ fn main() -> Result<(), String> {
     // init IPC broadcast channel
     info!("Initializing IPC...");
     ipc::init();
+
+    // ── Inline validation mode: subprocess called with --audio-test <wav> --validation-out <json>
+    // The harness is init'd here (after IPC) so A010 gets a real IPC subscription.
+    if let Some(out_path) = testing::replay::parse_inline_validation_output() {
+        if let Some(wav_str) = parse_audio_test_arg() {
+            testing::harness::TestHarness::init(wav_str, Some(out_path));
+        }
+    }
 
     // SEC-7: generate per-session IPC auth token and write to config dir.
     // Must be set BEFORE start_server() so the auth check works from first client.

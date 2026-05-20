@@ -242,3 +242,10 @@ pub fn has_clients() -> bool {
         false
     }
 }
+
+/// Subscribe to the IPC broadcast channel.  Returns `None` if IPC has not
+/// been initialized yet.  Used by the validation harness to capture IPC
+/// events for assertion A010.
+pub fn subscribe() -> Option<broadcast::Receiver<IpcEvent>> {
+    BROADCAST_TX.get().map(|tx| tx.subscribe())
+}

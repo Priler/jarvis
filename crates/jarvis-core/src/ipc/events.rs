@@ -42,6 +42,39 @@ pub enum IpcEvent {
 
     // A slow initialization step is in progress (e.g. loading STT model)
     Loading { component: String },
+
+    // Cognitive state changed (understanding / planning / executing / etc.)
+    CognitionState { state: String },
+
+    // Assistant needs the user to clarify their intent
+    ClarificationNeeded { question: String, options: Vec<String> },
+
+    // Multi-step plan started
+    PlanStarted { goal: String, steps: Vec<String> },
+
+    // A plan step is executing
+    PlanProgress { step: String, index: usize, total: usize },
+
+    // Long-term memory was recalled and informed the current response
+    MemoryRecalled { summary: String },
+
+    // An agent changed state
+    AgentEvent { agent_id: String, state: String },
+
+    // A workflow started executing
+    WorkflowStarted { id: String, name: String, steps: Vec<String> },
+
+    // A workflow step completed
+    WorkflowStepCompleted { workflow_id: String, step: String, index: usize, total: usize, success: bool },
+
+    // A workflow finished
+    WorkflowCompleted { id: String, success: bool },
+
+    // Governance blocked or flagged an action
+    GovernanceAlert { risk_level: String, action: String, blocked: bool },
+
+    // The active desktop window changed (multimodal perception)
+    ScreenContext { window_title: String },
 }
 
 // Actions sent from GUI to jarvis-app

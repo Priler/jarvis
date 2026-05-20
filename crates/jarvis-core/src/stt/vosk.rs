@@ -91,6 +91,31 @@ pub fn recognize_speech(data: &[i16]) -> Option<String> {
 }
 
 
+/// Returns `(final_text, partial_text)`. On finalize both may be set; on running
+/// only `partial_text` is Some. Advances the decoder by one frame regardless.
+pub fn recognize_speech_with_partial(data: &[i16]) -> (Option<String>, Option<String>) {
+    let mut recognizer = match SPEECH_RECOGNIZER.get() {
+        Some(r) => r.lock(),
+        None => return (None, None),
+    };
+
+    match recognizer.accept_waveform(data) {
+        Ok(DecodingState::Finalized) => {
+            let final_text = recognizer
+                .result()
+                .multiple()
+                .and_then(|m| m.alternatives.first().map(|a| a.text.to_string()));
+            (final_text, None)
+        }
+        Ok(DecodingState::Running) => {
+            let partial = recognizer.partial_result().partial.to_string();
+            let partial_opt = if partial.is_empty() { None } else { Some(partial) };
+            (None, partial_opt)
+        }
+        _ => (None, None),
+    }
+}
+
 pub fn reset_speech_recognizer() {
     if let Some(recognizer) = SPEECH_RECOGNIZER.get() {
         recognizer.lock().reset();

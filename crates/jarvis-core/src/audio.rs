@@ -120,6 +120,20 @@ pub fn play_sound(filename: &PathBuf) {
     extend_speaking(duration);
 }
 
+/// Force-clear the speaking gate. Used by the runtime watchdog when the gate is stuck.
+pub fn force_clear_speaking() {
+    let prev = SPEAKING_UNTIL_MS.swap(0, Ordering::Release);
+    warn!(
+        "[AUDIO] Speaking gate force-cleared prev_until_ms={}",
+        prev
+    );
+}
+
+/// Returns how many milliseconds remain on the speaking gate. 0 if not active.
+pub fn speaking_remaining_ms() -> u64 {
+    SPEAKING_UNTIL_MS.load(Ordering::Acquire).saturating_sub(now_ms())
+}
+
 pub fn get_sound_directory() -> Option<PathBuf> {
     let db = DB.get()?;
 

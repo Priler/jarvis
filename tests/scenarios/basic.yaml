@@ -1,0 +1,43 @@
+name: basic
+wav_base: tests/wavs
+
+scenarios:
+  - name: single_wake_no_command
+    wav: silence_only.wav
+    timeout_secs: 30
+    tags: [smoke, wake]
+    expected:
+      wake_count: 0
+      command_count: 0
+      no_illegal_transitions: true
+
+  - name: wake_with_command
+    wav: wake_open_calc.wav
+    timeout_secs: 30
+    tags: [smoke, command]
+    expected:
+      wake_count: 1
+      command_count: 1
+      executed: true
+      no_illegal_transitions: true
+      must_pass: [A001, A002, A003, A004]
+
+  - name: silence_timeout
+    wav: wake_then_silence.wav
+    timeout_secs: 30
+    tags: [smoke, timeout]
+    expected:
+      wake_count: 1
+      command_count: 0
+      no_illegal_transitions: true
+      must_pass: [A002, A003]
+
+  - name: rapid_double_wake
+    wav: double_wake_fast.wav
+    timeout_secs: 45
+    tags: [regression, debounce]
+    expected:
+      wake_count: 1
+      no_illegal_transitions: true
+      must_pass: [A002, A006]
+      known_failures: []
