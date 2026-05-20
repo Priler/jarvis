@@ -102,6 +102,21 @@ impl TestHarness {
             let _ = std::fs::write(&events_path, journal.to_json());
         }
 
+        // Write events as JSONL timeline (one event per line).
+        if let Some(ref out) = harness.output_path {
+            let timeline_path = out.with_extension("timeline.jsonl");
+            let _ = std::fs::write(&timeline_path, journal.to_jsonl());
+        }
+
+        // Write aggregated metrics JSON (includes latency stats and accelerated flag).
+        if let Some(ref out) = harness.output_path {
+            let metrics_path = out.with_extension("metrics.json");
+            let metrics = report.to_metrics(&journal);
+            let metrics_json = serde_json::to_string_pretty(&metrics)
+                .unwrap_or_else(|e| format!("{{\"error\":\"{}\"}}", e));
+            let _ = std::fs::write(&metrics_path, metrics_json);
+        }
+
         if report.passed { 0 } else { 1 }
     }
 }
@@ -142,7 +157,7 @@ fn ipc_event_tag(event: &jarvis_core::ipc::IpcEvent) -> &'static str {
 
 /// Run all WAV files in a directory.  Each run is spawned as a subprocess so
 /// state is fully isolated between runs.
-pub fn run_dir(dir: &Path, output_dir: &Path) -> BatchReport {
+pub fn run_dir(dir: &Path, output_dir: &Path, accelerated: bool) -> BatchReport {
     let wavs: Vec<PathBuf> = std::fs::read_dir(dir)
         .unwrap_or_else(|_| panic!("Cannot read dir {:?}", dir))
         .flatten()
@@ -152,7 +167,7 @@ pub fn run_dir(dir: &Path, output_dir: &Path) -> BatchReport {
 
     let reports: Vec<ReplayReport> = wavs
         .iter()
-        .map(|wav| run_wav_subprocess(wav, output_dir))
+        .map(|wav| run_wav_subprocess_ex(wav, output_dir, accelerated))
         .collect();
 
     BatchReport::new(reports)
@@ -160,7 +175,7 @@ pub fn run_dir(dir: &Path, output_dir: &Path) -> BatchReport {
 
 /// Run all scenarios from a YAML batch file.  Each run is spawned as a
 /// subprocess.  Scenario-level expected behavior is validated after the run.
-pub fn run_batch(yaml_path: &Path, output_dir: &Path) -> BatchReport {
+pub fn run_batch(yaml_path: &Path, output_dir: &Path, accelerated: bool) -> BatchReport {
     let batch = ScenarioBatch::load(yaml_path).unwrap_or_else(|e| {
         eprintln!("[HARNESS] {}", e);
         std::process::exit(1);
@@ -171,7 +186,7 @@ pub fn run_batch(yaml_path: &Path, output_dir: &Path) -> BatchReport {
     let mut reports = Vec::new();
     for scenario in &batch.scenarios {
         let wav = batch.resolve_wav(scenario);
-        let mut report = run_wav_subprocess(&wav, output_dir);
+        let mut report = run_wav_subprocess_ex(&wav, output_dir, accelerated);
 
         // Validate scenario-level expected behavior.
         let violations = scenario.validate(&report);
@@ -190,6 +205,10 @@ pub fn run_batch(yaml_path: &Path, output_dir: &Path) -> BatchReport {
 /// Spawn the current executable with `--audio-test <wav> --validation-out <out>`
 /// and wait for it to complete.  Returns the parsed JSON report.
 fn run_wav_subprocess(wav: &Path, output_dir: &Path) -> ReplayReport {
+    run_wav_subprocess_ex(wav, output_dir, false)
+}
+
+fn run_wav_subprocess_ex(wav: &Path, output_dir: &Path, accelerated: bool) -> ReplayReport {
     let exe = std::env::current_exe().expect("Cannot find current executable");
 
     std::fs::create_dir_all(output_dir).ok();
@@ -197,14 +216,15 @@ fn run_wav_subprocess(wav: &Path, output_dir: &Path) -> ReplayReport {
     let wav_stem = wav.file_stem().unwrap_or_default().to_string_lossy();
     let result_path = output_dir.join(format!("{}.result.json", wav_stem));
 
-    println!("[HARNESS] → {}", wav.display());
+    println!("[HARNESS] {} {}", if accelerated { "[ACCEL]" } else { "" }, wav.display());
 
-    let status = std::process::Command::new(&exe)
-        .arg("--audio-test")
-        .arg(wav)
-        .arg("--validation-out")
-        .arg(&result_path)
-        .status();
+    let mut cmd = std::process::Command::new(&exe);
+    cmd.arg("--audio-test").arg(wav)
+       .arg("--validation-out").arg(&result_path);
+    if accelerated {
+        cmd.arg("--accelerated");
+    }
+    let status = cmd.status();
 
     match status {
         Ok(s) => {
@@ -223,6 +243,45 @@ fn run_wav_subprocess(wav: &Path, output_dir: &Path) -> ReplayReport {
         }
         Err(e) => failed_report(wav, &format!("Subprocess spawn error: {}", e)),
     }
+}
+
+/// Run the same WAV file `n` times (each in a subprocess) and collect results.
+/// Useful for detecting nondeterminism and session-leak accumulation.
+pub fn run_stress(wav: &Path, n: u32, output_dir: &Path, accelerated: bool) -> BatchReport {
+    println!("[HARNESS] Stress: {} × {} iterations{}", wav.display(), n,
+        if accelerated { " [accelerated]" } else { "" });
+
+    let reports: Vec<ReplayReport> = (0..n)
+        .map(|i| {
+            let iter_dir = output_dir.join(format!("run_{:04}", i));
+            run_wav_subprocess_ex(wav, &iter_dir, accelerated)
+        })
+        .collect();
+
+    BatchReport::new(reports)
+}
+
+/// Run all WAV files in `dir`, each `n` times, in randomized order.
+pub fn run_stress_dir(dir: &Path, n: u32, output_dir: &Path, accelerated: bool) -> BatchReport {
+    let mut wavs: Vec<std::path::PathBuf> = std::fs::read_dir(dir)
+        .unwrap_or_else(|_| panic!("Cannot read dir {:?}", dir))
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| p.extension().map_or(false, |e| e.eq_ignore_ascii_case("wav")))
+        .collect();
+    wavs.sort();
+
+    println!("[HARNESS] Stress dir: {} WAV(s) × {} iterations{}", wavs.len(), n,
+        if accelerated { " [accelerated]" } else { "" });
+
+    let mut all_reports = Vec::new();
+    for wav in &wavs {
+        let wav_dir = output_dir.join(wav.file_stem().unwrap_or_default());
+        let batch = run_stress(wav, n, &wav_dir, accelerated);
+        all_reports.extend(batch.runs);
+    }
+
+    BatchReport::new(all_reports)
 }
 
 fn failed_report(wav: &Path, reason: &str) -> ReplayReport {

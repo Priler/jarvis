@@ -6,6 +6,7 @@ mod wav_source;
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 use once_cell::sync::OnceCell;
 
 use crate::{config, config::structs::RecorderType, DB};
@@ -15,6 +16,36 @@ static FRAME_LENGTH: OnceCell<u32> = OnceCell::new();
 static WAV_SOURCE: OnceCell<Mutex<wav_source::WavSource>> = OnceCell::new();
 static WAV_DONE: AtomicBool = AtomicBool::new(false);
 static WAV_PATH: OnceCell<String> = OnceCell::new();
+
+/// When true, `read_microphone()` skips the inter-frame sleep in WAV mode.
+/// Use for CI / stress runs where wall-clock timing is not required.
+/// Must be set before `init_wav()` is called.
+static ACCELERATED: AtomicBool = AtomicBool::new(false);
+
+pub fn set_accelerated(v: bool) {
+    ACCELERATED.store(v, Ordering::Relaxed);
+}
+
+pub fn is_accelerated() -> bool {
+    ACCELERATED.load(Ordering::Relaxed)
+}
+
+// ── AudioInputSource trait ────────────────────────────────────────────────────
+//
+// Formal abstraction for both WAV replay and live-microphone sources.
+// The `read_microphone()` function is the public dispatch point;
+// this trait documents the interface each backend must satisfy.
+
+pub(crate) trait AudioInputSource: Send {
+    /// Fill `buf` with the next PCM frame (i16 samples).
+    /// Returns `false` when the source is exhausted (WAV EOF).
+    /// Live sources never return `false`.
+    fn read_frame(&mut self, buf: &mut [i16]) -> bool;
+
+    /// Nominal delay between frames for real-time playback.
+    /// Returned by `WavSource::frame_duration()`.
+    fn frame_duration(&self) -> Duration;
+}
 
 pub fn init() -> Result<(), ()> {
     RECORDER_TYPE.set(config::DEFAULT_RECORDER_TYPE).unwrap();
@@ -103,7 +134,11 @@ pub fn read_microphone(frame_buffer: &mut [i16]) {
                 frame_buffer.fill(0);
             }
         }
-        std::thread::sleep(frame_dur);
+        // In accelerated mode skip the real-time sleep so CI/stress runs
+        // complete as fast as the CPU allows.
+        if !ACCELERATED.load(Ordering::Relaxed) {
+            std::thread::sleep(frame_dur);
+        }
         return;
     }
     match RECORDER_TYPE.get().unwrap() {

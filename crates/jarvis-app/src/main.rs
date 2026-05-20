@@ -54,20 +54,30 @@ fn main() -> Result<(), String> {
     // ── Replay / validation dispatch ──────────────────────────────────────────
     if let Some(cmd) = testing::replay::parse_replay_command() {
         match cmd {
-            testing::replay::ReplayCommand::Single { wav_path, output_path } => {
+            testing::replay::ReplayCommand::Single { wav_path, output_path, accelerated } => {
+                recorder::set_accelerated(accelerated);
                 if let Err(e) = testing::replay::setup_single(&wav_path, output_path) {
                     eprintln!("[REPLAY] {}", e);
                     std::process::exit(2);
                 }
                 // Falls through to normal startup; app.rs WAV exit calls on_replay_complete().
             }
-            testing::replay::ReplayCommand::Dir { dir, output_dir } => {
-                let report = testing::harness::run_dir(&dir, &output_dir);
+            testing::replay::ReplayCommand::Dir { dir, output_dir, accelerated } => {
+                let report = testing::harness::run_dir(&dir, &output_dir, accelerated);
                 testing::replay::print_dir_summary(&report);
                 std::process::exit(if report.failed > 0 { 1 } else { 0 });
             }
-            testing::replay::ReplayCommand::Batch { yaml_path, output_dir } => {
-                let report = testing::harness::run_batch(&yaml_path, &output_dir);
+            testing::replay::ReplayCommand::Batch { yaml_path, output_dir, accelerated } => {
+                let report = testing::harness::run_batch(&yaml_path, &output_dir, accelerated);
+                testing::replay::print_dir_summary(&report);
+                std::process::exit(if report.failed > 0 { 1 } else { 0 });
+            }
+            testing::replay::ReplayCommand::StressReplay { path, iterations, output_dir, accelerated } => {
+                let report = if path.is_dir() {
+                    testing::harness::run_stress_dir(&path, iterations, &output_dir, accelerated)
+                } else {
+                    testing::harness::run_stress(&path, iterations, &output_dir, accelerated)
+                };
                 testing::replay::print_dir_summary(&report);
                 std::process::exit(if report.failed > 0 { 1 } else { 0 });
             }
@@ -99,6 +109,7 @@ fn main() -> Result<(), String> {
     // init recorder — WAV test mode or live microphone
     let audio_test_path = parse_audio_test_arg();
     if let Some(ref path) = audio_test_path {
+        recorder::set_accelerated(testing::replay::parse_accelerated_flag());
         info!("[AUDIO_TEST] WAV test mode enabled: {}", path);
         if let Err(e) = recorder::init_wav(path) {
             error!("[AUDIO_TEST] Failed to initialize WAV source: {}", e);

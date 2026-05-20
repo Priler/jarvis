@@ -58,6 +58,10 @@ impl AssertionEngine {
             Self::a008_no_forced_gate_resets(journal),
             Self::a009_no_sessions_in_voice_active(journal),
             Self::a010_ipc_ordering_coherence(journal),
+            Self::a011_commands_within_wake_sessions(journal),
+            Self::a012_speech_only_in_command_mode(journal),
+            Self::a013_wake_recognizer_reset_coverage(journal),
+            Self::a014_no_duplicate_commands(journal),
         ];
         Self { results }
     }
@@ -369,6 +373,141 @@ impl AssertionEngine {
                     "avg {:.1} speech-reco frames fed per VoiceActive session ({} feeds / {} wakes). \
                      High contamination rate — single-word commands will silently fail.",
                     avg, journal.speech_reco_in_voice_active, journal.wake_opens
+                ),
+            )
+        } else {
+            AssertionResult::pass(ID, DESC)
+        }
+    }
+
+    // ── A011 ─────────────────────────────────────────────────────────────────
+
+    /// Every CommandSessionOpen must occur while a wake session is open.
+    ///
+    /// A command outside a wake session indicates a state-machine bug: the
+    /// pipeline entered CommandMode without a confirmed wake, or a command
+    /// session was opened by a code path that bypasses the wake guard.
+    fn a011_commands_within_wake_sessions(journal: &SessionJournal) -> AssertionResult {
+        const ID: &str = "A011";
+        const DESC: &str = "All command sessions opened within an active wake session";
+
+        if journal.command_opens == 0 {
+            return AssertionResult::pass(ID, DESC);
+        }
+
+        let mut failures = Vec::new();
+        let mut wake_active = false;
+        let mut cmd_idx = 0u32;
+
+        for ev in journal.events() {
+            match ev {
+                super::ValidationEvent::WakeSessionOpen { .. } => {
+                    wake_active = true;
+                }
+                super::ValidationEvent::WakeSessionClose { .. } => {
+                    wake_active = false;
+                }
+                super::ValidationEvent::CommandSessionOpen { text, ts, .. } => {
+                    cmd_idx += 1;
+                    if !wake_active {
+                        failures.push(format!(
+                            "Command #{} '{}' opened at ts={} with no active wake session",
+                            cmd_idx, text, ts
+                        ));
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        AssertionResult::with_failures(ID, DESC, failures)
+    }
+
+    // ── A012 ─────────────────────────────────────────────────────────────────
+
+    /// Speech recognizer must never be fed outside CommandMode.
+    ///
+    /// Strict version of A001/A009: checks VoiceActive AND any other non-CommandMode
+    /// state.  After the P0-1 fix there must be zero speech feeds outside CommandMode.
+    fn a012_speech_only_in_command_mode(journal: &SessionJournal) -> AssertionResult {
+        const ID: &str = "A012";
+        const DESC: &str = "Speech recognizer fed only in CommandMode (P0-1 strict isolation)";
+
+        let total_outside =
+            journal.speech_reco_in_voice_active + journal.speech_reco_other_state;
+        if total_outside > 0 {
+            AssertionResult::fail(
+                ID,
+                DESC,
+                format!(
+                    "Speech recognizer fed {} time(s) outside CommandMode \
+                     ({} in VoiceActive, {} in other states). \
+                     Pre-wake audio contaminates command transcript.",
+                    total_outside,
+                    journal.speech_reco_in_voice_active,
+                    journal.speech_reco_other_state,
+                ),
+            )
+        } else {
+            AssertionResult::pass(ID, DESC)
+        }
+    }
+
+    // ── A013 ─────────────────────────────────────────────────────────────────
+
+    /// Wake recognizer must be reset at least once per wake session.
+    ///
+    /// A missing reset leaves stale decoder state in the Vosk WAKE_RECOGNIZER,
+    /// causing previous partial-word context to contaminate the next session's
+    /// wake scoring.  Also confirms that P0-2 remainder-clear paths fire.
+    fn a013_wake_recognizer_reset_coverage(journal: &SessionJournal) -> AssertionResult {
+        const ID: &str = "A013";
+        const DESC: &str = "Wake recognizer reset at least once per wake session open";
+
+        if journal.wake_opens == 0 {
+            return AssertionResult::pass(ID, DESC);
+        }
+
+        if journal.wake_reco_resets < journal.wake_opens {
+            AssertionResult::fail(
+                ID,
+                DESC,
+                format!(
+                    "wake_opens={} but wake_recognizer_resets={} — {} session(s) lack a reset. \
+                     Stale Vosk decoder state bleeds into the next session.",
+                    journal.wake_opens,
+                    journal.wake_reco_resets,
+                    journal.wake_opens.saturating_sub(journal.wake_reco_resets),
+                ),
+            )
+        } else {
+            AssertionResult::pass(ID, DESC)
+        }
+    }
+
+    // ── A014 ─────────────────────────────────────────────────────────────────
+
+    /// No duplicate commands within a single wake session (P0-1 regression guard).
+    ///
+    /// Before the P0-1 fix, SPEECH_RECOGNIZER accumulated wake-phrase audio
+    /// during VoiceActive.  When CommandMode started, the decoder would emit
+    /// both the wake phrase AND the actual command in sequence — causing the
+    /// same (or very similar) command to be dispatched twice.
+    ///
+    /// After the fix, `duplicate_commands` must be 0 in all runs.
+    fn a014_no_duplicate_commands(journal: &SessionJournal) -> AssertionResult {
+        const ID: &str = "A014";
+        const DESC: &str = "No duplicate commands in same wake session (P0-1 regression guard)";
+
+        if journal.duplicate_commands > 0 {
+            AssertionResult::fail(
+                ID,
+                DESC,
+                format!(
+                    "{} duplicate command(s) detected — same text emitted twice in the same \
+                     wake session.  This is the P0-1 regression: SPEECH_RECOGNIZER is being fed \
+                     pre-wake audio again.",
+                    journal.duplicate_commands
                 ),
             )
         } else {

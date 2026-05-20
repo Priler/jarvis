@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 pub mod assertions;
+pub mod failure_classifier;
 pub mod harness;
 pub mod replay;
 pub mod report;

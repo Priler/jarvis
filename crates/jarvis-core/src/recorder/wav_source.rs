@@ -80,6 +80,26 @@ impl WavSource {
     }
 }
 
+impl super::AudioInputSource for WavSource {
+    fn read_frame(&mut self, buf: &mut [i16]) -> bool {
+        match self.next_frame() {
+            Some(f) => {
+                let copy_len = f.len().min(buf.len());
+                buf[..copy_len].copy_from_slice(&f[..copy_len]);
+                true
+            }
+            None => {
+                buf.fill(0);
+                false
+            }
+        }
+    }
+
+    fn frame_duration(&self) -> Duration {
+        self.frame_duration
+    }
+}
+
 fn read_as_i16(
     reader: &mut hound::WavReader<std::io::BufReader<std::fs::File>>,
 ) -> Result<Vec<i16>, String> {

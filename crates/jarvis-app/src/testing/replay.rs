@@ -12,21 +12,38 @@ use std::path::{Path, PathBuf};
 /// Parsed replay subcommand extracted from argv.
 #[derive(Debug)]
 pub enum ReplayCommand {
-    /// `replay <wav_path> [--out <dir>]`
+    /// `replay <wav_path> [--out <dir>] [--accelerated]`
     Single {
         wav_path: PathBuf,
         output_path: Option<PathBuf>,
+        accelerated: bool,
     },
-    /// `replay-dir <dir> [--out <dir>]`
+    /// `replay-dir <dir> [--out <dir>] [--accelerated]`
     Dir {
         dir: PathBuf,
         output_dir: PathBuf,
+        accelerated: bool,
     },
-    /// `replay-batch <yaml> [--out <dir>]`
+    /// `replay-batch <yaml> [--out <dir>] [--accelerated]`
     Batch {
         yaml_path: PathBuf,
         output_dir: PathBuf,
+        accelerated: bool,
     },
+    /// `stress-replay <dir|wav> [--n <N>] [--out <dir>] [--accelerated]`
+    ///
+    /// Runs each WAV file (or a single WAV) N times and reports aggregate pass/fail.
+    StressReplay {
+        path: PathBuf,
+        iterations: u32,
+        output_dir: PathBuf,
+        accelerated: bool,
+    },
+}
+
+/// Returns true if `--accelerated` appears in argv.
+pub fn parse_accelerated_flag() -> bool {
+    std::env::args().any(|a| a == "--accelerated")
 }
 
 /// Parse argv for replay subcommands.  Returns `None` if this is a normal run.
@@ -42,6 +59,8 @@ pub fn parse_replay_command() -> Option<ReplayCommand> {
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("validation_results"));
 
+    let accelerated = args.iter().any(|a| a == "--accelerated");
+
     match args[1].as_str() {
         "replay" => {
             let wav = PathBuf::from(&args[2]);
@@ -52,16 +71,29 @@ pub fn parse_replay_command() -> Option<ReplayCommand> {
                     let stem = wav.file_stem().unwrap_or_default().to_string_lossy();
                     Some(out_flag.join(format!("{}.result.json", stem)))
                 });
-            Some(ReplayCommand::Single { wav_path: wav, output_path })
+            Some(ReplayCommand::Single { wav_path: wav, output_path, accelerated })
         }
         "replay-dir" => Some(ReplayCommand::Dir {
             dir: PathBuf::from(&args[2]),
             output_dir: out_flag,
+            accelerated,
         }),
         "replay-batch" => Some(ReplayCommand::Batch {
             yaml_path: PathBuf::from(&args[2]),
             output_dir: out_flag,
+            accelerated,
         }),
+        "stress-replay" => {
+            let n: u32 = find_flag_value(&args, "--n")
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(100);
+            Some(ReplayCommand::StressReplay {
+                path: PathBuf::from(&args[2]),
+                iterations: n,
+                output_dir: out_flag,
+                accelerated,
+            })
+        }
         _ => None,
     }
 }

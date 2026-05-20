@@ -5,7 +5,8 @@
 use std::path::Path;
 
 use super::assertions::{AssertionEngine, AssertionResult};
-use super::session_log::SessionJournal;
+use super::failure_classifier::{self, FailureClass};
+use super::session_log::{SessionJournal, LatencyStats};
 
 // ── Report ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,10 @@ impl ReplayReport {
                     "A007" => defects.push("LV-4: Recognizer not reset after session end".into()),
                     "A008" => defects.push("P0-1: Speaking gate stuck (Rodio backend or watchdog fired)".into()),
                     "A010" => defects.push("IPC: Event ordering violation — GUI may desync".into()),
+                    "A011" => defects.push("ARCH-1: Command session opened outside wake session boundary".into()),
+                    "A012" => defects.push("P0-1: Speech recognizer contamination — fed outside CommandMode".into()),
+                    "A013" => defects.push("P0-2: Wake recognizer not reset after session end".into()),
+                    "A014" => defects.push("P0-1: Duplicate command — SPEECH_RECOGNIZER fed pre-wake audio (regression)".into()),
                     _ => {}
                 }
             }
@@ -118,6 +123,79 @@ impl ReplayReport {
 
         out.push_str(&format!("{}\n", bar));
         out
+    }
+}
+
+// ── Runtime metrics ───────────────────────────────────────────────────────────
+
+/// Aggregated numeric metrics extracted from a replay run.
+/// Written to `<scenario>.metrics.json` alongside the full report.
+#[derive(serde::Serialize)]
+pub struct RuntimeMetrics {
+    pub wav_path: String,
+    pub run_duration_ms: u64,
+    pub total_events: usize,
+    pub wake_sessions: u32,
+    pub command_sessions: u32,
+    pub dirty_session_closes: u32,
+    pub illegal_transitions: u32,
+    pub speech_reco_contaminations: u32,
+    pub duplicate_commands: u32,
+    /// Whether frames were delivered without inter-frame sleep (CI mode).
+    pub accelerated: bool,
+    /// command_sessions / wake_sessions, or 0.0 if no wakes.
+    pub avg_commands_per_wake: f64,
+    /// (wake_sessions - dirty_closes) / wake_sessions, or 1.0 if no wakes.
+    pub clean_session_rate: f64,
+    /// assertions_passed / total_assertions.
+    pub assertion_pass_rate: f64,
+    pub assertions_passed: usize,
+    pub assertions_failed: usize,
+    pub passed: bool,
+    pub defects: Vec<String>,
+    /// Pipeline latency statistics derived from event timestamps.
+    pub latency: LatencyStats,
+}
+
+impl ReplayReport {
+    pub fn to_metrics(&self, journal: &SessionJournal) -> RuntimeMetrics {
+        let total_assertions = self.assertions_passed + self.assertions_failed;
+        let pass_rate = if total_assertions > 0 {
+            self.assertions_passed as f64 / total_assertions as f64
+        } else {
+            1.0
+        };
+        let avg_cmd = if self.wake_sessions > 0 {
+            self.command_sessions as f64 / self.wake_sessions as f64
+        } else {
+            0.0
+        };
+        let clean_rate = if self.wake_sessions > 0 {
+            let clean = self.wake_sessions.saturating_sub(self.dirty_session_closes);
+            clean as f64 / self.wake_sessions as f64
+        } else {
+            1.0
+        };
+        RuntimeMetrics {
+            wav_path: self.wav_path.clone(),
+            run_duration_ms: self.run_duration_ms,
+            total_events: self.total_events,
+            wake_sessions: self.wake_sessions,
+            command_sessions: self.command_sessions,
+            dirty_session_closes: self.dirty_session_closes,
+            illegal_transitions: self.illegal_transitions,
+            speech_reco_contaminations: self.speech_reco_contaminations,
+            duplicate_commands: journal.duplicate_commands,
+            accelerated: jarvis_core::recorder::is_accelerated(),
+            avg_commands_per_wake: avg_cmd,
+            clean_session_rate: clean_rate,
+            assertion_pass_rate: pass_rate,
+            assertions_passed: self.assertions_passed,
+            assertions_failed: self.assertions_failed,
+            passed: self.passed,
+            defects: self.defects_detected.clone(),
+            latency: journal.compute_latency(),
+        }
     }
 }
 
