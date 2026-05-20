@@ -8,6 +8,16 @@ use super::assertions::{AssertionEngine, AssertionResult};
 use super::failure_classifier::{self, FailureClass};
 use super::session_log::{SessionJournal, LatencyStats};
 
+// ── Classified failure ────────────────────────────────────────────────────────
+
+/// A failed assertion tagged with its failure class.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct ClassifiedFailure {
+    pub assertion_id: String,
+    pub class: FailureClass,
+    pub message: String,
+}
+
 // ── Report ────────────────────────────────────────────────────────────────────
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -25,6 +35,25 @@ pub struct ReplayReport {
     pub passed: bool,
     pub assertions: Vec<AssertionResult>,
     pub defects_detected: Vec<String>,
+
+    // ── Phase 5 additions ─────────────────────────────────────────────────────
+
+    /// Failed assertions tagged with their failure class for certification reporting.
+    #[serde(default)]
+    pub classified_failures: Vec<ClassifiedFailure>,
+
+    /// Cached p95 wake-detection latency (ms) — extracted from RuntimeMetrics.
+    /// `None` when no wake activations occurred.
+    #[serde(default)]
+    pub latency_p95_wake_ms: Option<u64>,
+
+    /// Cached p95 STT latency (ms).
+    #[serde(default)]
+    pub latency_p95_stt_ms: Option<u64>,
+
+    /// Cached p95 pipeline latency (ms).
+    #[serde(default)]
+    pub latency_p95_pipeline_ms: Option<u64>,
 }
 
 impl ReplayReport {
@@ -58,6 +87,25 @@ impl ReplayReport {
         }
         defects.dedup();
 
+        // Build classified failure list from failed assertions.
+        let classified_failures: Vec<ClassifiedFailure> = engine.results.iter()
+            .filter(|r| !r.passed)
+            .flat_map(|r| {
+                let class = failure_classifier::classify_assertion(&r.id);
+                r.failures.iter().map(move |msg| ClassifiedFailure {
+                    assertion_id: r.id.clone(),
+                    class: class.clone(),
+                    message: msg.clone(),
+                })
+            })
+            .collect();
+
+        // Cache latency p95 values for scenario validation.
+        let latency = journal.compute_latency();
+        let latency_p95_wake_ms = latency.wake_detection_p95_ms;
+        let latency_p95_stt_ms = latency.stt_p95_ms;
+        let latency_p95_pipeline_ms = latency.pipeline_p95_ms;
+
         Self {
             wav_path: wav_path.to_string(),
             run_duration_ms,
@@ -72,6 +120,10 @@ impl ReplayReport {
             passed: engine.all_passed(),
             assertions: engine.results.clone(),
             defects_detected: defects,
+            classified_failures,
+            latency_p95_wake_ms,
+            latency_p95_stt_ms,
+            latency_p95_pipeline_ms,
         }
     }
 
@@ -118,6 +170,13 @@ impl ReplayReport {
             out.push_str(&format!("{}\n Defects:\n", bar));
             for d in &self.defects_detected {
                 out.push_str(&format!("  • {}\n", d));
+            }
+        }
+
+        if !self.classified_failures.is_empty() {
+            out.push_str(&format!("{}\n Failure Classes:\n", bar));
+            for f in &self.classified_failures {
+                out.push_str(&format!("  [{}] {} — {}\n", f.class, f.assertion_id, f.message));
             }
         }
 

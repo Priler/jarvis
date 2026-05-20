@@ -285,6 +285,8 @@ pub fn run_stress_dir(dir: &Path, n: u32, output_dir: &Path, accelerated: bool) 
 }
 
 fn failed_report(wav: &Path, reason: &str) -> ReplayReport {
+    use super::failure_classifier::classify_assertion;
+    use super::report::ClassifiedFailure;
     ReplayReport {
         wav_path: wav.to_string_lossy().into_owned(),
         run_duration_ms: 0,
@@ -304,5 +306,13 @@ fn failed_report(wav: &Path, reason: &str) -> ReplayReport {
             failures: vec![reason.to_string()],
         }],
         defects_detected: vec![format!("Subprocess failure: {}", reason)],
+        classified_failures: vec![ClassifiedFailure {
+            assertion_id: "SUBPROCESS".to_string(),
+            class: classify_assertion("SUBPROCESS"),
+            message: reason.to_string(),
+        }],
+        latency_p95_wake_ms: None,
+        latency_p95_stt_ms: None,
+        latency_p95_pipeline_ms: None,
     }
 }

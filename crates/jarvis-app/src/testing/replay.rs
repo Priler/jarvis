@@ -39,6 +39,15 @@ pub enum ReplayCommand {
         output_dir: PathBuf,
         accelerated: bool,
     },
+    /// `background-validation <dir> [--out <dir>] [--accelerated]`
+    ///
+    /// Runs all WAVs in `dir` as background (expected_wake=false) audio and
+    /// reports false-wakes-per-hour and related FP statistics.
+    BackgroundValidation {
+        dir: PathBuf,
+        output_dir: PathBuf,
+        accelerated: bool,
+    },
 }
 
 /// Returns true if `--accelerated` appears in argv.
@@ -94,6 +103,11 @@ pub fn parse_replay_command() -> Option<ReplayCommand> {
                 accelerated,
             })
         }
+        "background-validation" => Some(ReplayCommand::BackgroundValidation {
+            dir: PathBuf::from(&args[2]),
+            output_dir: out_flag,
+            accelerated,
+        }),
         _ => None,
     }
 }

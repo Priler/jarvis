@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 
 pub mod assertions;
+pub mod corpus_metadata;
 pub mod failure_classifier;
 pub mod harness;
 pub mod replay;
 pub mod report;
 pub mod scenario;
 pub mod session_log;
+pub mod statistical;
 
 use once_cell::sync::OnceCell;
 use std::sync::mpsc::SyncSender;
@@ -72,6 +74,9 @@ pub enum ValidationEvent {
     SpeakingGateCleared { forced: bool, ts: u64 },
     /// An IPC event was sent to GUI clients.
     IpcEvent { tag: &'static str, ts: u64 },
+    /// Rustpotter detection score for a wake event that passed the threshold.
+    /// Published once per confirmed wake (after debounce + session guard pass).
+    WakeScore { score: f32, threshold: f32, ts: u64 },
 }
 
 impl ValidationEvent {
@@ -86,7 +91,8 @@ impl ValidationEvent {
             | Self::RecognizerReset { ts, .. }
             | Self::SpeakingGateSet { ts, .. }
             | Self::SpeakingGateCleared { ts, .. }
-            | Self::IpcEvent { ts, .. } => *ts,
+            | Self::IpcEvent { ts, .. }
+            | Self::WakeScore { ts, .. } => *ts,
         }
     }
 
@@ -102,6 +108,7 @@ impl ValidationEvent {
             Self::SpeakingGateSet { .. } => "gate_set",
             Self::SpeakingGateCleared { .. } => "gate_clear",
             Self::IpcEvent { .. } => "ipc_event",
+            Self::WakeScore { .. } => "wake_score",
         }
     }
 }

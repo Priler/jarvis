@@ -53,6 +53,9 @@ pub struct SessionJournal {
     last_command_info: Option<(String, u64)>,
     /// Snapshot: last WakeSessionClose was clean or dirty.
     last_close_clean: Option<bool>,
+    /// Rustpotter detection scores for all confirmed wake events.
+    /// Used for threshold calibration analysis.
+    pub wake_scores: Vec<f32>,
 }
 
 impl SessionJournal {
@@ -78,6 +81,7 @@ impl SessionJournal {
             duplicate_commands: 0,
             last_command_info: None,
             last_close_clean: None,
+            wake_scores: Vec::new(),
         }
     }
 
@@ -140,6 +144,9 @@ impl SessionJournal {
             }
             ValidationEvent::IpcEvent { tag, ts } => {
                 self.ipc_events.push((tag, *ts));
+            }
+            ValidationEvent::WakeScore { score, .. } => {
+                self.wake_scores.push(*score);
             }
             _ => {}
         }

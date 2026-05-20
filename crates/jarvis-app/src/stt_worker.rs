@@ -848,6 +848,14 @@ fn run_inner(
 
                 if vosk_wake || frame.rustpotter_wake {
                     if let Some(sid) = ctx.open_wake_session(vosk_wake, frame.rustpotter_wake) {
+                        // Publish wake score for threshold calibration analysis.
+                        if frame.rustpotter_wake {
+                            crate::testing::publish(crate::testing::ValidationEvent::WakeScore {
+                                score: listener::get_last_detect_score(),
+                                threshold: jarvis_core::config::RUSPOTTER_MIN_SCORE,
+                                ts: crate::testing::now_ms(),
+                            });
+                        }
                         info!("[RESET][WAKE S:{}] wake_recognizer reason=wake_complete", sid);
                         stt::reset_wake_recognizer();
                         ctx.session_resets += 1;

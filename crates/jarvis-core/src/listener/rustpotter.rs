@@ -19,12 +19,39 @@ static EXPECTED_FRAME_SIZE: AtomicUsize = AtomicUsize::new(0);
 static MAX_SCORE: AtomicU32 = AtomicU32::new(0); // f32::to_bits()
 static FRAME_COUNT: AtomicUsize = AtomicUsize::new(0);
 
+/// Score of the most recent detection that passed the threshold.
+/// Updated atomically in data_callback() when above_threshold is true.
+/// Read by stt_worker to publish WakeScore validation events.
+static LAST_DETECT_SCORE: AtomicU32 = AtomicU32::new(0);
+
+/// Runtime-configurable minimum score override.
+/// Set from env var JARVIS_WAKE_THRESHOLD during init().
+/// 0.0 means "use config::RUSPOTTER_MIN_SCORE".
+static RUNTIME_MIN_SCORE: AtomicU32 = AtomicU32::new(0);
+
 pub fn get_max_score() -> f32 {
     f32::from_bits(MAX_SCORE.load(Ordering::Relaxed))
 }
 
 pub fn get_frame_count() -> usize {
     FRAME_COUNT.load(Ordering::Relaxed)
+}
+
+pub fn get_last_detect_score() -> f32 {
+    f32::from_bits(LAST_DETECT_SCORE.load(Ordering::Relaxed))
+}
+
+/// Override the minimum detection score at runtime.
+/// Called by listener::set_min_score() after init.
+pub fn set_min_score(v: f32) {
+    RUNTIME_MIN_SCORE.store(v.to_bits(), Ordering::Relaxed);
+    info!("[WAKE] Runtime threshold override: {:.3}", v);
+}
+
+/// Effective minimum score: runtime override if set, else config default.
+fn effective_min_score() -> f32 {
+    let rt = f32::from_bits(RUNTIME_MIN_SCORE.load(Ordering::Relaxed));
+    if rt > 0.0 { rt } else { config::RUSPOTTER_MIN_SCORE }
 }
 
 pub fn init() -> Result<(), ()> {
@@ -109,6 +136,17 @@ pub fn init() -> Result<(), ()> {
             if loaded == 0 {
                 error!("No wakeword models were loaded — Rustpotter cannot detect wake words.");
                 return Err(());
+            }
+
+            // Allow threshold override for threshold calibration experiments.
+            // Set JARVIS_WAKE_THRESHOLD=0.50 (or any f32) before launch.
+            if let Ok(val) = std::env::var("JARVIS_WAKE_THRESHOLD") {
+                if let Ok(f) = val.parse::<f32>() {
+                    RUNTIME_MIN_SCORE.store(f.to_bits(), Ordering::Relaxed);
+                    info!("[WAKE] Threshold override from JARVIS_WAKE_THRESHOLD env: {:.3}", f);
+                } else {
+                    warn!("[WAKE] JARVIS_WAKE_THRESHOLD '{}' is not a valid f32 — using default", val);
+                }
             }
 
             let _ = RUSTPOTTER.set(Mutex::new(rinstance));
@@ -303,13 +341,16 @@ pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
                 }
             }
 
-            let above_threshold = detection.score > config::RUSPOTTER_MIN_SCORE;
+            let threshold = effective_min_score();
+            let above_threshold = detection.score > threshold;
             info!(
                 "[WAKE] score: {:.3}, threshold: {:.3}, detected: {}",
-                detection.score, config::RUSPOTTER_MIN_SCORE, above_threshold
+                detection.score, threshold, above_threshold
             );
 
             if above_threshold {
+                // Store score for validation event publishing (read by stt_worker).
+                LAST_DETECT_SCORE.store(detection.score.to_bits(), Ordering::Relaxed);
                 info!("[WAKE] Wake word DETECTED! name={:?}", detection.name);
                 return Some(0);
             }

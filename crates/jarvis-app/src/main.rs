@@ -81,6 +81,26 @@ fn main() -> Result<(), String> {
                 testing::replay::print_dir_summary(&report);
                 std::process::exit(if report.failed > 0 { 1 } else { 0 });
             }
+            testing::replay::ReplayCommand::BackgroundValidation { dir, output_dir, accelerated } => {
+                let stats = testing::statistical::run_background_validation(
+                    &dir, &output_dir, accelerated,
+                );
+                println!("[BGVAL] === Background Validation Results ===");
+                println!("[BGVAL] Files processed : {}", stats.total_files);
+                println!("[BGVAL] Total audio     : {:.2}h", stats.total_duration_hours);
+                println!("[BGVAL] False wakes     : {}", stats.false_wakes);
+                println!("[BGVAL] False wakes/h   : {:.3}", stats.false_wakes_per_hour);
+                println!("[BGVAL] Ghost commands  : {}", stats.ghost_commands);
+                println!("[BGVAL] Ghost cmds/h    : {:.3}", stats.ghost_commands_per_hour);
+                println!("[BGVAL] Dup activations : {}", stats.duplicate_activation_events);
+                // Write JSON report
+                if let Ok(json) = serde_json::to_string_pretty(&stats) {
+                    let out = output_dir.join("background_validation.json");
+                    let _ = std::fs::write(&out, json);
+                    println!("[BGVAL] Report: {:?}", out);
+                }
+                std::process::exit(if stats.false_wakes > 0 { 1 } else { 0 });
+            }
         }
     }
 
