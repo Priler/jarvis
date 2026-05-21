@@ -467,3 +467,204 @@
 {"tick_id":64,"ts_ms":1779371521456,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
 {"tick_id":65,"ts_ms":1779371521458,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
 {"tick_id":66,"ts_ms":1779371521459,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":0,"ts_ms":1779382245653,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":1,"ts_ms":1779382245653,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":2,"ts_ms":1779382245653,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":3,"ts_ms":1779382245654,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+
+
+
+{"tick_id":6,"ts_ms":1779382245685,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":4,"ts_ms":1779382245685,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":7,"ts_ms":1779382245685,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":5,"ts_ms":1779382245685,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+{"tick_id":8,"ts_ms":1779382245688,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":10,"ts_ms":1779382245692,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":11,"ts_ms":1779382245693,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":9,"ts_ms":1779382245692,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+
+{"tick_id":12,"ts_ms":1779382245693,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+
+{"tick_id":13,"ts_ms":1779382245695,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":14,"ts_ms":1779382245695,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":16,"ts_ms":1779382245695,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":15,"ts_ms":1779382245695,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+
+{"tick_id":17,"ts_ms":1779382245700,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":18,"ts_ms":1779382245700,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":["safety: allowed"]}{"tick_id":19,"ts_ms":1779382245700,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":20,"ts_ms":1779382245700,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+
+
+
+{"tick_id":21,"ts_ms":1779382245701,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":22,"ts_ms":1779382245701,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}{"tick_id":24,"ts_ms":1779382245702,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":23,"ts_ms":1779382245701,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+
+
+{"tick_id":25,"ts_ms":1779382245706,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":27,"ts_ms":1779382245713,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}{"tick_id":26,"ts_ms":1779382245713,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":28,"ts_ms":1779382245713,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}{"tick_id":29,"ts_ms":1779382245713,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+
+{"tick_id":32,"ts_ms":1779382245716,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}{"tick_id":30,"ts_ms":1779382245716,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":31,"ts_ms":1779382245716,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":33,"ts_ms":1779382245716,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+
+
+{"tick_id":34,"ts_ms":1779382245718,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}{"tick_id":35,"ts_ms":1779382245718,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+
+{"tick_id":36,"ts_ms":1779382245760,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":37,"ts_ms":1779382245763,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":38,"ts_ms":1779382245765,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":39,"ts_ms":1779382245766,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":40,"ts_ms":1779382245934,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":41,"ts_ms":1779382245936,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":42,"ts_ms":1779382245938,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":43,"ts_ms":1779382245939,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":44,"ts_ms":1779382245941,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":45,"ts_ms":1779382245943,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":46,"ts_ms":1779382245945,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":47,"ts_ms":1779382245946,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":48,"ts_ms":1779382245947,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":49,"ts_ms":1779382245948,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":50,"ts_ms":1779382245950,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":51,"ts_ms":1779382245951,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":52,"ts_ms":1779382245952,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":53,"ts_ms":1779382245954,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":54,"ts_ms":1779382245991,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":55,"ts_ms":1779382245992,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":56,"ts_ms":1779382245992,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":[]}
+
+{"tick_id":57,"ts_ms":1779382245993,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":58,"ts_ms":1779382245995,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":59,"ts_ms":1779382245997,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":60,"ts_ms":1779382245998,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":61,"ts_ms":1779382245999,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":[]}
+
+{"tick_id":62,"ts_ms":1779382246000,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":63,"ts_ms":1779382246002,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":64,"ts_ms":1779382246002,"phase":"Verify","outcome":{"Failed":{"reason":"test failure"}},"duration_ms":0,"notes":[]}
+
+{"tick_id":65,"ts_ms":1779382246004,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":66,"ts_ms":1779382246005,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":0,"ts_ms":1779382744441,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":1,"ts_ms":1779382744441,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":2,"ts_ms":1779382744441,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":3,"ts_ms":1779382744442,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+
+
+{"tick_id":6,"ts_ms":1779382744452,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":5,"ts_ms":1779382744452,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":4,"ts_ms":1779382744452,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+{"tick_id":7,"ts_ms":1779382744453,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":8,"ts_ms":1779382744455,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":9,"ts_ms":1779382744455,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":10,"ts_ms":1779382744456,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+
+{"tick_id":11,"ts_ms":1779382744458,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":13,"ts_ms":1779382744459,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}{"tick_id":14,"ts_ms":1779382744459,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}{"tick_id":12,"ts_ms":1779382744459,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+
+
+{"tick_id":15,"ts_ms":1779382744461,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":16,"ts_ms":1779382744462,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":17,"ts_ms":1779382744462,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":18,"ts_ms":1779382744463,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+
+
+{"tick_id":19,"ts_ms":1779382744465,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":20,"ts_ms":1779382744466,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":21,"ts_ms":1779382744466,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":["safety: allowed"]}
+
+{"tick_id":22,"ts_ms":1779382744467,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":23,"ts_ms":1779382744468,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+
+{"tick_id":24,"ts_ms":1779382744470,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":25,"ts_ms":1779382744471,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":26,"ts_ms":1779382744473,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":27,"ts_ms":1779382744474,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":28,"ts_ms":1779382744476,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":29,"ts_ms":1779382744476,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":31,"ts_ms":1779382744476,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":30,"ts_ms":1779382744476,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+{"tick_id":32,"ts_ms":1779382744479,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":34,"ts_ms":1779382744480,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}{"tick_id":35,"ts_ms":1779382744480,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}{"tick_id":33,"ts_ms":1779382744480,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+
+
+{"tick_id":36,"ts_ms":1779382744487,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":37,"ts_ms":1779382744488,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":38,"ts_ms":1779382744490,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":39,"ts_ms":1779382744491,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":40,"ts_ms":1779382744493,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":41,"ts_ms":1779382744495,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":42,"ts_ms":1779382744496,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":43,"ts_ms":1779382744497,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":44,"ts_ms":1779382744498,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":45,"ts_ms":1779382744498,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":46,"ts_ms":1779382744499,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+
+{"tick_id":47,"ts_ms":1779382744500,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":48,"ts_ms":1779382744501,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":49,"ts_ms":1779382744503,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+
+{"tick_id":50,"ts_ms":1779382744504,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":52,"ts_ms":1779382744504,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":51,"ts_ms":1779382744504,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":53,"ts_ms":1779382744506,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":54,"ts_ms":1779382744506,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":55,"ts_ms":1779382744507,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":56,"ts_ms":1779382744507,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+{"tick_id":57,"ts_ms":1779382744509,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":59,"ts_ms":1779382744510,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":58,"ts_ms":1779382744510,"phase":"Verify","outcome":{"Failed":{"reason":"test failure"}},"duration_ms":0,"notes":[]}
+
+{"tick_id":60,"ts_ms":1779382744511,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":61,"ts_ms":1779382744513,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":62,"ts_ms":1779382744513,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":63,"ts_ms":1779382744516,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":64,"ts_ms":1779382744517,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":65,"ts_ms":1779382744519,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":68,"ts_ms":1779382744520,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":5,"ts_ms":1779388517652,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":3,"ts_ms":1779388517630,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":4,"ts_ms":1779388517652,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":8,"ts_ms":1779388517653,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":7,"ts_ms":1779388517653,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":0,"ts_ms":1779388517629,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":1,"ts_ms":1779388517630,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}{"tick_id":6,"ts_ms":1779388517652,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":2,"ts_ms":1779388517630,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+
+
+
+
+
+
+
+{"tick_id":9,"ts_ms":1779388517718,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":11,"ts_ms":1779388517718,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":12,"ts_ms":1779388517718,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":10,"ts_ms":1779388517718,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":14,"ts_ms":1779388517718,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":13,"ts_ms":1779388517718,"phase":"Verify","outcome":{"Failed":{"reason":"test failure"}},"duration_ms":0,"notes":[]}{"tick_id":15,"ts_ms":1779388517718,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+
+
+
+{"tick_id":16,"ts_ms":1779388517721,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":18,"ts_ms":1779388517724,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":17,"ts_ms":1779388517723,"phase":"Reason","outcome":"Completed","duration_ms":1,"notes":["inferences: 0"]}
+
+{"tick_id":19,"ts_ms":1779388517724,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}{"tick_id":22,"ts_ms":1779388517724,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":20,"ts_ms":1779388517724,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":21,"ts_ms":1779388517724,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+
+
+
+{"tick_id":24,"ts_ms":1779388517726,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}{"tick_id":23,"ts_ms":1779388517726,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+
+{"tick_id":26,"ts_ms":1779388517727,"phase":"Act","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":28,"ts_ms":1779388517727,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":27,"ts_ms":1779388517727,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}{"tick_id":25,"ts_ms":1779388517727,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+
+
+
+{"tick_id":29,"ts_ms":1779388517731,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":30,"ts_ms":1779388517731,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+
+{"tick_id":32,"ts_ms":1779388517733,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}{"tick_id":31,"ts_ms":1779388517733,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+
+{"tick_id":34,"ts_ms":1779388517734,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":33,"ts_ms":1779388517734,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+
+{"tick_id":35,"ts_ms":1779388517736,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":36,"ts_ms":1779388517736,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}{"tick_id":37,"ts_ms":1779388517736,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+
+
+{"tick_id":38,"ts_ms":1779388517736,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":40,"ts_ms":1779388517738,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":39,"ts_ms":1779388517738,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}{"tick_id":42,"ts_ms":1779388517738,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}{"tick_id":41,"ts_ms":1779388517738,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+
+
+{"tick_id":43,"ts_ms":1779388517739,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":44,"ts_ms":1779388517741,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":45,"ts_ms":1779388517741,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":46,"ts_ms":1779388517741,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}{"tick_id":47,"ts_ms":1779388517742,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+
+{"tick_id":48,"ts_ms":1779388517745,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":49,"ts_ms":1779388517749,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":50,"ts_ms":1779388517752,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":51,"ts_ms":1779388517753,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":52,"ts_ms":1779388517755,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":53,"ts_ms":1779388517756,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":54,"ts_ms":1779388517757,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":55,"ts_ms":1779388517758,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":57,"ts_ms":1779388517761,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":58,"ts_ms":1779388517795,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}
+{"tick_id":59,"ts_ms":1779388517798,"phase":"Observe","outcome":"Completed","duration_ms":0,"notes":["changes: 0"]}
+{"tick_id":60,"ts_ms":1779388517801,"phase":"Model","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":61,"ts_ms":1779388517802,"phase":"Reason","outcome":"Completed","duration_ms":0,"notes":["inferences: 0"]}
+{"tick_id":62,"ts_ms":1779388517803,"phase":"Predict","outcome":"Completed","duration_ms":0,"notes":["predictions: 0"]}
+{"tick_id":63,"ts_ms":1779388517805,"phase":"Plan","outcome":"Completed","duration_ms":0,"notes":["attention: Idle"]}
+{"tick_id":64,"ts_ms":1779388517806,"phase":"Act","outcome":{"Skipped":{"reason":"safety blocked or rate-limited"}},"duration_ms":0,"notes":[]}
+{"tick_id":65,"ts_ms":1779388517807,"phase":"Verify","outcome":"Completed","duration_ms":0,"notes":["anomalies: 0"]}
+{"tick_id":66,"ts_ms":1779388517808,"phase":"Learn","outcome":"Completed","duration_ms":0,"notes":[]}
+{"tick_id":67,"ts_ms":1779388517810,"phase":"Adapt","outcome":"Completed","duration_ms":0,"notes":["stale continuity cleared"]}

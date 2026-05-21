@@ -33,3 +33,18 @@
 {"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521908,"attempts":0,"context":{}}
 {"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521909,"attempts":0,"context":{}}
 {"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521911,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382246552,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382246553,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382246554,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382246553,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382246800,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382744804,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382744806,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382744808,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382744807,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779382744868,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518368,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518373,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518374,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518375,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518384,"attempts":0,"context":{}}

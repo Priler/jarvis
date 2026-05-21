@@ -28,3 +28,24 @@
 {"id":4,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779371521659,"updated_ms":1779371521659,"progress":0.0,"notes":[]}
 {"id":5,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779371521658,"updated_ms":1779371521658,"progress":0.0,"notes":[]}
 {"id":6,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779371521659,"updated_ms":1779371521659,"progress":0.0,"notes":[]}
+{"id":1,"kind":{"MultiDayGoal":{"title":"lhg.mday.unique3","deadline_ms":null}},"status":"Active","created_ms":1779382246452,"updated_ms":1779382246452,"progress":0.0,"notes":[]}
+{"id":2,"kind":{"BackgroundObjective":{"description":"lhg.test.unique1"}},"status":"Active","created_ms":1779382246459,"updated_ms":1779382246459,"progress":0.0,"notes":[]}
+{"id":3,"kind":{"PersistentWorkflow":{"workflow_id":"wf99"}},"status":"Active","created_ms":1779382246453,"updated_ms":1779382246453,"progress":0.0,"notes":[]}
+{"id":4,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779382246453,"updated_ms":1779382246453,"progress":0.0,"notes":[]}
+{"id":5,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779382246454,"updated_ms":1779382246454,"progress":0.0,"notes":[]}
+{"id":6,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779382246452,"updated_ms":1779382246452,"progress":0.0,"notes":[]}
+{"id":1,"kind":{"MultiDayGoal":{"title":"lhg.mday.unique3","deadline_ms":null}},"status":"Active","created_ms":1779382744629,"updated_ms":1779382744629,"progress":0.0,"notes":[]}
+{"id":2,"kind":{"BackgroundObjective":{"description":"lhg.test.unique1"}},"status":"Active","created_ms":1779382744636,"updated_ms":1779382744636,"progress":0.0,"notes":[]}
+{"id":3,"kind":{"PersistentWorkflow":{"workflow_id":"wf99"}},"status":"Active","created_ms":1779382744631,"updated_ms":1779382744631,"progress":0.0,"notes":[]}
+{"id":4,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779382744632,"updated_ms":1779382744632,"progress":0.0,"notes":[]}
+{"id":5,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779382744633,"updated_ms":1779382744633,"progress":0.0,"notes":[]}
+{"id":6,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779382744631,"updated_ms":1779382744631,"progress":0.0,"notes":[]}
+{"id":1,"kind":{"BackgroundObjective":{"description":"coord_goal"}},"status":"Active","created_ms":1779388517627,"updated_ms":1779388517627,"progress":0.0,"notes":[]}
+{"id":2,"kind":{"MultiDayGoal":{"title":"lhg.mday.unique3","deadline_ms":null}},"status":"Active","created_ms":1779388518090,"updated_ms":1779388518090,"progress":0.0,"notes":[]}
+{"id":3,"kind":{"BackgroundObjective":{"description":"lhg.test.unique1"}},"status":"Active","created_ms":1779388518092,"updated_ms":1779388518092,"progress":0.0,"notes":[]}
+{"id":4,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779388518091,"updated_ms":1779388518091,"progress":0.0,"notes":[]}
+{"id":5,"kind":{"PersistentWorkflow":{"workflow_id":"wf99"}},"status":"Active","created_ms":1779388518092,"updated_ms":1779388518092,"progress":0.0,"notes":[]}
+{"id":6,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779388518093,"updated_ms":1779388518093,"progress":0.0,"notes":[]}
+{"id":7,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779388518094,"updated_ms":1779388518094,"progress":0.0,"notes":[]}
+{"id":8,"kind":{"MultiDayGoal":{"title":"test multi-day goal","deadline_ms":null}},"status":"Active","created_ms":1779388518095,"updated_ms":1779388518095,"progress":0.0,"notes":[]}
+{"id":9,"kind":{"BackgroundObjective":{"description":"test goal"}},"status":"Active","created_ms":1779388518205,"updated_ms":1779388518205,"progress":0.0,"notes":[]}

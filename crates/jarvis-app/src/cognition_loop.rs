@@ -144,13 +144,15 @@ impl CognitionLoop {
         }
 
         // ── Phase: MetaCognition (Phase 18 live integration) ──────────────────
-        // Driven by meta_scheduler — will skip if subsystem is not yet due.
-        // Non-blocking: the live_meta_loop runs its own background thread;
-        // here we only call run_tick() if the meta loop is NOT running separately
-        // (test/constrained environments) to ensure at least one meta evaluation
-        // per cognition cycle.
         if !crate::live_meta_loop::is_running() {
             let _meta_tick = crate::live_meta_loop::run_tick();
+            phases_run += 1;
+        }
+
+        // ── Phase: HierarchicalCognition (Phase 19 integration) ───────────────
+        // Inline tick when background thread is absent (tests / constrained env).
+        if !crate::hierarchical_runtime::is_running() {
+            let _hier_tick = crate::hierarchical_runtime::run_tick();
             phases_run += 1;
         }
 
@@ -178,6 +180,8 @@ impl CognitionLoop {
 
         // Start Phase 18 live meta-cognition loop alongside the cognition loop
         crate::live_meta_loop::start();
+        // Start Phase 19 hierarchical cognition runtime
+        crate::hierarchical_runtime::start();
 
         std::thread::Builder::new()
             .name("jarvis-cognition-loop".to_string())
@@ -196,10 +200,11 @@ impl CognitionLoop {
             .ok();
     }
 
-    /// Signal the background loop and live meta-loop to stop.
+    /// Signal the background loop, live meta-loop, and hierarchical runtime to stop.
     pub fn stop() {
         LOOP_STOP.store(true, Ordering::SeqCst);
         crate::live_meta_loop::stop();
+        crate::hierarchical_runtime::stop();
     }
 
     pub fn is_running() -> bool {
@@ -231,7 +236,7 @@ mod tests {
     fn run_tick_completes_all_phases() {
         init_stubs();
         let result = CognitionLoop::run_tick();
-        assert_eq!(result.phases_run, 9);
+        assert_eq!(result.phases_run, 11); // 9 original + 1 MetaCognition (18) + 1 Hierarchical (19)
     }
 
     #[test]
