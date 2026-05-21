@@ -143,6 +143,17 @@ impl CognitionLoop {
             phases_run += 1;
         }
 
+        // ── Phase: MetaCognition (Phase 18 live integration) ──────────────────
+        // Driven by meta_scheduler — will skip if subsystem is not yet due.
+        // Non-blocking: the live_meta_loop runs its own background thread;
+        // here we only call run_tick() if the meta loop is NOT running separately
+        // (test/constrained environments) to ensure at least one meta evaluation
+        // per cognition cycle.
+        if !crate::live_meta_loop::is_running() {
+            let _meta_tick = crate::live_meta_loop::run_tick();
+            phases_run += 1;
+        }
+
         let tick_id = LOOP_TICKS_TOTAL.load(Ordering::Relaxed);
         let duration_ms = ts_now().saturating_sub(start_ms);
 
@@ -158,12 +169,15 @@ impl CognitionLoop {
         TickResult { tick_id, phases_run, anomalies: anomaly_count, predictions: prediction_count, duration_ms }
     }
 
-    /// Start the background cognition loop thread.
+    /// Start the background cognition loop thread and the live meta-loop thread.
     pub fn start() {
         if LOOP_RUNNING.swap(true, Ordering::SeqCst) {
             return; // already running
         }
         LOOP_STOP.store(false, Ordering::SeqCst);
+
+        // Start Phase 18 live meta-cognition loop alongside the cognition loop
+        crate::live_meta_loop::start();
 
         std::thread::Builder::new()
             .name("jarvis-cognition-loop".to_string())
@@ -179,12 +193,13 @@ impl CognitionLoop {
                 }
                 LOOP_RUNNING.store(false, Ordering::SeqCst);
             })
-            .ok(); // Ignore spawn errors in test/constrained environments
+            .ok();
     }
 
-    /// Signal the background loop to stop.
+    /// Signal the background loop and live meta-loop to stop.
     pub fn stop() {
         LOOP_STOP.store(true, Ordering::SeqCst);
+        crate::live_meta_loop::stop();
     }
 
     pub fn is_running() -> bool {

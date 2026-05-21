@@ -3,3 +3,33 @@
 
 
 {"task_id":"task-dup","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364277054,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779366427273,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779366427276,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779366427278,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779366427280,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779366427283,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779367695544,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779367695558,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779367695561,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779367695560,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779367695565,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779368080335,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779368080339,"attempts":0,"context":{}}
+
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779368080341,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779368080342,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779368080346,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779369630661,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779369630688,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779369630696,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779369630701,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779369630703,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371325363,"attempts":0,"context":{}}{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371325362,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371325363,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371325364,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371325379,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521903,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521907,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521908,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521909,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779371521911,"attempts":0,"context":{}}

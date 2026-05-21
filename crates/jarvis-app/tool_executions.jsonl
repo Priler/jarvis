@@ -18,3 +18,27 @@
 
 {"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779364277057}
 {"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779364277307}
+{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779366427296}
+{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779366427301}
+{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779366427304}
+{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779366427306}
+{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779367695632}
+{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779367695636}
+{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779367695640}
+{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779367695643}
+{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779368080386}{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779368080392}{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779368080390}{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779368080391}
+
+
+
+{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779369630732}
+{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779369630735}
+{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779369630737}
+{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779369630738}
+{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779371325369}{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779371325368}{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779371325390}{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779371325402}
+
+
+
+{"tool_id":"app.open","outcome":{"Blocked":{"reason":"blocked pattern 'powershell -enc' in command text"}},"latency_ms":0,"ts_ms":1779371521942}
+{"tool_id":"app.open","outcome":"Success","latency_ms":0,"ts_ms":1779371521946}
+{"tool_id":"system.volume","outcome":"Success","latency_ms":0,"ts_ms":1779371521947}
+{"tool_id":"jarvis.nonexistent.tool","outcome":{"Cancelled":{"reason":"tool not found: jarvis.nonexistent.tool"}},"latency_ms":0,"ts_ms":1779371521949}
