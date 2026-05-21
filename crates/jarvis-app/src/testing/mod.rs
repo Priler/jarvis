@@ -2,6 +2,7 @@
 
 pub mod assertions;
 pub mod corpus_metadata;
+pub mod corpus_runner;
 pub mod failure_classifier;
 pub mod harness;
 pub mod replay;

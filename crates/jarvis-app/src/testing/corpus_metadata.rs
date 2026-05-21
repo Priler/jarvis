@@ -47,6 +47,23 @@ pub struct CorpusMetadata {
 
 fn default_noise_level() -> String { "quiet".to_string() }
 
+impl Default for CorpusMetadata {
+    fn default() -> Self {
+        Self {
+            expected_wake: false,
+            expected_command: None,
+            expected_false_positive: false,
+            noise_level: default_noise_level(),
+            distance_meters: None,
+            speaker_id: None,
+            microphone: None,
+            room_type: None,
+            category: None,
+            note: None,
+        }
+    }
+}
+
 impl CorpusMetadata {
     /// Load metadata from `<wav_path>.meta.json`.
     /// Returns None if the file does not exist or cannot be parsed.

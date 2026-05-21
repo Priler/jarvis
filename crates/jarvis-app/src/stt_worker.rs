@@ -692,8 +692,18 @@ fn run_inner(
     let wake_silence_threshold =
         ((1.5 * sample_rate as f32) / frame_length as f32) as u32;
 
+    let mut adaptive_tick: u32 = 0;
+    let mut prev_speaking = false;
+
     for frame in &frame_rx {
         LAST_STT_FRAME_MS.store(now_ms(), Ordering::Relaxed);
+
+        // ── Adaptive engine tick (every 50 frames ≈ 1.6 s) ───────────────────
+        adaptive_tick = adaptive_tick.wrapping_add(1);
+        if adaptive_tick % 50 == 0 {
+            crate::environment_profile::observe_frame(frame.vad_rms, frame.is_voice);
+            crate::adaptive_threshold::update_and_apply();
+        }
 
         // ── Degraded mode gate ─────────────────────────────────────────────────
         // When the watchdog has entered L3 degraded mode, drain frames without
@@ -737,8 +747,15 @@ fn run_inner(
             }
         }
 
+        // ── Playback state tracking for environment profiler ─────────────────
+        let speaking_now = audio::is_speaking();
+        if speaking_now != prev_speaking {
+            crate::environment_profile::set_playback(speaking_now);
+            prev_speaking = speaking_now;
+        }
+
         // ── Speaking gate (with stuck recovery + interrupt detection) ─────────
-        if audio::is_speaking() {
+        if speaking_now {
             if ctx.check_speaking_gate_stuck() {
                 // Gate was stuck and is now cleared — fall through.
             } else if !matches!(ctx.state, State::CommandMode { .. }) {
@@ -846,10 +863,31 @@ fn run_inner(
                         matched
                     });
 
-                if vosk_wake || frame.rustpotter_wake {
-                    if let Some(sid) = ctx.open_wake_session(vosk_wake, frame.rustpotter_wake) {
+                // Confidence fusion gate: suppress marginal Rustpotter wakes
+                // when multi-signal evidence points to a false positive.
+                let rustpotter_confirmed = if frame.rustpotter_wake {
+                    let ev = crate::confidence_fusion::WakeEvidence {
+                        wake_score: listener::get_last_detect_score(),
+                        vad_rms: frame.vad_rms,
+                        in_problematic_session: ctx.session_timeouts > 2,
+                        consecutive_timeouts: ctx.session_timeouts,
+                    };
+                    let fused = crate::confidence_fusion::fuse(&ev);
+                    if !fused.confirmed {
+                        info!(
+                            "[FUSION] wake suppressed score={:.3} reason={}",
+                            fused.score, fused.suppression_reason
+                        );
+                    }
+                    fused.confirmed
+                } else {
+                    false
+                };
+
+                if vosk_wake || rustpotter_confirmed {
+                    if let Some(sid) = ctx.open_wake_session(vosk_wake, rustpotter_confirmed) {
                         // Publish wake score for threshold calibration analysis.
-                        if frame.rustpotter_wake {
+                        if rustpotter_confirmed {
                             crate::testing::publish(crate::testing::ValidationEvent::WakeScore {
                                 score: listener::get_last_detect_score(),
                                 threshold: jarvis_core::config::RUSPOTTER_MIN_SCORE,
@@ -1096,6 +1134,7 @@ fn run_inner(
 
             // ── 4. Post-command cooldown ──────────────────────────────────────
             State::Cooldown => {
+                crate::adaptive_threshold::record_session_close(ctx.cooldown_clean);
                 ctx.finalize_wake();
             }
 

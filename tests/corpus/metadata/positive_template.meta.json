@@ -1,0 +1,13 @@
+{
+  "speaker_id": "speaker_01",
+  "gender": "male",
+  "microphone": "intel_smart_sound",
+  "room_type": "quiet_room",
+  "distance_meters": 1.0,
+  "noise_level": "quiet",
+  "expected_wake": true,
+  "expected_command": null,
+  "expected_false_positive": false,
+  "category": "clean",
+  "note": "Clean wake recording at 1 m"
+}

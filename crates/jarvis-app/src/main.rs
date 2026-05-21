@@ -18,10 +18,14 @@ extern crate simple_log;
 mod log;
 
 // include app
+mod adaptive_threshold;
 mod app;
 mod agents;
+mod assistant_voice_fingerprint;
 mod bus;
 mod cognitive;
+mod confidence_fusion;
+mod environment_profile;
 mod failures;
 mod governance;
 mod health;
@@ -29,7 +33,18 @@ mod perception;
 mod platform;
 mod plugin;
 mod scheduler;
+mod adaptive_drift_detector;
+mod orchestration_runtime;
 mod recovery;
+mod runtime_bus;
+mod runtime_health;
+mod runtime_modes;
+mod runtime_observability;
+mod runtime_recovery;
+mod runtime_watchdog;
+mod service_observability;
+mod service_recovery;
+mod service_watchdogs;
 mod stt_worker;
 mod testing;
 mod voice_intelligence;
@@ -50,6 +65,23 @@ fn main() -> Result<(), String> {
 
     // initialize logging
     log::init_logging()?;
+
+    // ── Corpus validation dispatch ────────────────────────────────────────────
+    if let Some(cfg) = testing::corpus_runner::parse_corpus_validation_command() {
+        let report = testing::corpus_runner::run_corpus_validation(&cfg);
+        testing::corpus_runner::print_corpus_summary(&report);
+        if let Ok(json) = serde_json::to_string_pretty(&report) {
+            let out = cfg.output_dir.join("corpus_run_report.json");
+            let _ = std::fs::write(&out, json);
+            println!("[CORPUS] Full report: {:?}", out);
+        }
+        let exit_code = match report.certification {
+            testing::corpus_runner::CertificationDecision::ProductionReady => 0,
+            testing::corpus_runner::CertificationDecision::LimitedReady    => 2,
+            testing::corpus_runner::CertificationDecision::NotReady        => 1,
+        };
+        std::process::exit(exit_code);
+    }
 
     // ── Replay / validation dispatch ──────────────────────────────────────────
     if let Some(cmd) = testing::replay::parse_replay_command() {
@@ -361,6 +393,12 @@ fn main() -> Result<(), String> {
 
     // start the central watchdog (after all subsystems are fully initialized)
     watchdog::start();
+
+    // start the production hardening watchdog (slow timescale: 30s/60s/300s)
+    runtime_watchdog::start();
+
+    // start the service orchestration runtime (modular service platform)
+    orchestration_runtime::start();
 
     tray::init_blocking(settings);
 
