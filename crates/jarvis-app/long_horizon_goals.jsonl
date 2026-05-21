@@ -49,3 +49,21 @@
 {"id":7,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779388518094,"updated_ms":1779388518094,"progress":0.0,"notes":[]}
 {"id":8,"kind":{"MultiDayGoal":{"title":"test multi-day goal","deadline_ms":null}},"status":"Active","created_ms":1779388518095,"updated_ms":1779388518095,"progress":0.0,"notes":[]}
 {"id":9,"kind":{"BackgroundObjective":{"description":"test goal"}},"status":"Active","created_ms":1779388518205,"updated_ms":1779388518205,"progress":0.0,"notes":[]}
+{"id":1,"kind":{"BackgroundObjective":{"description":"coord_goal"}},"status":"Active","created_ms":1779394107644,"updated_ms":1779394107644,"progress":0.0,"notes":[]}
+{"id":2,"kind":{"MultiDayGoal":{"title":"lhg.mday.unique3","deadline_ms":null}},"status":"Active","created_ms":1779394108398,"updated_ms":1779394108398,"progress":0.0,"notes":[]}
+{"id":3,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779394108399,"updated_ms":1779394108399,"progress":0.0,"notes":[]}
+{"id":4,"kind":{"BackgroundObjective":{"description":"lhg.test.unique1"}},"status":"Active","created_ms":1779394108399,"updated_ms":1779394108399,"progress":0.0,"notes":[]}
+{"id":5,"kind":{"PersistentWorkflow":{"workflow_id":"wf99"}},"status":"Active","created_ms":1779394108402,"updated_ms":1779394108402,"progress":0.0,"notes":[]}
+{"id":6,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779394108404,"updated_ms":1779394108404,"progress":0.0,"notes":[]}
+{"id":7,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779394108406,"updated_ms":1779394108406,"progress":0.0,"notes":[]}
+{"id":8,"kind":{"MultiDayGoal":{"title":"test multi-day goal","deadline_ms":null}},"status":"Active","created_ms":1779394108407,"updated_ms":1779394108407,"progress":0.0,"notes":[]}
+{"id":9,"kind":{"BackgroundObjective":{"description":"test goal"}},"status":"Active","created_ms":1779394108521,"updated_ms":1779394108521,"progress":0.0,"notes":[]}
+{"id":1,"kind":{"BackgroundObjective":{"description":"coord_goal"}},"status":"Active","created_ms":1779395606384,"updated_ms":1779395606384,"progress":0.0,"notes":[]}
+{"id":2,"kind":{"MultiDayGoal":{"title":"lhg.mday.unique3","deadline_ms":null}},"status":"Active","created_ms":1779395606970,"updated_ms":1779395606970,"progress":0.0,"notes":[]}
+{"id":3,"kind":{"ResumableTask":{"task_id":"lhg.task.unique2"}},"status":"Active","created_ms":1779395606971,"updated_ms":1779395606971,"progress":0.0,"notes":[]}
+{"id":4,"kind":{"PersistentWorkflow":{"workflow_id":"wf99"}},"status":"Active","created_ms":1779395606971,"updated_ms":1779395606971,"progress":0.0,"notes":[]}
+{"id":5,"kind":{"BackgroundObjective":{"description":"lhg.counter.unique5"}},"status":"Active","created_ms":1779395606971,"updated_ms":1779395606971,"progress":0.0,"notes":[]}
+{"id":6,"kind":{"BackgroundObjective":{"description":"lhg.test.unique1"}},"status":"Active","created_ms":1779395606972,"updated_ms":1779395606972,"progress":0.0,"notes":[]}
+{"id":7,"kind":{"ProjectContinuity":{"project":"lhg.proj.unique4"}},"status":"Active","created_ms":1779395606972,"updated_ms":1779395606972,"progress":0.0,"notes":[]}
+{"id":8,"kind":{"MultiDayGoal":{"title":"test multi-day goal","deadline_ms":null}},"status":"Active","created_ms":1779395606973,"updated_ms":1779395606973,"progress":0.0,"notes":[]}
+{"id":9,"kind":{"BackgroundObjective":{"description":"test goal"}},"status":"Active","created_ms":1779395607083,"updated_ms":1779395607083,"progress":0.0,"notes":[]}

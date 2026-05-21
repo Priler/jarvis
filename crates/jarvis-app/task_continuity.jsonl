@@ -48,3 +48,13 @@
 
 
 {"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779388518384,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779394108536,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779394108537,"attempts":0,"context":{}}
+
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779394108537,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779394108538,"attempts":0,"context":{}}
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779394108561,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607179,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607184,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607186,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607187,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607193,"attempts":0,"context":{}}

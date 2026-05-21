@@ -206,6 +206,40 @@ pub fn all_plans() -> Vec<GeneralizedPlan> {
     STATE.lock().map(|s| s.plans.clone()).unwrap_or_default()
 }
 
+// ── Planner V2: abstraction-aware planning ────────────────────────────────────
+
+/// Create a plan enriched with conceptual abstractions from Phase 20.
+/// Reliable concepts boost goal priority; transfer records provide extra subgoals.
+pub fn create_from_abstractions(mut base_goals: Vec<PlanGoal>) -> GeneralizedPlan {
+    // Boost goal priorities based on matching concepts
+    for goal in base_goals.iter_mut() {
+        if let Some(concept) = crate::concept_engine::best_match(&goal.description) {
+            if concept.is_reliable() {
+                // Raise priority proportionally to concept confidence
+                goal.priority = (goal.priority + concept.confidence * 0.2).min(1.0);
+            }
+        }
+    }
+
+    // Inject subgoals derived from validated transfers
+    let transfers = crate::transfer_reasoning::all_validated();
+    for transfer in transfers.iter().take(3) {
+        let sub = PlanGoal::new(
+            format!("transfer_{}", transfer.id),
+            format!("Apply {} from {}", transfer.strategy, transfer.from_context),
+            transfer.success_prob * 0.6,
+            0,
+        );
+        if let Some(first) = base_goals.first_mut() {
+            if first.subgoals.len() < MAX_PLAN_DEPTH {
+                first.subgoals.push(sub);
+            }
+        }
+    }
+
+    create(base_goals)
+}
+
 fn ts_now() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

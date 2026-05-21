@@ -156,6 +156,27 @@ impl CognitionLoop {
             phases_run += 1;
         }
 
+        // ── Phase: ConceptualCognition (Phase 20 integration) ─────────────────
+        // Inline tick when abstraction runtime background thread is absent.
+        if !crate::abstraction_runtime::is_running() {
+            let _abs_tick = crate::abstraction_runtime::run_tick();
+            phases_run += 1;
+        }
+
+        // ── Phase: SymbolicCognition (Phase 21 integration) ───────────────────
+        // Inline tick when symbolic runtime background thread is absent.
+        if !crate::symbolic_runtime::is_running() {
+            let _sym_tick = crate::symbolic_runtime::run_tick();
+            phases_run += 1;
+        }
+
+        // ── Phase: ProbabilisticCognition (Phase 22 integration) ──────────────
+        // Inline tick when probabilistic runtime background thread is absent.
+        if !crate::probabilistic_runtime::is_running() {
+            let _prob_tick = crate::probabilistic_runtime::run_tick();
+            phases_run += 1;
+        }
+
         let tick_id = LOOP_TICKS_TOTAL.load(Ordering::Relaxed);
         let duration_ms = ts_now().saturating_sub(start_ms);
 
@@ -182,6 +203,12 @@ impl CognitionLoop {
         crate::live_meta_loop::start();
         // Start Phase 19 hierarchical cognition runtime
         crate::hierarchical_runtime::start();
+        // Start Phase 20 abstraction runtime
+        crate::abstraction_runtime::start();
+        // Start Phase 21 symbolic runtime
+        crate::symbolic_runtime::start();
+        // Start Phase 22 probabilistic runtime
+        crate::probabilistic_runtime::start();
 
         std::thread::Builder::new()
             .name("jarvis-cognition-loop".to_string())
@@ -200,11 +227,14 @@ impl CognitionLoop {
             .ok();
     }
 
-    /// Signal the background loop, live meta-loop, and hierarchical runtime to stop.
+    /// Signal the background loop, live meta-loop, hierarchical runtime, and abstraction runtime to stop.
     pub fn stop() {
         LOOP_STOP.store(true, Ordering::SeqCst);
         crate::live_meta_loop::stop();
         crate::hierarchical_runtime::stop();
+        crate::abstraction_runtime::stop();
+        crate::symbolic_runtime::stop();
+        crate::probabilistic_runtime::stop();
     }
 
     pub fn is_running() -> bool {
@@ -236,7 +266,7 @@ mod tests {
     fn run_tick_completes_all_phases() {
         init_stubs();
         let result = CognitionLoop::run_tick();
-        assert_eq!(result.phases_run, 11); // 9 original + 1 MetaCognition (18) + 1 Hierarchical (19)
+        assert_eq!(result.phases_run, 14); // 9 original + MetaCognition(18) + Hierarchical(19) + Conceptual(20) + Symbolic(21) + Probabilistic(22)
     }
 
     #[test]

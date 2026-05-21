@@ -595,3 +595,141 @@
 {"ts_ms":1779388518619,"kind":{"kind":"WorldModelUpdated","window_count":3,"active_app":"vscode"}}
 {"ts_ms":1779388518619,"kind":{"kind":"CognitionLoopTick","tick_id":1,"phase":"Observe","outcome":"Completed"}}
 {"ts_ms":1779388518622,"kind":{"kind":"CognitionLoopTick","tick_id":2,"phase":"Model","outcome":"Completed"}}
+{"ts_ms":1779394107638,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: test adaptation (planner Δ0.010)","confidence":0.7}}{"ts_ms":1779394107640,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 1 (cognitive_evolution Δ0.020)","confidence":0.7}}{"ts_ms":1779394107640,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 0 (test Δ0.010)","confidence":0.7}}{"ts_ms":1779394107639,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: log grow test (workflow Δ0.010)","confidence":0.7}}
+
+
+
+{"ts_ms":1779394107749,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 1 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779394107751,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 2 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779394107752,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 3 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779394107754,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 4 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779394107793,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394107793,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394107795,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394107795,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394107822,"kind":{"kind":"CognitionLoopTick","tick_id":5,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394107838,"kind":{"kind":"CognitionLoopTick","tick_id":6,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779394108337,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 31 (cognitive_evolution Δ0.390)","confidence":0.7}}
+{"ts_ms":1779394108341,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 32 (cognitive_evolution Δ0.380)","confidence":0.7}}
+{"ts_ms":1779394108343,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 33 (cognitive_evolution Δ0.370)","confidence":0.7}}
+{"ts_ms":1779394108345,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 34 (cognitive_evolution Δ0.360)","confidence":0.7}}{"ts_ms":1779394108345,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 35 (cognitive_evolution Δ0.350)","confidence":0.7}}
+
+{"ts_ms":1779394108347,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 36 (cognitive_evolution Δ0.340)","confidence":0.7}}
+{"ts_ms":1779394108347,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 37 (cognitive_evolution Δ0.330)","confidence":0.7}}{"ts_ms":1779394108348,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 38 (cognitive_evolution Δ0.320)","confidence":0.7}}
+
+{"ts_ms":1779394108349,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 39 (cognitive_evolution Δ0.310)","confidence":0.7}}
+{"ts_ms":1779394108351,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 40 (cognitive_evolution Δ0.300)","confidence":0.7}}
+{"ts_ms":1779394108353,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 41 (cognitive_evolution Δ0.290)","confidence":0.7}}
+{"ts_ms":1779394108444,"kind":{"kind":"PredictionMade","prediction":"DialogAppear(test)","confidence":0.5}}
+{"ts_ms":1779394108446,"kind":{"kind":"PredictionVerified","prediction":"4","correct":true}}
+{"ts_ms":1779394108455,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108455,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108455,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.9}}
+{"ts_ms":1779394108477,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108478,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108478,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}{"ts_ms":1779394108479,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 42 (cognitive_evolution Δ0.280)","confidence":0.7}}{"ts_ms":1779394108479,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+
+
+{"ts_ms":1779394108488,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 43 (cognitive_evolution Δ0.270)","confidence":0.7}}
+{"ts_ms":1779394108491,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 44 (cognitive_evolution Δ0.260)","confidence":0.7}}{"ts_ms":1779394108491,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 45 (cognitive_evolution Δ0.250)","confidence":0.7}}{"ts_ms":1779394108493,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+
+
+{"ts_ms":1779394108495,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108496,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 46 (cognitive_evolution Δ0.240)","confidence":0.7}}
+{"ts_ms":1779394108499,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 47 (cognitive_evolution Δ0.230)","confidence":0.7}}
+{"ts_ms":1779394108500,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108502,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 48 (cognitive_evolution Δ0.220)","confidence":0.7}}
+{"ts_ms":1779394108503,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108504,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 49 (cognitive_evolution Δ0.210)","confidence":0.7}}
+{"ts_ms":1779394108506,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779394108507,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 50 (cognitive_evolution Δ0.200)","confidence":0.7}}
+{"ts_ms":1779394108562,"kind":{"kind":"ContinuityRestored","task_id":"task-1"}}
+{"ts_ms":1779394108563,"kind":{"kind":"ContinuityRestored","task_id":"task-dup-unique-key"}}
+{"ts_ms":1779394108934,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.a→mknp.b→mknp.c","occurrences":3}}
+{"ts_ms":1779394108936,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.b→mknp.c→mknp.a","occurrences":3}}
+{"ts_ms":1779394108937,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.c→mknp.a→mknp.b","occurrences":3}}
+{"ts_ms":1779394108939,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.a→x.b→x.c","occurrences":3}}
+{"ts_ms":1779394108960,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.b→x.c→x.a","occurrences":3}}
+{"ts_ms":1779394108961,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.a→mknp.b→mknp.c","occurrences":3}}
+{"ts_ms":1779394108963,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.b→x.c→x.a","occurrences":3}}
+{"ts_ms":1779394108965,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.c→x.a→x.b","occurrences":3}}
+{"ts_ms":1779394108966,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.a→x.b→x.c","occurrences":3}}
+{"ts_ms":1779394108967,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq1→pat.uniq2→pat.uniq3","occurrences":3}}
+{"ts_ms":1779394108969,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq2→pat.uniq3→pat.uniq1","occurrences":3}}
+{"ts_ms":1779394108971,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq3→pat.uniq1→pat.uniq2","occurrences":3}}
+{"ts_ms":1779394108975,"kind":{"kind":"AnomalyResolved","anomaly":"FrozenApp"}}
+{"ts_ms":1779394108977,"kind":{"kind":"WorldModelUpdated","window_count":3,"active_app":"vscode"}}
+{"ts_ms":1779394108979,"kind":{"kind":"CognitionLoopTick","tick_id":1,"phase":"Observe","outcome":"Completed"}}
+{"ts_ms":1779394108981,"kind":{"kind":"CognitionLoopTick","tick_id":2,"phase":"Model","outcome":"Completed"}}
+{"ts_ms":1779395606377,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: test adaptation (planner Δ0.010)","confidence":0.7}}{"ts_ms":1779395606379,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 1 (cognitive_evolution Δ0.020)","confidence":0.7}}
+{"ts_ms":1779395606378,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: log grow test (workflow Δ0.010)","confidence":0.7}}{"ts_ms":1779395606378,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 0 (test Δ0.010)","confidence":0.7}}
+
+
+{"ts_ms":1779395606518,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 1 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779395606519,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 2 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779395606520,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 3 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779395606522,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: bulk 4 (test Δ0.010)","confidence":0.7}}
+{"ts_ms":1779395606684,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779395606684,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}{"ts_ms":1779395606684,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}{"ts_ms":1779395606684,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+
+
+{"ts_ms":1779395606700,"kind":{"kind":"CognitionLoopTick","tick_id":5,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779395606713,"kind":{"kind":"CognitionLoopTick","tick_id":6,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779395606815,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 31 (cognitive_evolution Δ0.390)","confidence":0.7}}
+{"ts_ms":1779395606815,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 32 (cognitive_evolution Δ0.380)","confidence":0.7}}{"ts_ms":1779395606816,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 33 (cognitive_evolution Δ0.370)","confidence":0.7}}{"ts_ms":1779395606816,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 34 (cognitive_evolution Δ0.360)","confidence":0.7}}{"ts_ms":1779395606816,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 35 (cognitive_evolution Δ0.350)","confidence":0.7}}{"ts_ms":1779395606817,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 36 (cognitive_evolution Δ0.340)","confidence":0.7}}
+
+
+
+
+{"ts_ms":1779395606824,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 37 (cognitive_evolution Δ0.330)","confidence":0.7}}
+{"ts_ms":1779395606825,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 38 (cognitive_evolution Δ0.320)","confidence":0.7}}
+{"ts_ms":1779395606826,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 39 (cognitive_evolution Δ0.310)","confidence":0.7}}
+{"ts_ms":1779395606829,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 40 (cognitive_evolution Δ0.300)","confidence":0.7}}
+{"ts_ms":1779395606831,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 41 (cognitive_evolution Δ0.290)","confidence":0.7}}
+{"ts_ms":1779395607018,"kind":{"kind":"PredictionMade","prediction":"DialogAppear(test)","confidence":0.5}}
+{"ts_ms":1779395607020,"kind":{"kind":"PredictionVerified","prediction":"4","correct":true}}
+{"ts_ms":1779395607030,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607031,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}{"ts_ms":1779395607031,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.9}}
+
+{"ts_ms":1779395607052,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607052,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607053,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}{"ts_ms":1779395607054,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 42 (cognitive_evolution Δ0.280)","confidence":0.7}}{"ts_ms":1779395607054,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607054,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+
+
+{"ts_ms":1779395607055,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 43 (cognitive_evolution Δ0.270)","confidence":0.7}}
+{"ts_ms":1779395607057,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 44 (cognitive_evolution Δ0.260)","confidence":0.7}}
+{"ts_ms":1779395607058,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 45 (cognitive_evolution Δ0.250)","confidence":0.7}}{"ts_ms":1779395607058,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}{"ts_ms":1779395607058,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 46 (cognitive_evolution Δ0.240)","confidence":0.7}}
+
+
+{"ts_ms":1779395607061,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 47 (cognitive_evolution Δ0.230)","confidence":0.7}}
+{"ts_ms":1779395607062,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607063,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 48 (cognitive_evolution Δ0.220)","confidence":0.7}}
+{"ts_ms":1779395607064,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607066,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 49 (cognitive_evolution Δ0.210)","confidence":0.7}}
+{"ts_ms":1779395607066,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779395607074,"kind":{"kind":"ReflectionInsight","insight":"adaptation applied: heuristic evolution gen 50 (cognitive_evolution Δ0.200)","confidence":0.7}}
+{"ts_ms":1779395607193,"kind":{"kind":"ContinuityRestored","task_id":"task-1"}}
+{"ts_ms":1779395607197,"kind":{"kind":"ContinuityRestored","task_id":"task-dup-unique-key"}}
+{"ts_ms":1779395607455,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.a→mknp.b→mknp.c","occurrences":3}}
+{"ts_ms":1779395607457,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.b→mknp.c→mknp.a","occurrences":3}}
+{"ts_ms":1779395607458,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.c→mknp.a→mknp.b","occurrences":3}}
+{"ts_ms":1779395607459,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq1→pat.uniq2→pat.uniq3","occurrences":3}}
+{"ts_ms":1779395607460,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq2→pat.uniq3→pat.uniq1","occurrences":3}}
+{"ts_ms":1779395607461,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.b→mknp.c→mknp.a","occurrences":3}}
+{"ts_ms":1779395607462,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.c→mknp.a→mknp.b","occurrences":3}}
+{"ts_ms":1779395607464,"kind":{"kind":"WorkflowPatternLearned","pattern":"mknp.a→mknp.b→mknp.c","occurrences":3}}
+{"ts_ms":1779395607465,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq2→pat.uniq3→pat.uniq1","occurrences":3}}
+{"ts_ms":1779395607466,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq3→pat.uniq1→pat.uniq2","occurrences":3}}
+{"ts_ms":1779395607468,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq1→pat.uniq2→pat.uniq3","occurrences":3}}
+{"ts_ms":1779395607469,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.a→x.b→x.c","occurrences":3}}
+{"ts_ms":1779395607470,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.b→x.c→x.a","occurrences":3}}
+{"ts_ms":1779395607471,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.c→x.a→x.b","occurrences":3}}
+{"ts_ms":1779395607472,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq2→x.a→pat.uniq3","occurrences":3}}
+{"ts_ms":1779395607474,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.c→pat.uniq2→x.a","occurrences":3}}
+{"ts_ms":1779395607476,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.b→pat.uniq3→x.c","occurrences":3}}
+{"ts_ms":1779395607476,"kind":{"kind":"AnomalyResolved","anomaly":"FrozenApp"}}
+{"ts_ms":1779395607479,"kind":{"kind":"WorkflowPatternLearned","pattern":"pat.uniq3→x.c→pat.uniq1","occurrences":3}}
+{"ts_ms":1779395607483,"kind":{"kind":"WorldModelUpdated","window_count":3,"active_app":"vscode"}}
+{"ts_ms":1779395607483,"kind":{"kind":"CognitionLoopTick","tick_id":1,"phase":"Observe","outcome":"Completed"}}
+{"ts_ms":1779395607485,"kind":{"kind":"CognitionLoopTick","tick_id":2,"phase":"Model","outcome":"Completed"}}
