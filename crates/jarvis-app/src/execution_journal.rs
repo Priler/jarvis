@@ -88,6 +88,12 @@ pub fn entry_count() -> u64 {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+/// Returns the directory where journal files are written.
+/// Defaults to the current working directory so tests and production both work.
+pub fn journal_dir() -> std::path::PathBuf {
+    std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
+}
+
 fn append_line(path: &str, line: &str) -> std::io::Result<()> {
     use std::io::Write;
     let mut f = std::fs::OpenOptions::new()

@@ -1,0 +1,5 @@
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364276904,"attempts":0,"context":{}}{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364276904,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364276905,"attempts":0,"context":{}}{"task_id":"task-dup","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364276905,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779364277054,"attempts":0,"context":{}}

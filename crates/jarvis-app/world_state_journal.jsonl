@@ -1,0 +1,27 @@
+{"ts_ms":1779364276436,"kind":{"kind":"ReflectionInsight","insight":"only 0% success over last 20 ticks","confidence":0.85}}
+{"ts_ms":1779364276434,"kind":{"kind":"PredictionMade","prediction":"DialogAppear(test)","confidence":0.5}}
+{"ts_ms":1779364276554,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364276762,"kind":{"kind":"PredictionVerified","prediction":"4","correct":true}}
+{"ts_ms":1779364276764,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364276855,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.9}}
+{"ts_ms":1779364276885,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364276890,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}{"ts_ms":1779364276888,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+
+{"ts_ms":1779364276930,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364277054,"kind":{"kind":"ContinuityRestored","task_id":"task-1"}}
+{"ts_ms":1779364277056,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779364277067,"kind":{"kind":"CognitionLoopTick","tick_id":4,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779364277067,"kind":{"kind":"CognitionLoopTick","tick_id":5,"phase":"full_cycle","outcome":"Completed"}}{"ts_ms":1779364277068,"kind":{"kind":"CognitionLoopTick","tick_id":5,"phase":"full_cycle","outcome":"Completed"}}
+
+{"ts_ms":1779364277099,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364277111,"kind":{"kind":"CognitionLoopTick","tick_id":5,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779364277123,"kind":{"kind":"ReflectionInsight","insight":"goals exist but none progressed in recent ticks","confidence":0.7}}
+{"ts_ms":1779364277127,"kind":{"kind":"CognitionLoopTick","tick_id":6,"phase":"full_cycle","outcome":"Completed"}}
+{"ts_ms":1779364277573,"kind":{"kind":"WorkflowPatternLearned","pattern":"a.x→b.y→c.z","occurrences":3}}
+{"ts_ms":1779364277577,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.c→x.a→x.b","occurrences":3}}
+{"ts_ms":1779364277579,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.a→x.b→x.c","occurrences":3}}
+{"ts_ms":1779364277582,"kind":{"kind":"WorkflowPatternLearned","pattern":"x.b→x.c→x.a","occurrences":3}}
+{"ts_ms":1779364277587,"kind":{"kind":"AnomalyResolved","anomaly":"FrozenApp"}}
+{"ts_ms":1779364277592,"kind":{"kind":"WorldModelUpdated","window_count":3,"active_app":"vscode"}}
+{"ts_ms":1779364277594,"kind":{"kind":"CognitionLoopTick","tick_id":1,"phase":"Observe","outcome":"Completed"}}
+{"ts_ms":1779364277596,"kind":{"kind":"CognitionLoopTick","tick_id":2,"phase":"Model","outcome":"Completed"}}
