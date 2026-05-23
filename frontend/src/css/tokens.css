@@ -1,0 +1,80 @@
+/* JARVIS UI — Design Tokens */
+:root {
+    /* Backgrounds */
+    --bg-base:    #070B11;
+    --bg-surface: #0B1118;
+    --bg-raised:  #101722;
+    --bg-card:    rgba(var(--white-rgb),0.025);
+    --bg-input:   rgba(var(--white-rgb),0.03);
+    --bg-hover:   rgba(var(--white-rgb),0.04);
+
+    /* Accents */
+    --accent:         #00E5FF;
+    --accent-rgb:     0, 229, 255;
+    --accent-alt:     #00FFC6;
+    --accent-alt-rgb: 0, 255, 198;
+
+    /* Text */
+    --text:       #FFFFFF;
+    --text-sub:   #B8C2CC;
+    --text-muted: #6E7B87;
+
+    /* Borders */
+    --border:         rgba(var(--white-rgb),0.08);
+    --border-subtle:  rgba(var(--white-rgb),0.06);
+    --border-strong:  rgba(var(--white-rgb),0.14);
+    --border-accent:  rgba(var(--accent-rgb),0.35);
+    --border-section: rgba(var(--white-rgb),0.04);
+    --border-hover:   rgba(var(--accent-rgb),0.22);
+    --border-focus:   rgba(var(--accent-rgb),0.42);
+
+    /* Typography */
+    --font:      "Inter", "Segoe UI", -apple-system, sans-serif;
+    --font-mono: "Consolas", "Courier New", monospace;
+
+    /* Radii */
+    --r-sm: 4px;
+    --r-md: 6px;
+    --r-lg: 8px;
+    --r-xl: 10px;
+
+    /* Animation */
+    --ease: color 140ms ease, background 140ms ease, border-color 140ms ease, opacity 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+
+    /* Header — shell bar (48px) + nav bar (44px) */
+    --header-h:         92px;
+    --shell-h:          48px;
+    --nav-h:            44px;
+    --header-bg:        linear-gradient(180deg, rgba(10,15,24,0.98), rgba(5,8,14,0.96));
+    --header-border:    1px solid rgba(var(--white-rgb),0.04);
+
+    /* Semantic colors */
+    --color-warning-rgb: 255, 190, 90;
+    --color-warning:    rgba(var(--color-warning-rgb), 0.92);
+    --color-error-rgb:  255, 90, 90;
+    --color-error:      rgba(var(--color-error-rgb), 0.92);
+    --status-online:    rgba(var(--accent-rgb), 0.82);
+    --status-ready:     rgba(var(--accent-rgb), 0.65);
+    --status-connected: rgba(var(--accent-rgb), 0.75);
+    --status-active:    rgba(var(--accent-rgb), 0.82);
+    --status-loading:   rgba(var(--color-warning-rgb), 0.72);
+    --status-offline:   rgba(180, 190, 205, 0.46);
+
+    /* Base channel tokens */
+    --white-rgb: 255, 255, 255;
+    --black-rgb: 0, 0, 0;
+
+    /* Glows — box-shadow presets */
+    --glow-sm: 0 0 12px rgba(var(--accent-rgb),0.06);
+    --glow-md: 0 0 24px rgba(var(--accent-rgb),0.08);
+
+    /* Accent glow — raw rgba for use inside gradients and inline shadows */
+    --accent-glow-xs: rgba(var(--accent-rgb), 0.04);
+    --accent-glow-sm: rgba(var(--accent-rgb), 0.08);
+    --accent-glow-md: rgba(var(--accent-rgb), 0.12);
+    --accent-glow-lg: rgba(var(--accent-rgb), 0.16);
+    --accent-glow-xl: rgba(var(--accent-rgb), 0.22);
+
+    /* Shell separators — unified geometry */
+    --shell-separator: linear-gradient(90deg, transparent 0%, rgba(var(--accent-rgb),0.22) 30%, rgba(var(--accent-rgb),0.22) 70%, transparent 100%);
+}

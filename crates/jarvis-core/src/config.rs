@@ -4,12 +4,14 @@ use structs::RecorderType;
 use structs::SpeechToTextEngine;
 use structs::WakeWordEngine;
 
-use once_cell::sync::Lazy;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 
 use platform_dirs::AppDirs;
+
+#[cfg(feature="jarvis_app")]
+use once_cell::sync::Lazy;
 
 #[cfg(feature="jarvis_app")]
 use rustpotter::{
@@ -94,7 +96,7 @@ pub const TRAY_ICON: &str = "32x32.png";
 pub const TRAY_TOOLTIP: &str = "Jarvis Voice Assistant";
 
 // RUSPOTTER
-pub const RUSPOTTER_MIN_SCORE: f32 = 0.62;
+pub const RUSPOTTER_MIN_SCORE: f32 = 0.58;
 
 #[cfg(feature="jarvis_app")]
 pub const RUSTPOTTER_DEFAULT_CONFIG: Lazy<RustpotterConfig> = Lazy::new(|| {
@@ -103,7 +105,7 @@ pub const RUSTPOTTER_DEFAULT_CONFIG: Lazy<RustpotterConfig> = Lazy::new(|| {
         detector: DetectorConfig {
             avg_threshold: 0.,
             threshold: 0.5,
-            min_scores: 15,
+            min_scores: 5,
             score_ref: 0.22,
             band_size: 5,
             vad_mode: None,
@@ -124,9 +126,9 @@ pub const RUSTPOTTER_DEFAULT_CONFIG: Lazy<RustpotterConfig> = Lazy::new(|| {
                 max_gain: 1.0,
             },
             band_pass: BandPassConfig {
-                enabled: true,
+                enabled: false,
                 low_cutoff: 80.,
-                high_cutoff: 400.,
+                high_cutoff: 8000.,
             },
         },
     }
@@ -167,7 +169,7 @@ pub const DEFAULT_NOISE_SUPPRESSION: NoiseSuppressionBackend = NoiseSuppressionB
 pub const DEFAULT_GAIN_NORMALIZER: bool = false;
 
 // VAD settings
-pub const VAD_ENERGY_THRESHOLD: f32 = 100.0;  // RMS threshold for energy-based VAD
+pub const VAD_ENERGY_THRESHOLD: f32 = 500.0;  // RMS threshold for energy-based VAD
 pub const VAD_NNNOISELESS_THRESHOLD: f32 = 0.8;  // probability threshold for nnnoiseless
 pub const VAD_SILENCE_FRAMES: u32 = 15;  // frames of silence before speech end (~480ms)
 
@@ -184,7 +186,7 @@ pub const DEFAULT_LUA_SANDBOX: &str = "standard";
 pub const DEFAULT_LUA_TIMEOUT: u64 = 10000; // ms
 
 // ETC
-pub const CMD_RATIO_THRESHOLD: f64 = 75f64;
+pub const CMD_RATIO_THRESHOLD: f64 = 85f64;
 pub const CMS_WAIT_DELAY: std::time::Duration = std::time::Duration::from_secs(15);
 
 // pub const ASSISTANT_GREET_PHRASES: [&str; 3] = ["greet1", "greet2", "greet3"];

@@ -24,7 +24,7 @@ pub fn init_vosk() -> Result<(), String> {
     let vosk = models::vosk::load(
         models::registry(),
         &model_id,
-        model_path.to_str().unwrap(),
+        model_path.to_str().ok_or("Vosk model path contains non-UTF-8 characters")?,
     )?;
 
     // language-specific wake grammar
@@ -91,6 +91,31 @@ pub fn recognize_speech(data: &[i16]) -> Option<String> {
 }
 
 
+/// Returns `(final_text, partial_text)`. On finalize both may be set; on running
+/// only `partial_text` is Some. Advances the decoder by one frame regardless.
+pub fn recognize_speech_with_partial(data: &[i16]) -> (Option<String>, Option<String>) {
+    let mut recognizer = match SPEECH_RECOGNIZER.get() {
+        Some(r) => r.lock(),
+        None => return (None, None),
+    };
+
+    match recognizer.accept_waveform(data) {
+        Ok(DecodingState::Finalized) => {
+            let final_text = recognizer
+                .result()
+                .multiple()
+                .and_then(|m| m.alternatives.first().map(|a| a.text.to_string()));
+            (final_text, None)
+        }
+        Ok(DecodingState::Running) => {
+            let partial = recognizer.partial_result().partial.to_string();
+            let partial_opt = if partial.is_empty() { None } else { Some(partial) };
+            (None, partial_opt)
+        }
+        _ => (None, None),
+    }
+}
+
 pub fn reset_speech_recognizer() {
     if let Some(recognizer) = SPEECH_RECOGNIZER.get() {
         recognizer.lock().reset();
@@ -100,6 +125,46 @@ pub fn reset_speech_recognizer() {
 pub fn reset_wake_recognizer() {
     if let Some(recognizer) = WAKE_RECOGNIZER.get() {
         recognizer.lock().reset();
+    }
+}
+
+/// Fully recreate the speech recognizer from the loaded model.
+///
+/// Unlike `reset_speech_recognizer` (which only flushes accumulated audio),
+/// this rebuilds the recognizer object from scratch.  Use when the decoder
+/// is suspected to be in an irrecoverable internal state.
+pub fn reinit_speech_recognizer() -> Result<(), String> {
+    let model = VOSK_MODEL.get().ok_or("Vosk model not loaded")?;
+    let mut new_rec = Recognizer::new(&model.model, 16000.0)
+        .ok_or("Failed to create speech recognizer")?;
+    new_rec.set_max_alternatives(config::VOSK_SPEECH_RECOGNIZER_MAX_ALTERNATIVES);
+    new_rec.set_words(config::VOSK_SPEECH_RECOGNIZER_WORDS);
+    new_rec.set_partial_words(config::VOSK_SPEECH_PARTIAL_WORDS);
+    match SPEECH_RECOGNIZER.get() {
+        Some(mutex) => {
+            *mutex.lock() = new_rec;
+            info!("[STT] Speech recognizer recreated from model (L2 recovery)");
+            Ok(())
+        }
+        None => Err("Speech recognizer not initialized".to_string()),
+    }
+}
+
+/// Fully recreate the wake recognizer from the loaded model.
+pub fn reinit_wake_recognizer() -> Result<(), String> {
+    let model = VOSK_MODEL.get().ok_or("Vosk model not loaded")?;
+    let lang = i18n::get_language();
+    let wake_grammar = config::get_wake_grammar(&lang);
+    let mut new_rec = Recognizer::new_with_grammar(&model.model, 16000.0, wake_grammar)
+        .ok_or("Failed to create wake recognizer")?;
+    new_rec.set_max_alternatives(1);
+    match WAKE_RECOGNIZER.get() {
+        Some(mutex) => {
+            *mutex.lock() = new_rec;
+            info!("[STT] Wake recognizer recreated from model (L2 recovery)");
+            Ok(())
+        }
+        None => Err("Wake recognizer not initialized".to_string()),
     }
 }
 

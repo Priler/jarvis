@@ -17,27 +17,49 @@ pub async fn init(commands: &Vec<JCommandsList>) -> Result<(), String> {
 
     let backend = DB.get().unwrap().read().intent_backend.clone();
 
-    BACKEND.set(backend.clone()).map_err(|_| "Backend already set")?;
-
-    match backend.as_str() {
+    let effective_backend = match backend.as_str() {
         "none" => {
             info!("Intent recognition disabled");
+            backend
         }
         "intent-classifier" => {
             info!("Initializing IntentClassifier backend.");
             intentclassifier::init(&commands).await?;
             info!("IntentClassifier backend initialized.");
+            backend
         }
         // any other value is treated as a model ID for embedding classification
         model_id => {
             info!("Initializing EmbeddingClassifier with model '{}'.", model_id);
-            let model = models::embedding::load(models::registry(), model_id)?;
-            embeddingclassifier::init_with_model(model, &commands)?;
-            info!("EmbeddingClassifier backend initialized.");
+            match models::embedding::load(models::registry(), model_id) {
+                Ok(model) => {
+                    embeddingclassifier::init_with_model(model, &commands)?;
+                    info!("EmbeddingClassifier backend initialized.");
+                    backend
+                }
+                Err(e) => {
+                    warn!(
+                        "EmbeddingClassifier model '{}' not found in catalog: {}. Intent recognition disabled.",
+                        model_id, e
+                    );
+                    "none".to_string()
+                }
+            }
         }
-    }
+    };
+
+    BACKEND.set(effective_backend).map_err(|_| "Backend already set")?;
 
     Ok(())
+}
+
+/// Reload the active intent backend with updated commands (no app restart required).
+pub async fn reload(commands: &[JCommandsList]) -> Result<(), String> {
+    match BACKEND.get().map(|s| s.as_str()) {
+        Some("none") | None => Ok(()),
+        Some("intent-classifier") => intentclassifier::reload(commands).await,
+        Some(_) => embeddingclassifier::reload(commands),
+    }
 }
 
 pub async fn classify(text: &str) -> Option<(String, f64)> {

@@ -10,19 +10,24 @@ export default defineConfig({
       preprocess: [
         sveltePreprocess({
           typescript: true,
+          scss: { silenceDeprecations: ["legacy-js-api"] },
         }),
       ],
       onwarn: (warning, handler) => {
-        const { code, frame } = warning;
-        if (code === "css-unused-selector")
-            return;
-
         handler(warning);
       },
     }),
     routify(),
     tsconfigPaths()
   ],
+
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ["legacy-js-api", "global-builtin", "color-functions", "import"],
+      },
+    },
+  },
 
   clearScreen: false,
   server: {

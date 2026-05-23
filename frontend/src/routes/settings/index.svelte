@@ -1,619 +1,398 @@
 <script lang="ts">
-    import { onMount } from "svelte"
-    import { invoke } from "@tauri-apps/api/core"
+    import { onMount, onDestroy } from "svelte"
+    import { get } from "svelte/store"
     import { goto } from "@roxi/routify"
-    import { setTimeout } from "worker-timers"
+    import { listOllamaModels } from "@/lib/api"
+    import { appInfo, assistantVoice, currentLanguage, setLanguage, tStore, audioDevices, loadAudioDevices, invalidateAudioDevices, invalidateSettingsSnapshot, getSupportedLanguages } from "@/stores"
+    import { addToast } from "@/lib/toast"
+    import { saveSettingsValues } from "@/lib/settings"
+    import { loadSettingsPageData } from "@/lib/settings-loader"
+    import { LANGUAGE_NAMES } from "@/lib/engine-options"
+    import type { VoiceMeta, SelectOption, IntentEngine } from "@/types"
 
-    import { showInExplorer } from "@/functions"
-    import { appInfo, assistantVoice, translations, translate } from "@/stores"
+    import TabGeneral from "@/components/settings/TabGeneral.svelte"
+    import TabDevices from "@/components/settings/TabDevices.svelte"
+    import TabNeural from "@/components/settings/TabNeural.svelte"
+    import TabAbout from "@/components/settings/TabAbout.svelte"
+    import Button from "@/components/ui/Button.svelte"
 
-    import HDivider from "@/components/elements/HDivider.svelte"
-    import Footer from "@/components/Footer.svelte"
+    $: t = $tStore
 
-    import {
-        Notification,
-        Button,
-        Text,
-        Tabs,
-        Space,
-        Alert,
-        Input,
-        InputWrapper,
-        NativeSelect,
-        Switch
-    } from "@svelteuidev/core"
+    type SettingsTab = "general" | "devices" | "neural" | "about"
+    const TAB_ORDER: SettingsTab[] = ["general", "devices", "neural", "about"]
+    let activeTab: SettingsTab = "general"
+    let loading = true
 
-    import {
-        Check,
-        Mix,
-        Cube,
-        Code,
-        Gear,
-        QuestionMarkCircled,
-        CrossCircled
-    } from "radix-icons-svelte"
-
-    $: t = (key: string) => translate($translations, key)
-
-    interface VoiceMeta {
-        id: string
-        name: string
-        author: string
-        languages: string[]
-    }
-
-    interface VoiceConfig {
-        voice: VoiceMeta
-    }
-    
     let availableVoices: VoiceMeta[] = []
-
-    async function selectVoice(voiceId: string) {
-        voiceVal = voiceId
-        
-        // play preview sound
-        try {
-            await invoke("preview_voice", { voiceId })
-        } catch (err) {
-            console.error("Failed to preview voice:", err)
-        }
-    }
-
-    // ### STATE
-    interface MicrophoneOption {
-        label: string
-        value: string
-    }
-
-    let availableMicrophones: MicrophoneOption[] = []
-    let availableVoskModels: { label: string; value: string }[] = []
-    let availableGlinerModels: { label: string; value: string }[] = []
-    let settingsSaved = false
+    let availableMicrophones: SelectOption[] = []
+    let availableVoskModels: SelectOption[] = []
+    let availableGlinerModels: SelectOption[] = []
     let saveButtonDisabled = false
 
-    // form values (state vars)
-    let voiceVal = ""
+    let voiceVal = get(assistantVoice)
     let selectedMicrophone = ""
     let selectedWakeWordEngine = ""
-    let selectedIntentRecognitionEngine = ""
+    let selectedIntentRecognitionEngine: IntentEngine = "none"
     let selectedSlotExtractionEngine = ""
     let selectedGlinerModel = ""
     let selectedVoskModel = ""
     let selectedNoiseSuppression = ""
     let selectedVad = ""
+    let vadEnergyThreshold = 100
     let gainNormalizerEnabled = false
     let apiKeyPicovoice = ""
-    let apiKeyOpenai = ""
+    let ollamaUrl = "http://localhost:11434"
+    let ollamaModel = ""
+    let availableOllamaModels: SelectOption[] = []
+    let ollamaLoading = false
+    let ollamaError = ""
+    let ollamaModelsLoaded = false
 
-    // subscribe to stores
-    assistantVoice.subscribe(value => {
-        voiceVal = value
-    })
+    let languages: { code: string; name: string }[] = [
+        { code: "ru", name: "Русский" },
+        { code: "en", name: "English" },
+        { code: "ua", name: "Українська" },
+    ]
+
+    async function selectLanguage(code: string) {
+        await setLanguage(code)
+    }
+
+    function handleTabNav(e: KeyboardEvent) {
+        const idx = TAB_ORDER.indexOf(activeTab)
+        if (e.key === 'ArrowRight') {
+            e.preventDefault()
+            activeTab = TAB_ORDER[(idx + 1) % TAB_ORDER.length]
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault()
+            activeTab = TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]
+        }
+    }
+
+    async function loadOllamaModels() {
+        ollamaLoading = true
+        ollamaError = ""
+        ollamaModelsLoaded = false
+        try {
+            const models = await listOllamaModels(ollamaUrl)
+            availableOllamaModels = models.map(m => ({ label: m, value: m }))
+            ollamaModelsLoaded = true
+            if (models.length > 0 && !ollamaModel) {
+                ollamaModel = models[0]
+            }
+        } catch (err: unknown) {
+            ollamaError = err instanceof Error ? err.message : t('settings-ollama-error')
+            availableOllamaModels = []
+        } finally {
+            ollamaLoading = false
+        }
+    }
 
     let feedbackLink = ""
     let logFilePath = ""
-    appInfo.subscribe(info => {
+    let tgLink = ""
+    let repoLink = ""
+    let boostyLink = ""
+    let patreonLink = ""
+    let authorName = ""
+    let appVersion = ""
+    const unsubAppInfo = appInfo.subscribe(info => {
+        authorName   = info.authorName
         feedbackLink = info.feedbackLink
-        logFilePath = info.logFilePath
+        logFilePath  = info.logFilePath
+        tgLink       = info.tgOfficialLink
+        repoLink     = info.repositoryLink
+        boostyLink   = info.boostySupportLink
+        patreonLink  = info.patreonSupportLink
     })
 
-    // ### FUNCTIONS
     async function saveSettings() {
         saveButtonDisabled = true
-        settingsSaved = false
-
         try {
-            await Promise.all([
-                invoke("db_write", { key: "assistant_voice", val: voiceVal }),
-                invoke("db_write", { key: "selected_microphone", val: selectedMicrophone }),
-                invoke("db_write", { key: "selected_wake_word_engine", val: selectedWakeWordEngine }),
-                invoke("db_write", { key: "selected_intent_recognition_engine", val: selectedIntentRecognitionEngine }),
-                invoke("db_write", { key: "selected_slot_extraction_engine", val: selectedSlotExtractionEngine }),
-                invoke("db_write", { key: "selected_gliner_model", val: selectedGlinerModel }),
-                invoke("db_write", { key: "selected_vosk_model", val: selectedVoskModel }),
-
-                invoke("db_write", { key: "noise_suppression", val: selectedNoiseSuppression }),
-                invoke("db_write", { key: "vad", val: selectedVad }),
-                invoke("db_write", { key: "gain_normalizer", val: gainNormalizerEnabled.toString() }),
-
-                invoke("db_write", { key: "api_key__picovoice", val: apiKeyPicovoice }),
-                invoke("db_write", { key: "api_key__openai", val: apiKeyOpenai })
-            ])
-
-            // update shared store
+            await saveSettingsValues({
+                voiceVal,
+                microphone:            selectedMicrophone,
+                wakeWordEngine:        selectedWakeWordEngine,
+                intentEngine:          selectedIntentRecognitionEngine,
+                slotEngine:            selectedSlotExtractionEngine,
+                glinerModel:           selectedGlinerModel,
+                voskModel:             selectedVoskModel,
+                noiseSuppression:      selectedNoiseSuppression,
+                vad:                   selectedVad,
+                vadEnergyThreshold,
+                gainNormalizerEnabled,
+                apiKeyPicovoice,
+                ollamaUrl,
+                ollamaModel,
+            })
             assistantVoice.set(voiceVal)
-            settingsSaved = true
-
-            // hide alert after 5 seconds
-            setTimeout(() => {
-                settingsSaved = false
-            }, 5000)
-
-            // restart listening with new settings
-            // stopListening(() => startListening())
-        } catch (err) {
+            invalidateSettingsSnapshot()
+            addToast(t('notification-saved') || "Settings saved", "success")
+        } catch (err: unknown) {
             console.error("failed to save settings:", err)
+            addToast(t('notification-error') || "Failed to save settings", "error")
         }
-
-        setTimeout(() => {
-            saveButtonDisabled = false
-        }, 1000)
+        setTimeout(() => { saveButtonDisabled = false }, 1000)
     }
 
-    // ### INIT
+    onDestroy(() => {
+        unsubAppInfo()
+    })
+
     onMount(async () => {
-        // load voices
         try {
-            const voices = await invoke<VoiceConfig[]>("list_voices")
-            availableVoices = voices.map(v => v.voice)
-        } catch (err) {
-            console.error("Failed to load voices:", err)
-            availableVoices = []
+            const codes = await getSupportedLanguages()
+            languages = codes.map(code => ({ code, name: LANGUAGE_NAMES[code] ?? code }))
+        } catch { /* keep fallback defaults */ }
+
+        try {
+            await loadAudioDevices()
+        } catch {
+            addToast(t('error-load-audio') || "Failed to load audio devices", "error")
         }
 
         try {
-            // load microphones
-            const mics = await invoke<string[]>("pv_get_audio_devices")
+            const data = await loadSettingsPageData()
+
+            appVersion            = data.appVersion
+            availableVoices       = data.availableVoices
+            availableVoskModels   = data.availableVoskModels
+            availableGlinerModels = data.availableGlinerModels
+
             availableMicrophones = [
-                { label: t('settings-mic-default'), value: "-1" },  // system default
-                ...mics.map((name, idx) => ({
-                    label: name,
-                    value: String(idx)
-                }))
+                { label: t('settings-mic-default'), value: "-1" },
+                ...$audioDevices.map((name, idx) => ({ label: name, value: String(idx) }))
             ]
 
-            // load vosk models
-            const languageNames: Record<string, string> = {
-                us: 'English',
-                ru: 'Русский',
-                uk: 'Українська',
-                de: 'German',
-                fr: 'French',
-                es: 'Spanish',
-                // ..
-            };
-            const voskModels = await invoke<{ name: string; language: string; size: string }[]>("list_vosk_models")
-            availableVoskModels = voskModels.map(m => ({
-                label: `${m.name} (${languageNames[m.language] ?? m.language}, ${m.size})`,
-                value: m.name
-            }))
+            if (data.errors.meta)     addToast(t('error-load-meta')    || "Failed to load app metadata",  "info")
+            if (data.errors.vosk)     addToast(t('error-load-vosk')    || "Failed to load Vosk models",   "info")
+            if (data.errors.gliner)   addToast(t('error-load-gliner')  || "Failed to load GLiNER models", "info")
+            if (data.errors.voices)   addToast(t('error-load-voices')  || "Failed to load voices",        "error")
+            if (data.errors.settings) addToast(t('error-load-settings')|| "Failed to load settings",      "error")
 
-            // load gliner models
-            const glinerModels = await invoke<{ display_name: string; value: string }[]>("list_gliner_models")
-            availableGlinerModels = glinerModels.map(m => ({
-                label: m.display_name,
-                value: m.value,
-            }))
-
-            // load settings from db
-            const [mic, wakeWord, intentReco, slotEngine, glinerModel, voskModel,
-                   noiseSuppression, vad, gainNormalizer,
-                   pico, openai] = await Promise.all([
-                invoke<string>("db_read", { key: "selected_microphone" }),
-                invoke<string>("db_read", { key: "selected_wake_word_engine" }),
-                invoke<string>("db_read", { key: "selected_intent_recognition_engine" }),
-                invoke<string>("db_read", { key: "selected_slot_extraction_engine" }),
-                invoke<string>("db_read", { key: "selected_gliner_model" }),
-                invoke<string>("db_read", { key: "selected_vosk_model" }),
-
-                invoke<string>("db_read", { key: "noise_suppression" }),
-                invoke<string>("db_read", { key: "vad" }),
-                invoke<string>("db_read", { key: "gain_normalizer" }),
-
-                invoke<string>("db_read", { key: "api_key__picovoice" }),
-                invoke<string>("db_read", { key: "api_key__openai" })
-            ])
-
-            selectedMicrophone = mic
-            selectedWakeWordEngine = wakeWord
-            selectedIntentRecognitionEngine = intentReco
-            selectedSlotExtractionEngine = slotEngine
-            selectedVoskModel = voskModel
-            selectedGlinerModel = glinerModel
-            selectedNoiseSuppression = noiseSuppression
-            selectedVad = vad
-            gainNormalizerEnabled = gainNormalizer === "true"
-            apiKeyPicovoice = pico
-            apiKeyOpenai = openai
-        } catch (err) {
-            console.error("failed to load settings:", err)
+            if (data.settings) {
+                const s = data.settings
+                selectedMicrophone              = s.microphone
+                selectedWakeWordEngine          = s.wakeWordEngine
+                selectedIntentRecognitionEngine = s.intentEngine
+                selectedSlotExtractionEngine    = s.slotEngine
+                selectedGlinerModel             = s.glinerModel
+                selectedVoskModel               = s.voskModel
+                selectedNoiseSuppression        = s.noiseSuppression
+                selectedVad                     = s.vad
+                vadEnergyThreshold              = s.vadEnergyThreshold
+                gainNormalizerEnabled           = s.gainNormalizerEnabled
+                apiKeyPicovoice                 = s.apiKeyPicovoice
+                ollamaUrl                       = s.ollamaUrl
+                ollamaModel                     = s.ollamaModel
+            }
+        } finally {
+            loading = false
         }
     })
 </script>
 
-<Space h="xl" />
+{#if loading}
+    <div class="settings-loading" aria-busy="true">
+        <div class="settings-skeleton"></div>
+        <div class="settings-skeleton settings-skeleton--short"></div>
+        <div class="settings-skeleton"></div>
+        <div class="settings-skeleton settings-skeleton--short"></div>
+    </div>
+{:else}
+<div class="settings-layout">
+    <div class="settings-nav" role="tablist" tabindex="-1" on:keydown={handleTabNav}>
+        <button class="nav-item" role="tab" id="tab-general" aria-selected={activeTab === 'general'} aria-controls="panel-settings" class:active={activeTab === 'general'} on:click={() => activeTab = 'general'}>
+            {t('settings-general')}
+        </button>
+        <button class="nav-item" role="tab" id="tab-devices" aria-selected={activeTab === 'devices'} aria-controls="panel-settings" class:active={activeTab === 'devices'} on:click={() => activeTab = 'devices'}>
+            {t('settings-devices')}
+        </button>
+        <button class="nav-item" role="tab" id="tab-neural" aria-selected={activeTab === 'neural'} aria-controls="panel-settings" class:active={activeTab === 'neural'} on:click={() => activeTab = 'neural'}>
+            {t('settings-neural-networks')}
+        </button>
+        <button class="nav-item" role="tab" id="tab-about" aria-selected={activeTab === 'about'} aria-controls="panel-settings" class:active={activeTab === 'about'} on:click={() => activeTab = 'about'}>
+            {t('settings-about')}
+        </button>
+    </div>
 
-<Notification
-    title={t('settings-beta-title')}
-    icon={QuestionMarkCircled}
-    color="blue"
-    withCloseButton={false}
->
-    {t('settings-beta-desc')}<br />
-    {t('settings-beta-feedback')} <a href={feedbackLink} target="_blank">{t('settings-beta-bot')}</a>.
-    <Space h="sm" />
-    <Button
-        color="gray"
-        radius="md"
-        size="xs"
-        uppercase
-        on:click={() => showInExplorer(logFilePath)}
-    >
-        {t('settings-open-logs')}
-    </Button>
-</Notification>
+    <div class="settings-content"
+         id="panel-settings"
+         role="tabpanel"
+         aria-labelledby="tab-{activeTab}">
+        {#if activeTab === 'general'}
+            <TabGeneral
+                {t}
+                {languages}
+                currentLanguage={$currentLanguage || "ru"}
+                {availableVoices}
+                bind:voiceVal
+                on:languageChange={(e) => selectLanguage(e.detail)}
+            />
+        {:else if activeTab === 'devices'}
+            <TabDevices
+                {t}
+                {availableMicrophones}
+                bind:selectedMicrophone
+                on:refresh={async () => {
+                    invalidateAudioDevices()
+                    try { await loadAudioDevices() } catch { /* toast shown inside */ }
+                    availableMicrophones = [
+                        { label: t('settings-mic-default'), value: "-1" },
+                        ...$audioDevices.map((name, idx) => ({ label: name, value: String(idx) }))
+                    ]
+                }}
+            />
+        {:else if activeTab === 'neural'}
+            <TabNeural
+                {t}
+                bind:selectedWakeWordEngine
+                bind:selectedIntentRecognitionEngine
+                bind:selectedSlotExtractionEngine
+                bind:selectedGlinerModel
+                bind:selectedVoskModel
+                bind:selectedNoiseSuppression
+                bind:selectedVad
+                bind:vadEnergyThreshold
+                bind:gainNormalizerEnabled
+                bind:apiKeyPicovoice
+                bind:ollamaUrl
+                bind:ollamaModel
+                {availableVoskModels}
+                {availableGlinerModels}
+                {availableOllamaModels}
+                {ollamaLoading}
+                {ollamaError}
+                {ollamaModelsLoaded}
+                on:loadOllama={loadOllamaModels}
+            />
+        {:else if activeTab === 'about'}
+            <TabAbout
+                {t}
+                {appVersion}
+                {authorName}
+                {feedbackLink}
+                {logFilePath}
+                {tgLink}
+                {repoLink}
+                {boostyLink}
+                {patreonLink}
+                currentLanguage={$currentLanguage || "en"}
+            />
+        {/if}
+    </div>
 
-<Space h="xl" />
-
-{#if settingsSaved}
-    <Notification
-        title={t('notification-saved')}
-        icon={Check}
-        color="teal"
-        on:close={() => { settingsSaved = false }}
-    />
-    <Space h="xl" />
+    <div class="settings-actions">
+        <Button variant="primary" on:click={saveSettings} disabled={saveButtonDisabled}>
+            {t('settings-save')}
+        </Button>
+        <Button variant="ghost" on:click={() => $goto("/")}>
+            {t('settings-back')}
+        </Button>
+    </div>
+</div>
 {/if}
 
-<Tabs class="form" color="#8AC832" position="left">
-    <Tabs.Tab label={t('settings-general')} icon={Gear}>
-        <Space h="sm" />
-        <div class="voice-select">
-            <label>{t('settings-voice')}</label>
-            <p class="description">{t('settings-voice-desc')}</p>
-            
-            <div class="voice-options">
-                {#each availableVoices as voice}
-                    <button 
-                        type="button"
-                        class="voice-option"
-                        class:selected={voiceVal === voice.id}
-                        on:click={() => selectVoice(voice.id)}
-                    >
-                        <div class="voice-info">
-                            <span class="voice-name">{voice.name}</span>
-                            {#if voice.author}
-                                <span class="voice-author">by {voice.author}</span>
-                            {/if}
-                        </div>
-                        <div class="voice-languages">
-                            {#each voice.languages as lang}
-                                <img 
-                                    src="/media/flags/{lang.toUpperCase()}.png" 
-                                    alt={lang} 
-                                    width="20" 
-                                    title={lang}
-                                />
-                            {/each}
-                        </div>
-                    </button>
-                {/each}
-                
-                {#if availableVoices.length === 0}
-                    <p class="no-voices">{t('settings-no-voices')}</p>
-                {/if}
-            </div>
-        </div>
-    </Tabs.Tab>
-
-    <Tabs.Tab label={t('settings-devices')} icon={Mix}>
-        <Space h="sm" />
-        <NativeSelect
-            data={availableMicrophones}
-            label={t('settings-microphone')}
-            description={t('settings-microphone-desc')}
-            variant="filled"
-            bind:value={selectedMicrophone}
-        />
-    </Tabs.Tab>
-
-    <Tabs.Tab label={t('settings-neural-networks')} icon={Cube}>
-        <Space h="sm" />
-        <NativeSelect
-            data={[
-                { label: "Rustpotter", value: "Rustpotter" },
-                { label: "Vosk", value: "Vosk" },
-                { label: "Picovoice Porcupine", value: "Picovoice" }
-            ]}
-            label={t('settings-wake-word-engine')}
-            description={t('settings-wake-word-desc')}
-            variant="filled"
-            bind:value={selectedWakeWordEngine}
-        />
-
-        {#if selectedWakeWordEngine === "picovoice"}
-            <Space h="sm" />
-            <Alert title={t('settings-attention')} color="#868E96" variant="outline">
-                <Notification
-                    title={t('settings-picovoice-warning')}
-                    icon={CrossCircled}
-                    color="orange"
-                    withCloseButton={false}
-                >
-                    {t('settings-picovoice-waiting')}
-                </Notification>
-                <Space h="sm" />
-                <Text size="sm" color="gray">
-                    {t('settings-picovoice-key-desc')}
-                    <a href="https://console.picovoice.ai/" target="_blank">Picovoice Console</a>.
-                </Text>
-                <Space h="sm" />
-                <Input
-                    icon={Code}
-                    placeholder={t('settings-picovoice-key')}
-                    variant="filled"
-                    autocomplete="off"
-                    bind:value={apiKeyPicovoice}
-                />
-            </Alert>
-        {/if}
-
-        <Space h="xl" />
-        {#key availableVoskModels}
-        <NativeSelect
-            data={[
-                { label: t('settings-auto-detect'), value: "" },
-                ...availableVoskModels
-            ]}
-            label={t('settings-vosk-model')}
-            description={t('settings-vosk-model-desc')}
-            variant="filled"
-            bind:value={selectedVoskModel}
-        />
-        {/key}
-
-        {#if availableVoskModels.length === 0}
-            <Space h="sm" />
-            <Alert title={t('settings-models-not-found')} color="orange" variant="outline">
-                <Text size="sm" color="gray">
-                    {t('settings-models-hint')}
-                </Text>
-            </Alert>
-        {/if}
-
-        <Space h="xl" />
-        <NativeSelect
-            data={[
-                { label: "Intent Classifier", value: "IntentClassifier" },
-                { label: "Embedding Classifier", value: "EmbeddingClassifier" }
-            ]}
-            label={t('settings-intent-engine')}
-            description={t('settings-intent-engine-desc')}
-            variant="filled"
-            bind:value={selectedIntentRecognitionEngine}
-        />
-
-        <Space h="xl" />
-        <NativeSelect
-            data={[
-                { label: t('settings-disabled'), value: "None" },
-                { label: "GLiNER (NER)", value: "GLiNER" }
-            ]}
-            label={t('settings-slot-engine')}
-            description={t('settings-slot-engine-desc')}
-            variant="filled"
-            bind:value={selectedSlotExtractionEngine}
-        />
-
-        {#if selectedSlotExtractionEngine === "GLiNER"}
-            <Space h="sm" />
-            {#key availableGlinerModels}
-            <NativeSelect
-                data={[
-                    { label: t('settings-auto-detect'), value: "" },
-                    ...availableGlinerModels
-                ]}
-                label={t('settings-gliner-model')}
-                description={t('settings-gliner-model-desc')}
-                variant="filled"
-                bind:value={selectedGlinerModel}
-            />
-            {/key}
-
-            {#if availableGlinerModels.length === 0}
-                <Space h="sm" />
-                <Alert title={t('settings-models-not-found')} color="orange" variant="outline">
-                    <Text size="sm" color="gray">
-                        {t('settings-gliner-models-hint')}
-                    </Text>
-                </Alert>
-            {/if}
-        {/if}
-
-        <Space h="xl" />
-        <NativeSelect
-            data={[
-                { label: t('settings-disabled'), value: "None" },
-                { label: "Nnnoiseless", value: "Nnnoiseless" }
-            ]}
-            label={t('settings-noise-suppression')}
-            description={t('settings-noise-suppression-desc')}
-            variant="filled"
-            bind:value={selectedNoiseSuppression}
-        />
-
-        <Space h="md" />
-
-        <NativeSelect
-            data={[
-                { label: t('settings-disabled'), value: "None" },
-                { label: "Energy", value: "Energy" },
-                { label: "Nnnoiseless", value: "Nnnoiseless" }
-            ]}
-            label={t('settings-vad')}
-            description={t('settings-vad-desc')}
-            variant="filled"
-            bind:value={selectedVad}
-        />
-
-        <Space h="md" />
-
-        <InputWrapper label={t('settings-gain-normalizer')}>
-            <Text size="sm" color="gray">
-                {t('settings-gain-normalizer-desc')}
-            </Text>
-            <Space h="xs" />
-            <Switch
-                label={gainNormalizerEnabled ? t('settings-enabled') : t('settings-disabled')}
-                bind:checked={gainNormalizerEnabled}
-            />
-        </InputWrapper>
-
-        <Space h="xl" />
-
-        <InputWrapper label={t('settings-openai-key')}>
-            <Text size="sm" color="gray">
-                {t('settings-openai-not-supported')}
-            </Text>
-            <Space h="sm" />
-            <Input
-                icon={Code}
-                placeholder={t('settings-openai-key')}
-                variant="filled"
-                autocomplete="off"
-                bind:value={apiKeyOpenai}
-                disabled
-            />
-        </InputWrapper>
-    </Tabs.Tab>
-</Tabs>
-
-<Space h="xl" />
-
-<Button
-    color="lime"
-    radius="md"
-    size="sm"
-    uppercase
-    ripple
-    fullSize
-    on:click={saveSettings}
-    disabled={saveButtonDisabled}
->
-    {t('settings-save')}
-</Button>
-
-<Space h="sm" />
-
-<Button
-    color="gray"
-    radius="md"
-    size="sm"
-    uppercase
-    fullSize
-    on:click={() => $goto("/")}
->
-    {t('settings-back')}
-</Button>
-
-<HDivider />
-<Footer />
-
 <style lang="scss">
-.voice-select {
-    margin-bottom: 1rem;
-    
-    label {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #fff;
-        display: block;
-        margin-bottom: 0.25rem;
-    }
-    
-    .description {
-        font-size: 0.75rem;
-        color: rgba(255,255,255,0.5);
-        margin: 0 0 0.75rem;
-        white-space: pre-line;
-    }
-}
-
-$voice-item-height: 70px;
-$voice-item-gap: 0.5rem;
-$voice-max-visible: 3;
-
-.voice-options {
+.settings-loading {
     display: flex;
     flex-direction: column;
-    gap: $voice-item-gap;
-    max-height: $voice-item-height * $voice-max-visible;
-    overflow-y: auto;
-    
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    &::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 3px;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
-        
-        &:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-    }
+    gap: 10px;
+    padding-top: 16px;
 }
 
-.voice-option {
+.settings-skeleton {
+    height: 80px;
+    border-radius: var(--r-xl);
+    background: linear-gradient(90deg,
+        rgba(var(--white-rgb), 0.03) 0%,
+        rgba(var(--white-rgb), 0.06) 50%,
+        rgba(var(--white-rgb), 0.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+
+    &--short { height: 56px; }
+}
+
+@keyframes skeleton-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.settings-layout {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0;
+    padding-top: 16px;
+    height: calc(100vh - var(--header-h));
+    overflow: hidden;
+}
+
+.settings-nav {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    height: 38px;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: rgba(var(--white-rgb), 0.02);
+    border: 1px solid rgba(var(--white-rgb), 0.05);
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.nav-item {
+    position: relative;
+    display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
-    background: rgba(30, 40, 45, 0.8);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    padding: 0 16px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(var(--white-rgb), 0.04);
+    color: rgba(var(--white-rgb), 0.35);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
     cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-    width: 100%;
-    
+    transition: var(--ease);
+    white-space: nowrap;
+
+    &:last-child { border-right: none; }
+
     &:hover {
-        background: rgba(40, 55, 60, 0.9);
-        border-color: rgba(255,255,255,0.2);
+        background: rgba(var(--accent-rgb),0.035);
+        color: rgba(var(--white-rgb), 0.65);
     }
-    
-    &.selected {
-        background: rgba(82, 254, 254, 0.1);
-        border-color: rgba(82, 254, 254, 0.4);
+
+    &.active {
+        background: rgba(var(--accent-rgb),0.06);
+        border-right-color: rgba(var(--accent-rgb),0.12);
+        color: var(--accent);
+        box-shadow: 0 0 12px rgba(var(--accent-rgb),0.05);
     }
 }
 
-.voice-info {
+.settings-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 12px;
+    padding-bottom: 8px;
+}
+
+.settings-actions {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
-}
+    gap: 12px;
+    padding: 18px 0 24px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(var(--white-rgb), 0.05);
 
-.voice-name {
-    font-size: 0.85rem;
-    color: #fff;
-    font-weight: 500;
-}
-
-.voice-author {
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.4);
-}
-
-.voice-languages {
-    display: flex;
-    gap: 0.35rem;
-    
-    img {
-        opacity: 0.8;
-        border-radius: 2px;
-    }
-}
-
-.no-voices {
-    font-size: 0.8rem;
-    color: rgba(255,255,255,0.4);
-    font-style: italic;
+    & > :global(*) { width: 100%; }
 }
 </style>

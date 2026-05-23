@@ -1,0 +1,50 @@
+[[commands]]
+id = "folder_music"
+type = "lua"
+script = "folders.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой папку с музыкой",
+    "перейди в папку с музыкой",
+    "папка с музыкой",
+]
+
+
+[[commands]]
+id = "folder_downloads"
+type = "lua"
+script = "folders.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "папка загрузок",
+    "покажи загрузки",
+    "открой папку загрузок",
+]
+
+
+[[commands]]
+id = "folder_documents"
+type = "lua"
+script = "folders.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой документы",
+    "открой папку с документами",
+    "перейди в документы",
+    "папка с документами",
+]
+
+
+[[commands]]
+id = "folder_desktop"
+type = "lua"
+script = "folders.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой папку рабочего стола",
+    "папка рабочего стола",
+]

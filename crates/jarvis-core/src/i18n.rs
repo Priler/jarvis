@@ -1,4 +1,4 @@
-use fluent_bundle::{FluentBundle, FluentResource, FluentArgs, FluentValue};
+use fluent_bundle::{FluentResource, FluentArgs, FluentValue};
 use fluent_bundle::concurrent::FluentBundle as ConcurrentFluentBundle;
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock;

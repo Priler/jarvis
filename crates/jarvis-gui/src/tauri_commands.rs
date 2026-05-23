@@ -38,3 +38,7 @@ pub use commands::*;
 // import voices commands
 mod voices;
 pub use voices::*;
+
+// import ollama commands
+mod ollama;
+pub use ollama::*;

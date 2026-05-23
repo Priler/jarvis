@@ -182,31 +182,53 @@ pub fn register(
     Ok(())
 }
 
-// Resolve path relative to command folder, with sandbox checks
+// Resolve path relative to command folder, with sandbox checks.
+// Uses lexical normalization first (no filesystem access) to catch ../ escapes on
+// non-existent paths, then canonicalize for symlink resolution on existing paths.
 fn resolve_path(command_path: &PathBuf, path: &str, sandbox: SandboxLevel) -> mlua::Result<PathBuf> {
     let path = Path::new(path);
-    
-    // if absolute path, check sandbox allows it
+
     if path.is_absolute() {
         if !sandbox.allows_expanded_paths() {
             return Err(mlua::Error::runtime("Absolute paths not allowed in this sandbox"));
         }
         return Ok(path.to_path_buf());
     }
-    
-    // relative path - resolve against command folder
-    let resolved = command_path.join(path);
-    
-    // canonicalize to resolve ../ etc and check it's still within command folder
-    let canonical = resolved.canonicalize()
-        .unwrap_or_else(|_| resolved.clone());
-    
-    let cmd_canonical = command_path.canonicalize()
-        .unwrap_or_else(|_| command_path.clone());
-    
-    if !sandbox.allows_expanded_paths() && !canonical.starts_with(&cmd_canonical) {
-        return Err(mlua::Error::runtime("Path escapes command folder"));
+
+    // Lexically normalize to catch ../ escape without hitting the filesystem.
+    // This is the primary guard for paths that don't exist yet (e.g. write targets).
+    let normalized = normalize_lexically(&command_path.join(path));
+
+    if !sandbox.allows_expanded_paths() {
+        let cmd_canonical = command_path.canonicalize()
+            .map_err(|e| mlua::Error::runtime(format!("Command path unresolvable: {}", e)))?;
+
+        // If the target already exists, canonicalize it to follow any symlinks.
+        let check = if normalized.exists() {
+            normalized.canonicalize()
+                .map_err(|e| mlua::Error::runtime(format!("Path resolution error: {}", e)))?
+        } else {
+            normalized.clone()
+        };
+
+        if !check.starts_with(&cmd_canonical) {
+            return Err(mlua::Error::runtime("Path escapes command folder"));
+        }
     }
-    
-    Ok(resolved)
+
+    Ok(normalized)
+}
+
+// Resolve . and .. components without touching the filesystem (no symlink resolution).
+fn normalize_lexically(path: &Path) -> PathBuf {
+    use std::path::Component;
+    let mut out: Vec<std::path::Component> = Vec::new();
+    for component in path.components() {
+        match component {
+            Component::ParentDir => { out.pop(); }
+            Component::CurDir => {}
+            other => out.push(other),
+        }
+    }
+    out.iter().collect()
 }

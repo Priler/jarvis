@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CorpusMetadata",
+  "description": "Sidecar metadata for each WAV file in the acoustic corpus.",
+  "type": "object",
+  "required": ["expected_wake"],
+  "properties": {
+    "speaker_id": {
+      "type": "string",
+      "description": "Speaker identifier, e.g. speaker_01",
+      "examples": ["speaker_01", "speaker_02"]
+    },
+    "gender": {
+      "type": "string",
+      "enum": ["male", "female", "other"],
+      "description": "Speaker gender"
+    },
+    "microphone": {
+      "type": "string",
+      "description": "Microphone used for this recording",
+      "examples": ["intel_smart_sound", "motu", "usb", "headset", "windows_default"]
+    },
+    "room_type": {
+      "type": "string",
+      "description": "Room / environment type",
+      "examples": ["quiet_room", "bedroom", "tv_background", "fan_noise", "street_noise", "music_background"]
+    },
+    "distance_meters": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 10.0,
+      "description": "Speaker-to-microphone distance in meters"
+    },
+    "noise_level": {
+      "type": "string",
+      "enum": ["quiet", "low", "medium", "high", "very_high"],
+      "default": "quiet",
+      "description": "Subjective ambient noise level"
+    },
+    "expected_wake": {
+      "type": "boolean",
+      "description": "Whether this recording is expected to trigger a wake event"
+    },
+    "expected_command": {
+      "type": ["string", "null"],
+      "description": "Expected command ID after wake, or null",
+      "examples": ["calculator_open", "music_play", "weather_query"]
+    },
+    "expected_false_positive": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this WAV is specifically testing false-positive resistance"
+    },
+    "category": {
+      "type": ["string", "null"],
+      "description": "Acoustic category label",
+      "examples": ["clean", "far_field", "noisy", "similar_phonetics"]
+    },
+    "note": {
+      "type": ["string", "null"],
+      "description": "Human-readable note about this recording"
+    }
+  }
+}

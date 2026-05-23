@@ -1,30 +1,62 @@
 mod pvrecorder;
+mod wav_source;
 
 // mod cpal;
 // mod portaudio;
 
+use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 use once_cell::sync::OnceCell;
 
 use crate::{config, config::structs::RecorderType, DB};
 
 static RECORDER_TYPE: OnceCell<RecorderType> = OnceCell::new();
 static FRAME_LENGTH: OnceCell<u32> = OnceCell::new();
+static WAV_SOURCE: OnceCell<Mutex<wav_source::WavSource>> = OnceCell::new();
+static WAV_DONE: AtomicBool = AtomicBool::new(false);
+static WAV_PATH: OnceCell<String> = OnceCell::new();
+
+/// When true, `read_microphone()` skips the inter-frame sleep in WAV mode.
+/// Use for CI / stress runs where wall-clock timing is not required.
+/// Must be set before `init_wav()` is called.
+static ACCELERATED: AtomicBool = AtomicBool::new(false);
+
+pub fn set_accelerated(v: bool) {
+    ACCELERATED.store(v, Ordering::Relaxed);
+}
+
+pub fn is_accelerated() -> bool {
+    ACCELERATED.load(Ordering::Relaxed)
+}
+
+// ── AudioInputSource trait ────────────────────────────────────────────────────
+//
+// Formal abstraction for both WAV replay and live-microphone sources.
+// The `read_microphone()` function is the public dispatch point;
+// this trait documents the interface each backend must satisfy.
+
+pub(crate) trait AudioInputSource: Send {
+    /// Fill `buf` with the next PCM frame (i16 samples).
+    /// Returns `false` when the source is exhausted (WAV EOF).
+    /// Live sources never return `false`.
+    fn read_frame(&mut self, buf: &mut [i16]) -> bool;
+
+    /// Nominal delay between frames for real-time playback.
+    /// Returned by `WavSource::frame_duration()`.
+    fn frame_duration(&self) -> Duration;
+}
 
 pub fn init() -> Result<(), ()> {
-    // set default recorder type
-    // @TODO. Make it configurable?
     RECORDER_TYPE.set(config::DEFAULT_RECORDER_TYPE).unwrap();
 
-    // some info
     info!("Loading recorder ...");
     info!("Available audio_devices are:\n{:?}", get_audio_devices());
 
-    // load given recorder
     match RECORDER_TYPE.get().unwrap() {
         RecorderType::PvRecorder => {
-            // Init Pv Recorder
             info!("Initializing PvRecorder recording backend.");
-            FRAME_LENGTH.set(512u32).unwrap(); // pvrecorder requires frame buffer of 512
+            FRAME_LENGTH.set(512u32).unwrap();
             let selected_microphone = get_selected_microphone_index();
             match pvrecorder::init_microphone(
                 selected_microphone,
@@ -32,7 +64,6 @@ pub fn init() -> Result<(), ()> {
             ) {
                 false => {
                     error!("Recorder initialization failed.");
-
                     return Err(());
                 }
                 _ => {
@@ -45,51 +76,87 @@ pub fn init() -> Result<(), ()> {
             }
         }
         RecorderType::PortAudio => {
-            // Init PortAudio
-            info!("Initializing PortAudio recording backend");
-            todo!();
-            // match portaudio::init_microphone(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst)) {
-            //     false => {
-            //         // Switch to PortAudio recorder
-            //         error!("PortAudio audio backend failed.");
-            //     },
-            //     _ => ()
-            // }
+            error!("PortAudio recorder backend is not implemented");
+            return Err(());
         }
         RecorderType::Cpal => {
-            // Init CPAL
-            info!("Initializing CPAL recording backend");
-            todo!();
-            // match cpal::init_microphone(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst)) {
-            //     false => {
-            //         // Switch to CPAL recorder
-            //         error!("CPAL audio backend failed.");
-            //     },
-            //     _ => ()
-            // }
+            error!("CPAL recorder backend is not implemented");
+            return Err(());
         }
     }
 
     Ok(())
 }
 
+/// Initialize WAV replay mode instead of live microphone.
+/// Loads the WAV file, resamples to 16 kHz mono i16 if needed,
+/// and splits into 512-sample frames for pipeline injection.
+pub fn init_wav(path: &str) -> Result<(), String> {
+    WAV_PATH.set(path.to_string()).map_err(|_| "WAV path already set".to_string())?;
+    FRAME_LENGTH
+        .set(512u32)
+        .map_err(|_| "Frame length already set".to_string())?;
+    let source = wav_source::WavSource::load(path, 512, 16000)?;
+    WAV_SOURCE
+        .set(Mutex::new(source))
+        .map_err(|_| "WAV source already set".to_string())?;
+    Ok(())
+}
+
+pub fn get_wav_path() -> Option<&'static str> {
+    WAV_PATH.get().map(|s| s.as_str())
+}
+
+pub fn is_wav_mode() -> bool {
+    WAV_SOURCE.get().is_some()
+}
+
+pub fn is_wav_done() -> bool {
+    WAV_DONE.load(Ordering::SeqCst)
+}
+
 pub fn read_microphone(frame_buffer: &mut [i16]) {
+    if let Some(source) = WAV_SOURCE.get() {
+        let (frame_opt, frame_dur) = {
+            let mut src = source.lock().unwrap();
+            (src.next_frame(), src.frame_duration())
+        };
+        match frame_opt {
+            Some(f) => {
+                frame_buffer.copy_from_slice(&f);
+            }
+            None => {
+                // WAV exhausted — fill with silence and mark done
+                if !WAV_DONE.load(Ordering::SeqCst) {
+                    WAV_DONE.store(true, Ordering::SeqCst);
+                    info!("[AUDIO_TEST] All WAV frames delivered — filling with silence");
+                }
+                frame_buffer.fill(0);
+            }
+        }
+        // In accelerated mode skip the real-time sleep so CI/stress runs
+        // complete as fast as the CPU allows.
+        if !ACCELERATED.load(Ordering::Relaxed) {
+            std::thread::sleep(frame_dur);
+        }
+        return;
+    }
     match RECORDER_TYPE.get().unwrap() {
         RecorderType::PvRecorder => {
             pvrecorder::read_microphone(frame_buffer);
         }
-        RecorderType::PortAudio => {
-            todo!();
-            // portaudio::read_microphone(frame_buffer);
-        }
-        RecorderType::Cpal => {
-            // cpal::read_microphone(frame_buffer);
-            panic!("Cpal should be used via callback assignment");
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented — filling with silence", RECORDER_TYPE.get());
+            frame_buffer.fill(0);
         }
     }
 }
 
 pub fn start_recording() -> Result<(), ()> {
+    if is_wav_mode() {
+        info!("[AUDIO_TEST] WAV mode — skipping PvRecorder start");
+        return Ok(());
+    }
     match RECORDER_TYPE.get().unwrap() {
         RecorderType::PvRecorder => {
             return pvrecorder::start_recording(
@@ -97,75 +164,73 @@ pub fn start_recording() -> Result<(), ()> {
                 FRAME_LENGTH.get().unwrap().to_owned(),
             );
         }
-        RecorderType::PortAudio => {
-            todo!();
-            // portaudio::start_recording(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst));
-        }
-        RecorderType::Cpal => {
-            todo!();
-            // cpal::start_recording(get_selected_microphone_index(), FRAME_LENGTH.load(Ordering::SeqCst));
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented", RECORDER_TYPE.get());
+            return Err(());
         }
     }
 }
 
 pub fn stop_recording() -> Result<(), ()> {
+    if is_wav_mode() {
+        return Ok(());
+    }
     match RECORDER_TYPE.get().unwrap() {
         RecorderType::PvRecorder => pvrecorder::stop_recording(),
-        RecorderType::PortAudio => {
-            todo!();
-            // portaudio::stop_recording();
-        }
-        RecorderType::Cpal => {
-            todo!();
-            // cpal::stop_recording();
+        RecorderType::PortAudio | RecorderType::Cpal => {
+            error!("Recorder backend {:?} not implemented", RECORDER_TYPE.get());
+            Err(())
         }
     }
+}
+
+/// Stop the recorder and immediately restart it on the same device.
+///
+/// Used by the watchdog L2 recovery path when the recorder appears frozen.
+/// A 200 ms gap between stop and start gives the audio driver time to release
+/// the device before re-acquiring it.
+pub fn restart_recording() -> Result<(), ()> {
+    if is_wav_mode() {
+        return Ok(());
+    }
+    stop_recording().ok();
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    start_recording()
 }
 
 pub fn get_selected_microphone_index() -> i32 {
     let idx = DB.get().unwrap().read().microphone;
 
     if idx > 0 {
-        // validate that this microphone is actually in the list
         let devices = get_audio_devices();
         if (idx as usize) >= devices.len() {
-            warn!("Microphone index {} not found ({} available), falling back to default", 
-                idx, devices.len());
+            warn!(
+                "Microphone index {} not found ({} available), falling back to default",
+                idx,
+                devices.len()
+            );
             return -1;
         }
     }
-    
+
     idx
 }
 
 pub fn get_audio_devices() -> Vec<String> {
     match RECORDER_TYPE.get() {
         Some(RecorderType::PvRecorder) => pvrecorder::list_audio_devices(),
-        Some(RecorderType::PortAudio) => {
-            todo!();
-        }
-        Some(RecorderType::Cpal) => {
-            todo!();
-        }
-        None => {
-            // not initialized yet, default to pvrecorder
-            pvrecorder::list_audio_devices()
-        }
+        Some(RecorderType::PortAudio) | Some(RecorderType::Cpal) => vec![],
+        None => pvrecorder::list_audio_devices(),
     }
 }
 
 pub fn get_audio_device_name(idx: i32) -> String {
+    if is_wav_mode() {
+        return String::from("[WAV test mode]");
+    }
     match RECORDER_TYPE.get() {
         Some(RecorderType::PvRecorder) => pvrecorder::get_audio_device_name(idx),
-        Some(RecorderType::PortAudio) => {
-            todo!();
-        }
-        Some(RecorderType::Cpal) => {
-            todo!();
-        }
-        None => {
-            // not initialized yet, default to pvrecorder
-            pvrecorder::get_audio_device_name(idx)
-        }
+        Some(RecorderType::PortAudio) | Some(RecorderType::Cpal) => String::new(),
+        None => pvrecorder::get_audio_device_name(idx),
     }
 }

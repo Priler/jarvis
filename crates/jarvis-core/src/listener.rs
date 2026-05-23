@@ -44,3 +44,46 @@ pub fn data_callback(frame_buffer: &[i16]) -> Option<i32> {
         WakeWordEngine::Vosk => vosk::data_callback(frame_buffer),
     }
 }
+
+pub fn get_max_score() -> f32 {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::get_max_score(),
+        _ => 0.0,
+    }
+}
+
+pub fn get_frame_count() -> usize {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::get_frame_count(),
+        _ => 0,
+    }
+}
+
+/// Score of the most recent detection that passed the threshold.
+/// Used by stt_worker to publish WakeScore validation events.
+pub fn get_last_detect_score() -> f32 {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::get_last_detect_score(),
+        _ => 0.0,
+    }
+}
+
+/// Override the minimum detection threshold at runtime.
+/// Must be called after listener::init().
+/// Also readable via JARVIS_WAKE_THRESHOLD env var at init time.
+pub fn set_min_score(score: f32) {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::set_min_score(score),
+        _ => {}
+    }
+}
+
+/// Reset all internal engine state accumulated since the last wake session.
+/// For Rustpotter this clears the rechunking remainder buffer; other engines
+/// are no-ops unless they accumulate internal state.
+pub fn reset_state() {
+    match WAKE_WORD_ENGINE.get() {
+        Some(WakeWordEngine::Rustpotter) => rustpotter::reset_remainder(),
+        _ => {}
+    }
+}

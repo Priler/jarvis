@@ -1,0 +1,253 @@
+/* JARVIS — Settings tab content styles (applied globally to child tab components) */
+
+.settings-section {
+    padding: 18px;
+    border-radius: var(--r-xl);
+    background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
+    border: 1px solid rgba(255,255,255,0.055);
+    margin-bottom: 8px;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+
+    &::before {
+        content: '';
+        flex-shrink: 0;
+        width: 2px;
+        height: 16px;
+        background: var(--accent);
+        border-radius: 2px;
+        box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.35);
+    }
+}
+
+.section-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+    margin: -6px 0 12px 12px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.voice-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding-left: 2px;
+}
+
+.voice-meta-author {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.voice-meta-langs {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: rgba(var(--accent-rgb), 0.45);
+    font-family: var(--font-mono);
+}
+
+.sub-field {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.field-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+.field-desc {
+    display: block;
+    font-size: 0.67rem;
+    color: var(--text-muted);
+    opacity: 0.65;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.empty-hint,
+.info-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 8px 0 0;
+    opacity: 0.65;
+}
+
+.error-text {
+    font-size: 0.72rem;
+    color: rgba(255,80,80,0.85);
+    padding: 6px 0 0;
+}
+
+
+/* ── About tab ── */
+.beta-panel {
+    padding: 12px;
+    border-radius: var(--r-xl);
+    background: rgba(var(--color-warning-rgb), 0.032);
+    border: 1px solid rgba(var(--color-warning-rgb), 0.10);
+    margin-bottom: 8px;
+}
+
+.beta-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.beta-panel-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(var(--color-warning-rgb), 0.9);
+    box-shadow: 0 0 6px rgba(var(--color-warning-rgb), 0.5);
+    flex-shrink: 0;
+}
+
+.beta-panel-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(var(--color-warning-rgb), 0.92);
+}
+
+.beta-panel-body {
+    font-size: 0.72rem;
+    color: rgba(var(--color-warning-rgb), 0.7);
+    line-height: 1.45;
+    margin: 0 0 3px;
+}
+
+.btn-logs {
+    margin-top: 8px;
+}
+
+.beta-panel-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    color: rgba(var(--color-warning-rgb), 0.9);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+    }
+}
+
+.about-section {
+    padding: 14px 16px;
+}
+
+.about-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.about-version-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.about-card-name {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.82);
+    font-family: var(--font-mono);
+}
+
+.about-card-ver {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: rgba(var(--accent-rgb), 0.6);
+}
+
+.ver-badge {
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(var(--accent-rgb), 0.55);
+    border: 1px solid rgba(var(--accent-rgb), 0.28);
+    border-radius: var(--r-sm);
+    padding: 1px 5px;
+}
+
+.about-card-copy {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    opacity: 0.55;
+    margin: 4px 0 0;
+}
+
+.link-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.link-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: var(--r-lg);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--ease);
+
+    &:hover {
+        background: var(--accent-glow-xs);
+        border-color: rgba(var(--accent-rgb), 0.14);
+    }
+}
+
+.link-name {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.55);
+    transition: color 140ms ease;
+}
+
+.link-arrow {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.2);
+    opacity: 0.6;
+    transition: color 140ms ease, opacity 140ms ease;
+}

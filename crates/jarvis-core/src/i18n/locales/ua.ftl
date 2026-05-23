@@ -15,8 +15,10 @@ tray-vad = Детекцiя голосу (VAD)
 tray-gain-normalizer = Нормалізація гучності
 
 # ### HEADER
+header-home = ГОЛОВНА
 header-commands = КОМАНДИ
 header-settings = НАЛАШТУВАННЯ
+header-system = СИСТЕМА
 
 # ### SEARCH
 search-placeholder = Введіть команду вручну або скажіть «Джарвіс» ...
@@ -104,14 +106,23 @@ settings-vosk-model-desc =
 settings-models-not-found = Моделі не знайдено
 settings-models-hint = Помістіть моделі Vosk в папку resources/vosk
 
-# settings - openai
-settings-openai-key = Ключ OpenAI
-settings-openai-not-supported = Наразі ChatGPT не підтримується. Він буде доданий у наступних оновленнях.
+# settings - ollama
+settings-ollama-desc = Ollama дозволяє запускати мовні моделі локально — без інтернету та без передачі даних стороннім серверам.
+settings-ollama-url = URL сервера Ollama
+settings-ollama-url-desc = Адреса запущеного Ollama. За замовчуванням: http://localhost:11434
+settings-ollama-load-models = Завантажити моделі
+settings-ollama-model = Модель
+settings-ollama-model-desc = Виберіть модель після підключення до сервера Ollama.
+settings-ollama-no-models = Моделі не знайдено. Переконайтеся що Ollama запущена та моделі встановлені.
+settings-ollama-error = Не вдалося підключитися до Ollama
 
 # ### COMMANDS PAGE
 commands-title = Команди
 commands-search = Пошук команд...
 commands-count = { $count } команд
+commands-no-commands = Немає доступних команд
+commands-load-error = Не вдалося завантажити команди
+commands-retry = Повторити
 commands-wip-title = [404] Цей розділ ще в розробці!
 commands-wip-desc = Тут буде список команд + повноцінний редактор команд.
 commands-wip-follow = Слідкуйте за оновленнями в
@@ -136,6 +147,11 @@ settings-gliner-model-desc =
     Оберіть варіант моделі.
     Квантизовані моделі (int8, uint8) швидші, але менш точні.
 settings-gliner-models-hint = Моделі GLiNER не знайдено.
+
+# CONFIRM OVERLAY
+confirm-overlay-title = Підтвердження команди
+confirm-overlay-execute = Виконати
+confirm-overlay-cmd-label = Команда
 
 # ETC
 search-error-not-running = Асистент не запущено

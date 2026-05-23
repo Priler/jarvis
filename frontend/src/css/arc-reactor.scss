@@ -1,0 +1,599 @@
+// [ ARC REACTOR VARIABLES ]
+$arc-radius: 133px;
+$arc-container-size: 195%;
+$arc-spacing: 93%;
+
+// [ STRUCTURAL COLOR TOKENS ]
+// These are reactor-specific values, not theme colors.
+// Theme colors (cyan, red, etc.) are set per .arc-* class via --arc-color / --arc-glow.
+$arc-shell-bg:        #161a1b;   // dark shell around the core
+$arc-core-inner-fill: rgba(200,235,248,0.52);
+$arc-core-outer-fill: rgba(180,225,245,0.28);
+$arc-tunnel-fill:     rgba(160,215,240,0.16);
+
+$arc-thickness-1: 1px;
+$arc-thickness-2: 2px;
+$arc-thickness-3: 3px;
+$arc-thickness-4: 4px;
+
+$mark-width: 2.5px;
+$mark-height: 11px;
+
+// [ DEFAULT THEME - CYAN ]
+.reactor-container {
+    --arc-color: 0, 200, 220;
+    --arc-glow: #00c8dc;
+    --arc-glow-rgb: 0, 200, 220;
+    --arc-core-border: #1b4e5f;
+    --arc-core-bg: #073c4b;
+
+    width: 300px;
+    height: 300px;
+    margin: auto;
+    position: relative;
+    border-radius: 50%;
+    transition: transform 0.6s ease, opacity 0.6s ease, filter 0.8s ease;
+    transform: scale(0.95);
+    opacity: 0.9;
+    top: 10px;
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+// [ COLOR THEMES ]
+.reactor-container.arc-cyan {
+    --arc-color: 0, 200, 220;
+    --arc-glow: #00c8dc;
+    --arc-glow-rgb: 0, 200, 220;
+    --arc-core-border: #1b4e5f;
+    --arc-core-bg: #073c4b;
+}
+
+.reactor-container.arc-red {
+    --arc-color: 255, 50, 50;
+    --arc-glow: #ff5050;
+    --arc-glow-rgb: 255, 80, 80;
+    --arc-core-border: #5f1b1b;
+    --arc-core-bg: #4b0707;
+}
+
+.reactor-container.arc-orange {
+    --arc-color: 255, 150, 50;
+    --arc-glow: #ff9632;
+    --arc-glow-rgb: 255, 150, 50;
+    --arc-core-border: #5f3c1b;
+    --arc-core-bg: #4b2a07;
+}
+
+.reactor-container.arc-yellow {
+    --arc-color: 255, 230, 50;
+    --arc-glow: #ffe632;
+    --arc-glow-rgb: 255, 230, 50;
+    --arc-core-border: #5f5a1b;
+    --arc-core-bg: #4b4507;
+}
+
+.reactor-container.arc-green {
+    --arc-color: 50, 255, 100;
+    --arc-glow: #32ff64;
+    --arc-glow-rgb: 50, 255, 100;
+    --arc-core-border: #1b5f2a;
+    --arc-core-bg: #074b15;
+}
+
+.reactor-container.arc-blue {
+    --arc-color: 50, 150, 255;
+    --arc-glow: #3296ff;
+    --arc-glow-rgb: 50, 150, 255;
+    --arc-core-border: #1b3c5f;
+    --arc-core-bg: #072a4b;
+}
+
+.reactor-container.arc-purple {
+    --arc-color: 180, 100, 255;
+    --arc-glow: #b464ff;
+    --arc-glow-rgb: 180, 100, 255;
+    --arc-core-border: #3c1b5f;
+    --arc-core-bg: #28074b;
+}
+
+.reactor-container.arc-pink {
+    --arc-color: 255, 100, 200;
+    --arc-glow: #ff64c8;
+    --arc-glow-rgb: 255, 100, 200;
+    --arc-core-border: #5f1b4a;
+    --arc-core-bg: #4b0735;
+}
+
+.reactor-container.arc-white {
+    --arc-color: 255, 255, 255;
+    --arc-glow: #ffffff;
+    --arc-glow-rgb: 255, 255, 255;
+    --arc-core-border: #4a4a4a;
+    --arc-core-bg: #2a2a2a;
+}
+
+// [ BACKGROUND GLOW ]
+.reactor-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(var(--arc-color), 0.065) 0%,
+        rgba(var(--arc-color), 0.04)  35%,
+        rgba(var(--arc-color), 0.015) 55%,
+        transparent 70%
+    );
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.8s ease, transform 0.6s ease;
+}
+
+// [ CORE ELEMENTS ]
+.reactor-container-inner {
+    height: 238px;
+    width: 238px;
+    background-color: $arc-shell-bg;
+    box-shadow: 0px 0px 50px 15px rgba(var(--arc-color), 0.16),
+                inset 0px 0px 50px 15px rgba(var(--arc-color), 0.16);
+    transition: box-shadow 0.8s ease;
+}
+
+.circle { border-radius: 50%; }
+
+.abs-center {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    margin: auto;
+}
+
+.core-inner {
+    width: 70px;
+    height: 70px;
+    border: 5px solid var(--arc-core-border);
+    background-color: $arc-core-inner-fill;
+    box-shadow: 0px 0px 5px 3px var(--arc-glow),
+                0px 0px 7px 6px var(--arc-glow) inset;
+    transition: box-shadow 0.8s ease;
+}
+
+.core-outer {
+    width: 120px;
+    height: 120px;
+    border: 1px solid var(--arc-glow);
+    background-color: $arc-core-outer-fill;
+    box-shadow: 0px 0px 1px 1px var(--arc-glow),
+                0px 0px 7px 3px var(--arc-glow) inset;
+    transition: box-shadow 0.8s ease, border-color 0.8s ease;
+}
+
+.core-wrapper {
+    width: 180px;
+    height: 180px;
+    background-color: var(--arc-core-bg);
+    box-shadow: 0px 0px 4px 3px var(--arc-glow),
+                0px 0px 4px 1px var(--arc-glow) inset;
+    transition: box-shadow 0.8s ease, background-color 0.8s ease;
+}
+
+.tunnel {
+    width: 220px;
+    height: 220px;
+    background-color: $arc-tunnel-fill;
+    box-shadow: 0px 0px 3px 1px var(--arc-glow),
+                0px 0px 3px 2px var(--arc-glow) inset;
+    transition: box-shadow 0.8s ease;
+}
+
+.coil-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    animation: reactor-anim 10s infinite linear;
+}
+
+.coil {
+    position: absolute;
+    width: 30px;
+    height: 20px;
+    top: calc(50% - 110px);
+    left: calc(50% - 15px);
+    transform-origin: 15px 110px;
+    background-color: var(--arc-core-bg);
+    box-shadow: 0px 0px 5px var(--arc-glow) inset;
+    transition: background-color 0.8s ease, box-shadow 0.8s ease;
+}
+
+@for $i from 1 through 8 {
+    .coil-#{$i} {
+        transform: rotate(#{($i - 1) * 45}deg);
+    }
+}
+
+@keyframes reactor-anim {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.e7 {
+    position: absolute;
+    z-index: 1;
+    width: $arc-container-size;
+    height: $arc-container-size;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 6px solid transparent;
+    background: transparent;
+    border-radius: 50%;
+    transition: opacity 0.8s ease;
+    text-align: center;
+    opacity: 0.5;
+}
+
+.semi_arc_3 {
+    $offset: calc((100% - #{$arc-spacing}) / 2);
+    position: absolute;
+    width: $arc-spacing;
+    height: $arc-spacing;
+    left: $offset;
+    top: $offset;
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 50%;
+    box-sizing: border-box;
+    animation: rotate 6s linear infinite;
+    overflow: hidden;
+    transition: border-color 0.8s ease;
+}
+
+// [ MAIN ARCS ]
+.e5_1 {
+    border-width: $arc-thickness-1;
+    border-top-color: rgba(var(--arc-color), 0.25);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: rgba(var(--arc-color), 0.25);
+    animation: rotate 8s linear infinite;
+}
+
+.e5_2 {
+    border-width: $arc-thickness-2;
+    border-top-color: transparent;
+    border-right-color: rgba(var(--arc-color), 0.4);
+    border-bottom-color: rgba(var(--arc-color), 0.4);
+    border-left-color: transparent;
+    animation: rotate_anti 6s linear infinite;
+}
+
+.e5_3 {
+    border-width: $arc-thickness-3;
+    border-top-color: rgba(var(--arc-color), 0.6);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    animation: rotate 4s linear infinite;
+}
+
+.e5_4 {
+    border-width: $arc-thickness-4;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: rgba(var(--arc-color), 0.8);
+    border-left-color: transparent;
+    animation: rotate_anti 5s linear infinite;
+}
+
+// [ GHOST ARCS ]
+.e5_1_ghost {
+    border-width: $arc-thickness-1;
+    border-top-color: rgba(var(--arc-color), 0.08);
+    border-right-color: rgba(var(--arc-color), 0.08);
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    animation: rotate_anti 12s linear infinite;
+}
+
+.e5_2_ghost {
+    border-width: $arc-thickness-2;
+    border-top-color: rgba(var(--arc-color), 0.12);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: rgba(var(--arc-color), 0.12);
+    animation: rotate 9s linear infinite;
+}
+
+.e5_3_ghost {
+    border-width: $arc-thickness-3;
+    border-top-color: transparent;
+    border-right-color: rgba(var(--arc-color), 0.18);
+    border-bottom-color: rgba(var(--arc-color), 0.18);
+    border-left-color: transparent;
+    animation: rotate_anti 6s linear infinite;
+}
+
+.e5_4_ghost {
+    border-width: $arc-thickness-4;
+    border-top-color: rgba(var(--arc-color), 0.24);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: rgba(var(--arc-color), 0.24);
+    animation: rotate 7.5s linear infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+
+@keyframes rotate_anti {
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(-360deg); }
+}
+
+// [ MARKS ]
+.marks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.marks li {
+    width: $mark-width;
+    height: $mark-height;
+    background: rgba(var(--arc-color), 0.8);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: calc(-#{$mark-width} / 2);
+    margin-top: calc(-#{$mark-height} / 2);
+    animation: colour_ease2 3s infinite ease-in-out;
+    transition: background-color 0.8s ease;
+}
+
+@keyframes colour_ease2 {
+    0% { background: rgba(var(--arc-color), 1); }
+    50% { background: rgba(var(--arc-color), 0.3); }
+    100% { background: rgba(var(--arc-color), 1); }
+}
+
+@for $i from 1 through 60 {
+    .marks li:nth-child(#{$i}) {
+        transform: rotate(#{$i * 6}deg) translateY(-$arc-radius);
+    }
+}
+
+// ========================================================
+// [ DISCONNECTED ] — grey, slow, dim
+// ========================================================
+.reactor-container.disconnected {
+    transform: scale(0.85);
+    opacity: 0.4;
+    filter: grayscale(0.7) brightness(0.6);
+
+    .coil-container { animation-duration: 20s; }
+    .e7 { opacity: 0.3; }
+
+    .e5_1 {
+        border-top-color: rgba(var(--arc-color), 0.1);
+        border-left-color: rgba(var(--arc-color), 0.1);
+        animation: rotate 35s linear infinite;
+    }
+    .e5_2 {
+        border-right-color: rgba(var(--arc-color), 0.15);
+        border-bottom-color: rgba(var(--arc-color), 0.15);
+        animation: rotate_anti 30s linear infinite;
+    }
+    .e5_3 {
+        border-top-color: rgba(var(--arc-color), 0.2);
+        animation: rotate 25s linear infinite;
+    }
+    .e5_4 {
+        border-bottom-color: rgba(var(--arc-color), 0.25);
+        animation: rotate_anti 28s linear infinite;
+    }
+    .e5_1_ghost { animation: rotate_anti 50s linear infinite; }
+    .e5_2_ghost { animation: rotate 45s linear infinite; }
+    .e5_3_ghost { animation: rotate_anti 40s linear infinite; }
+    .e5_4_ghost { animation: rotate 42s linear infinite; }
+}
+
+.reactor-container.disconnected::before {
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(0.6);
+}
+
+// ========================================================
+// [ IDLE ] — cyan, slow breath pulse (5s)
+// ========================================================
+.reactor-container.idle {
+    transform: scale(0.95);
+    opacity: 0.92;
+    filter: drop-shadow(0 0 12px rgba(var(--arc-color), 0.14));
+
+    .coil-container { animation-duration: 10s; }
+    .e7 { opacity: 0.38; }
+
+    .e5_1 {
+        border-top-color: rgba(var(--arc-color), 0.09);
+        border-left-color: rgba(var(--arc-color), 0.09);
+        animation: rotate 9s linear infinite;
+    }
+    .e5_2 {
+        border-right-color: rgba(var(--arc-color), 0.20);
+        border-bottom-color: rgba(var(--arc-color), 0.20);
+        animation: rotate_anti 15s linear infinite;
+    }
+    .e5_3 {
+        border-top-color: rgba(var(--arc-color), 0.32);
+        animation: rotate 12s linear infinite;
+    }
+    .e5_4 {
+        border-bottom-color: rgba(var(--arc-color), 0.44);
+        animation: rotate_anti 14s linear infinite;
+    }
+    .e5_1_ghost {
+        border-top-color: rgba(var(--arc-color), 0.04);
+        border-right-color: rgba(var(--arc-color), 0.04);
+        animation: rotate_anti 14s linear infinite;
+    }
+    .e5_2_ghost {
+        border-top-color: rgba(var(--arc-color), 0.07);
+        border-left-color: rgba(var(--arc-color), 0.07);
+        animation: rotate 22s linear infinite;
+    }
+    .e5_3_ghost {
+        border-right-color: rgba(var(--arc-color), 0.10);
+        border-bottom-color: rgba(var(--arc-color), 0.10);
+        animation: rotate_anti 18s linear infinite;
+    }
+    .e5_4_ghost {
+        border-top-color: rgba(var(--arc-color), 0.14);
+        border-left-color: rgba(var(--arc-color), 0.14);
+        animation: rotate 21s linear infinite;
+    }
+}
+
+.reactor-container.idle::before {
+    opacity: 0.30;
+    transform: translate(-50%, -50%) scale(0.88);
+    animation: bg-pulse 5s ease-in-out infinite;
+}
+
+// ========================================================
+// [ ACTIVE BASE ] — shared active visuals
+// ========================================================
+.reactor-container.active {
+    transform: scale(1.05);
+    opacity: 1;
+    filter: drop-shadow(0 0 18px rgba(var(--arc-color), 0.22));
+
+    .coil-container { animation-duration: 3s; }
+    .e7 { opacity: 1; }
+
+    .e5_1 {
+        border-top-color: rgba(var(--arc-color), 0.3);
+        border-left-color: rgba(var(--arc-color), 0.3);
+        animation: rotate 4s linear infinite;
+    }
+    .e5_2 {
+        border-right-color: rgba(var(--arc-color), 0.5);
+        border-bottom-color: rgba(var(--arc-color), 0.5);
+        animation: rotate_anti 3s linear infinite;
+    }
+    .e5_3 {
+        border-top-color: rgba(var(--arc-color), 0.7);
+        animation: rotate 2s linear infinite;
+    }
+    .e5_4 {
+        border-bottom-color: rgba(var(--arc-color), 0.9);
+        animation: rotate_anti 2.5s linear infinite;
+    }
+    .e5_1_ghost {
+        border-top-color: rgba(var(--arc-color), 0.1);
+        border-right-color: rgba(var(--arc-color), 0.1);
+        animation: rotate_anti 6s linear infinite;
+    }
+    .e5_2_ghost {
+        border-top-color: rgba(var(--arc-color), 0.15);
+        border-left-color: rgba(var(--arc-color), 0.15);
+        animation: rotate 4.5s linear infinite;
+    }
+    .e5_3_ghost {
+        border-right-color: rgba(var(--arc-color), 0.2);
+        border-bottom-color: rgba(var(--arc-color), 0.2);
+        animation: rotate_anti 3s linear infinite;
+    }
+    .e5_4_ghost {
+        border-top-color: rgba(var(--arc-color), 0.28);
+        border-left-color: rgba(var(--arc-color), 0.28);
+        animation: rotate 3.75s linear infinite;
+    }
+
+    .reactor-container-inner {
+        box-shadow: 0px 0px 70px 25px rgba(var(--arc-color), 0.20),
+                    inset 0px 0px 70px 25px rgba(var(--arc-color), 0.20);
+    }
+    .core-inner {
+        box-shadow: 0px 0px 10px 7px var(--arc-glow),
+                    0px 0px 14px 10px var(--arc-glow) inset;
+    }
+    .core-outer {
+        box-shadow: 0px 0px 3px 2px var(--arc-glow),
+                    0px 0px 10px 6px var(--arc-glow) inset;
+    }
+    .core-wrapper {
+        box-shadow: 0px 0px 7px 5px var(--arc-glow),
+                    0px 0px 7px 3px var(--arc-glow) inset;
+    }
+    .tunnel {
+        box-shadow: 0px 0px 6px 2px var(--arc-glow),
+                    0px 0px 6px 5px var(--arc-glow) inset;
+    }
+    .marks li {
+        animation: colour_ease2_active 1s infinite ease-in-out;
+    }
+}
+
+// [ LISTENING ] — cyan, нормальный пульс (2.5s)
+.reactor-container.active.s-listening::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+    animation: bg-pulse 2.5s ease-in-out infinite;
+}
+
+// [ PROCESSING ] — white, быстрый пульс (0.8s)
+.reactor-container.active.s-processing::before {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+    animation: bg-pulse-fast 0.8s ease-in-out infinite;
+}
+
+@keyframes bg-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1.0);
+    }
+}
+
+@keyframes bg-pulse-fast {
+    0%, 100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.12);
+    }
+    50% {
+        opacity: 0.4;
+        transform: translate(-50%, -50%) scale(0.98);
+    }
+}
+
+@keyframes colour_ease2_active {
+    0% { background: rgba(var(--arc-color), 1); box-shadow: 0 0 5px rgba(var(--arc-color), 1); }
+    50% { background: rgba(var(--arc-color), 0.3); box-shadow: none; }
+    100% { background: rgba(var(--arc-color), 1); box-shadow: 0 0 5px rgba(var(--arc-color), 1); }
+}
+
+// [ REDUCED MOTION ]
+@media (prefers-reduced-motion: reduce) {
+    .reactor-container,
+    .reactor-container * {
+        animation: none !important;
+        transition: opacity 0.3s ease, filter 0.3s ease !important;
+    }
+}

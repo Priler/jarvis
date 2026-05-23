@@ -15,8 +15,10 @@ tray-vad = Voice Activity Detection
 tray-gain-normalizer = Gain Normalizer
 
 # ### HEADER
+header-home = HOME
 header-commands = COMMANDS
 header-settings = SETTINGS
+header-system = SYSTEM
 
 # ### SEARCH
 search-placeholder = Enter a command manually or say «Jarvis» ...
@@ -104,14 +106,23 @@ settings-vosk-model-desc =
 settings-models-not-found = Models not found
 settings-models-hint = Place Vosk models in resources/vosk folder
 
-# settings - openai
-settings-openai-key = OpenAI Key
-settings-openai-not-supported = ChatGPT is not currently supported. It will be added in future updates.
+# settings - ollama
+settings-ollama-desc = Ollama lets you run language models locally — no internet, no data sent to third-party servers.
+settings-ollama-url = Ollama server URL
+settings-ollama-url-desc = Address of your running Ollama instance. Default: http://localhost:11434
+settings-ollama-load-models = Load models
+settings-ollama-model = Model
+settings-ollama-model-desc = Select a model after connecting to the Ollama server.
+settings-ollama-no-models = No models found. Make sure Ollama is running and models are installed.
+settings-ollama-error = Could not connect to Ollama
 
 # ### COMMANDS PAGE
 commands-title = Commands
 commands-search = Search commands...
 commands-count = { $count } commands
+commands-no-commands = No commands available
+commands-load-error = Failed to load commands
+commands-retry = Retry
 commands-wip-title = [404] This section is under development!
 commands-wip-desc = Here will be a list of commands + full-featured command editor.
 commands-wip-follow = Follow updates in
@@ -136,6 +147,11 @@ settings-gliner-model-desc =
     Select model variant.
     Smaller quantized models (int8, uint8) are faster but less accurate.
 settings-gliner-models-hint = No GLiNER models found.
+
+# CONFIRM OVERLAY
+confirm-overlay-title = Command Confirmation
+confirm-overlay-execute = Execute
+confirm-overlay-cmd-label = Command
 
 # ETC
 search-error-not-running = Assistant is not running

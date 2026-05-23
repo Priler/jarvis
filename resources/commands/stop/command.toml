@@ -1,0 +1,14 @@
+[[commands]]
+id = "stop_listening"
+type = "stop_chaining"
+sounds.ru = ["thanks", "ok1"]
+phrases.ru = [
+    "всё",
+    "хватит",
+    "отмена",
+    "не слушай",
+    "перестань слушать",
+    "отдыхай",
+    "на этом всё",
+    "хватит слушать",
+]

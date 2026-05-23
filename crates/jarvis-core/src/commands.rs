@@ -1,15 +1,76 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::fs;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::process::{Child, Command};
 
+use once_cell::sync::Lazy;
+use parking_lot::Mutex;
 use seqdiff::ratio;
 
 mod structs;
 pub use structs::*;
 
 use crate::{config, i18n, APP_DIR};
+
+// CLI commands that always require confirmation regardless of the `confirm` flag.
+// Includes destructive system tools AND shell interpreters that can run arbitrary code.
+const ALWAYS_CONFIRM_CMDS: &[&str] = &[
+    // destructive system tools
+    "shutdown", "format", "diskpart", "reg", "del", "rmdir", "rd", "cipher",
+    // shell interpreters — can execute arbitrary code via arguments
+    "cmd", "powershell", "pwsh", "sh", "bash", "zsh", "fish",
+    "wscript", "cscript", "mshta", "rundll32", "regsvr32",
+];
+
+pub struct PendingConfirm {
+    pub id: String,
+    pub cmd_path: PathBuf,
+    pub cmd: JCommand,
+    pub created_at: Instant,
+}
+
+static PENDING_CONFIRM: Lazy<Mutex<Option<PendingConfirm>>> = Lazy::new(|| Mutex::new(None));
+
+pub fn requires_confirmation(cmd: &JCommand) -> bool {
+    if cmd.cmd_type != "cli" {
+        return false;
+    }
+    let cli_lower = cmd.cli_cmd.to_lowercase();
+    cmd.confirm
+        || ALWAYS_CONFIRM_CMDS
+            .iter()
+            .any(|&c| cli_lower == c || cli_lower.starts_with(&format!("{} ", c)))
+}
+
+pub fn store_pending_command(path: &PathBuf, cmd: &JCommand) {
+    *PENDING_CONFIRM.lock() = Some(PendingConfirm {
+        id: cmd.id.clone(),
+        cmd_path: path.clone(),
+        cmd: cmd.clone(),
+        created_at: Instant::now(),
+    });
+}
+
+pub fn take_pending_command() -> Option<PendingConfirm> {
+    PENDING_CONFIRM.lock().take()
+}
+
+/// Expire a pending confirmation that has been waiting longer than `max_age_s` seconds.
+/// Called by the watchdog every interval to GC abandoned confirmations.
+pub fn expire_pending_confirm(max_age_s: u64) {
+    let mut guard = PENDING_CONFIRM.lock();
+    if let Some(ref pending) = *guard {
+        let age_s = pending.created_at.elapsed().as_secs();
+        if age_s >= max_age_s {
+            warn!(
+                "[SESSION_GC] Expired stale pending confirm id='{}' age={}s",
+                pending.id, age_s
+            );
+            *guard = None;
+        }
+    }
+}
 
 #[cfg(feature = "lua")]
 use crate::lua::{self, SandboxLevel, CommandContext};
@@ -183,50 +244,43 @@ pub fn execute_exe(exe: &str, args: &[String]) -> std::io::Result<Child> {
 }
 
 pub fn execute_cli(cmd: &str, args: &[String]) -> std::io::Result<Child> {
-    debug!("Spawning: cmd /C {} {:?}", cmd, args);
-
-    if cfg!(target_os = "windows") {
-        Command::new("cmd").arg("/C").arg(cmd).args(args).spawn()
-    } else {
-        Command::new("sh").arg("-c").arg(cmd).args(args).spawn()
-    }
+    debug!("Spawning: {} {:?}", cmd, args);
+    Command::new(cmd).args(args).spawn()
 }
 
-pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, phrase: Option<&str>, slots: Option<&HashMap<String, SlotValue>>) -> Result<bool, String> {
+pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, _phrase: Option<&str>, _slots: Option<&HashMap<String, SlotValue>>) -> Result<bool, String> {
     // execute command by the type
     match cmd_config.cmd_type.as_str() {
 
         // BRUH
-        "voice" => Ok(true),
-        
+        "voice" => Ok(cmd_config.chain),
+
         // LUA command
         #[cfg(feature = "lua")]
         "lua" => {
-            execute_lua_command(cmd_path, cmd_config, phrase, slots)
+            execute_lua_command(cmd_path, cmd_config, _phrase, _slots)
         }
 
         // AutoHotkey command
         // @TODO: Consider adding ahk source files execution?
         "ahk" => {
-            let exe_path_absolute = Path::new(&cmd_config.exe_path);
-            let exe_path_local = cmd_path.join(&cmd_config.exe_path);
-
-            let exe_path = if exe_path_absolute.exists() {
-                exe_path_absolute
-            } else {
-                exe_path_local.as_path()
-            };
-
+            // SEC-4: reject absolute exe_path and traversal sequences so command.toml
+            // cannot redirect to arbitrary system binaries (e.g. cmd.exe, powershell.exe).
+            let ep = &cmd_config.exe_path;
+            if Path::new(ep).is_absolute() || ep.contains("..") {
+                return Err(format!(
+                    "AHK exe_path must be relative and within the command folder: '{}'", ep
+                ));
+            }
+            let exe_path = cmd_path.join(ep);
             execute_exe(exe_path.to_str().unwrap(), &cmd_config.exe_args)
-                .map(|_| true)
+                .map(|_| cmd_config.chain)
                 .map_err(|e| format!("AHK process spawn error: {}", e))
         }
-        
-        // CLI command type
-        // @TODO: Consider security restrictions
+
         "cli" => {
             execute_cli(&cmd_config.cli_cmd, &cmd_config.cli_args)
-                .map(|_| true)
+                .map(|_| cmd_config.chain)
                 .map_err(|e| format!("CLI command error: {}", e))
         }
         
@@ -315,5 +369,136 @@ fn execute_lua_command(
             error!("Lua command {} failed: {}", cmd_config.id, e);
             Err(e.to_string())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn cli_cmd(cli_cmd: &str, confirm: bool) -> JCommand {
+        serde_json::from_str(&format!(
+            r#"{{"id":"t","type":"cli","cli_cmd":"{cli_cmd}","confirm":{confirm}}}"#
+        )).unwrap()
+    }
+
+    fn voice_cmd(id: &str, phrase: &str) -> JCommandsList {
+        let json = format!(
+            r#"{{"commands":[{{"id":"{id}","type":"voice","phrases":{{"en":["{phrase}"]}}}}]}}"#
+        );
+        let mut list: JCommandsList = serde_json::from_str(&json).unwrap();
+        list.path = PathBuf::from("/tmp");
+        list
+    }
+
+    // --- requires_confirmation ---
+
+    #[test]
+    fn non_cli_type_never_needs_confirmation() {
+        let cmd: JCommand = serde_json::from_str(r#"{"id":"t","type":"voice"}"#).unwrap();
+        assert!(!requires_confirmation(&cmd));
+    }
+
+    #[test]
+    fn safe_cli_cmd_no_confirmation() {
+        assert!(!requires_confirmation(&cli_cmd("echo", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_shutdown_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("shutdown", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_case_insensitive() {
+        assert!(requires_confirmation(&cli_cmd("SHUTDOWN", false)));
+    }
+
+    #[test]
+    fn dangerous_cmd_with_args_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("shutdown /s /f /t 0", false)));
+    }
+
+    #[test]
+    fn confirm_flag_forces_confirmation_for_safe_cmd() {
+        assert!(requires_confirmation(&cli_cmd("notepad", true)));
+    }
+
+    #[test]
+    fn del_cmd_exact_match_needs_confirmation() {
+        assert!(requires_confirmation(&cli_cmd("del", false)));
+    }
+
+    #[test]
+    fn cmd_starting_with_dangerous_prefix_but_no_space_is_safe() {
+        // "deleteme" is not the same as "del" and does not start with "del "
+        assert!(!requires_confirmation(&cli_cmd("deleteme", false)));
+    }
+
+    #[test]
+    fn shell_interpreters_always_need_confirmation() {
+        for prog in &["cmd", "powershell", "pwsh", "sh", "bash", "wscript", "cscript", "mshta", "rundll32"] {
+            assert!(requires_confirmation(&cli_cmd(prog, false)), "{prog} should require confirmation");
+        }
+    }
+
+    #[test]
+    fn shell_interpreter_case_insensitive() {
+        assert!(requires_confirmation(&cli_cmd("PowerShell", false)));
+        assert!(requires_confirmation(&cli_cmd("CMD", false)));
+    }
+
+    // --- fetch_command ---
+
+    #[test]
+    fn empty_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("", &lists).is_none());
+    }
+
+    #[test]
+    fn whitespace_only_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("   ", &lists).is_none());
+    }
+
+    #[test]
+    fn no_commands_returns_none() {
+        assert!(fetch_command("say hello", &[]).is_none());
+    }
+
+    #[test]
+    fn exact_phrase_match_returns_command() {
+        let lists = [voice_cmd("greet", "say hello")];
+        let result = fetch_command("say hello", &lists);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().1.id, "greet");
+    }
+
+    #[test]
+    fn phrase_match_is_case_insensitive() {
+        let lists = [voice_cmd("greet", "say hello")];
+        let result = fetch_command("SAY HELLO", &lists);
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn completely_unrelated_phrase_returns_none() {
+        let lists = [voice_cmd("greet", "say hello")];
+        assert!(fetch_command("xyzzy frobozzle quux", &lists).is_none());
+    }
+
+    #[test]
+    fn best_of_multiple_commands_is_returned() {
+        let json = r#"{"commands":[
+            {"id":"a","type":"voice","phrases":{"en":["turn on the lights"]}},
+            {"id":"b","type":"voice","phrases":{"en":["play some music"]}}
+        ]}"#;
+        let mut list: JCommandsList = serde_json::from_str(json).unwrap();
+        list.path = PathBuf::from("/tmp");
+        let lists = [list];
+        let result = fetch_command("play some music", &lists);
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().1.id, "b");
     }
 }

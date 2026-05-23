@@ -1,0 +1,43 @@
+name: edge_cases
+wav_base: tests/wavs
+
+scenarios:
+  - name: short_command
+    wav: short_command.wav
+    timeout_secs: 30
+    tags: [edge, p2-2]
+    expected:
+      wake_count: 1
+      no_illegal_transitions: true
+      must_pass: [A002]
+      # P2-2: short ASCII commands (<=4 bytes) may be silently dropped by the
+      # text.len() < 5 byte-length filter in stt_worker.rs:947
+
+  - name: interrupted_speech
+    wav: wake_interrupted.wav
+    timeout_secs: 45
+    tags: [edge, interrupt]
+    expected:
+      wake_count: 1
+      no_illegal_transitions: true
+      must_pass: [A002, A003, A004, A008]
+
+  - name: chain_command
+    wav: wake_chain_two_commands.wav
+    timeout_secs: 60
+    tags: [edge, chain]
+    expected:
+      wake_count: 1
+      command_count: 2
+      no_illegal_transitions: true
+      must_pass: [A002, A003, A004]
+
+  - name: speech_reco_contamination
+    wav: wake_voiceactive_long.wav
+    timeout_secs: 45
+    tags: [regression, p0-2]
+    expected:
+      wake_count: 1
+      no_illegal_transitions: true
+      must_pass: [A001, A002]
+      # A001 specifically catches P0-2: speech recognizer fed during VoiceActive

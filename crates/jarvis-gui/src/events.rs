@@ -1,7 +1,9 @@
+#![allow(dead_code)]
 use tauri::Emitter;
 
 // the payload type must implement `Serialize` and `Clone`.
 #[derive(Clone, serde::Serialize)]
+#[allow(dead_code)]
 pub struct Payload {
     pub data: String,
 }

@@ -1,42 +1,28 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/core"
     import { onMount } from "svelte"
-    import { 
-        isJarvisRunning, 
-        jarvisRamUsage, 
-        jarvisCpuUsage,
-        ipcConnected,
-        translations,
-        translate
-    } from "@/stores"
+    import { isJarvisRunning, jarvisRamUsage, tStore, audioDevices, loadAudioDevices, settingsSnapshot, loadSettingsSnapshot } from "@/stores"
 
-    $: t = (key: string) => translate($translations, key)
+    $: t = $tStore
 
     let microphoneName = ""
-    let wakeWordEngine = "Rustpotter"
-    let sttEngine = "Vosk"
-    let vadInfo = ""
+
+    $: neuralLabel = $settingsSnapshot.wakeWordEngine === $settingsSnapshot.sttEngine
+        ? $settingsSnapshot.wakeWordEngine
+        : `${$settingsSnapshot.wakeWordEngine} + ${$settingsSnapshot.sttEngine}`
 
     onMount(async () => {
         microphoneName = t('stats-loading')
-        
         try {
-            const micIndex = await invoke<string>("db_read", { key: "selected_microphone" })
-            if (micIndex && micIndex !== "-1") {
-                const devices = await invoke<string[]>("pv_get_audio_devices")
-                const idx = parseInt(micIndex)
-                if (devices[idx]) {
-                    microphoneName = devices[idx]
-                }
+            await Promise.all([loadAudioDevices(), loadSettingsSnapshot()])
+            const { microphoneIndex } = $settingsSnapshot
+            const devices = $audioDevices
+            if (microphoneIndex && microphoneIndex !== "-1") {
+                const idx = parseInt(microphoneIndex)
+                if (!isNaN(idx) && devices[idx]) microphoneName = devices[idx]
             } else {
                 microphoneName = t('stats-system-default')
             }
-
-            wakeWordEngine = await invoke<string>("db_read", { key: "selected_wake_word_engine" }) || "Rustpotter"
-            sttEngine = await invoke<string>("db_read", { key: "selected_stt_engine" }) || "Vosk"
-            vadInfo = await invoke<string>("db_read", { key: "vad" }) || "Vosk"
-        } catch (err) {
-            console.error("Failed to load stats:", err)
+        } catch {
             microphoneName = t('stats-not-selected')
         }
     })
@@ -46,85 +32,133 @@
     }
 </script>
 
-<div class="stats-bar">
-    <div class="stat-item">
-        <span class="stat-dot" class:active={$isJarvisRunning} style="--color: #22c55e;"></span>
-        <div class="stat-content">
-            <span class="stat-label">{t('stats-microphone')}</span>
-            <span class="stat-value" title="{microphoneName}">{truncate(microphoneName, 18)}</span>
+<div class="footer-separator"></div>
+
+<div class="footer-statusbar">
+
+    <div class="footer-status-item">
+        <svg class="footer-status-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <rect x="6.5" y="2" width="5" height="8.5" rx="2.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3.5 9C3.5 12.59 5.91 15 9 15C12.09 15 14.5 12.59 14.5 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="9" y1="15" x2="9" y2="17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="6" y1="17" x2="12" y2="17" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <div class="footer-status-text">
+            <div class="footer-status-label">{t('stats-microphone')}</div>
+            <div class="footer-status-value" title="{microphoneName}">{truncate(microphoneName, 18)}</div>
         </div>
     </div>
-    
-    <div class="stat-item">
-        <span class="stat-dot" class:active={$ipcConnected} style="--color: #f97316;"></span>
-        <div class="stat-content">
-            <span class="stat-label">{t('stats-neural-networks')}</span>
-            <span class="stat-value"><span title="Wake Word Engine">{wakeWordEngine}</span> + <span title="Speech To Text">{sttEngine}</span></span>
-            <span class="stat-value-sub">{#if vadInfo != "None"}VAD: {vadInfo}{/if}</span>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-status-item">
+        <svg class="footer-status-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="3.5" cy="6"  r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="3.5" cy="12" r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="9"   cy="4"  r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="9"   cy="9"  r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="9"   cy="14" r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="14.5" cy="6"  r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="14.5" cy="12" r="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <line x1="5"    y1="6"  x2="7.5" y2="4"  stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="5"    y1="6"  x2="7.5" y2="9"  stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="5"    y1="12" x2="7.5" y2="9"  stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="5"    y1="12" x2="7.5" y2="14" stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="10.5" y1="4"  x2="13"  y2="6"  stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="10.5" y1="9"  x2="13"  y2="6"  stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="10.5" y1="9"  x2="13"  y2="12" stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+            <line x1="10.5" y1="14" x2="13"  y2="12" stroke="currentColor" stroke-width="0.9" opacity="0.6"/>
+        </svg>
+        <div class="footer-status-text">
+            <div class="footer-status-label">{t('stats-neural-networks')}</div>
+            <div class="footer-status-value">{neuralLabel}</div>
         </div>
     </div>
-    
-    <div class="stat-item">
-        <span class="stat-dot" class:active={$ipcConnected} style="--color: #3b82f6;"></span>
-        <div class="stat-content">
-            <span class="stat-label">{t('stats-resources')}</span>
-            <span class="stat-value">{#if $jarvisRamUsage }RAM {$jarvisRamUsage}mb{:else}...{/if}</span>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-status-item">
+        <svg class="footer-status-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/>
+            <rect x="7" y="7" width="4" height="4" rx="0.5" stroke="currentColor" stroke-width="1"/>
+            <line x1="7.5"  y1="5"  x2="7.5"  y2="2.5"  stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="10.5" y1="5"  x2="10.5" y2="2.5"  stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="7.5"  y1="13" x2="7.5"  y2="15.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="10.5" y1="13" x2="10.5" y2="15.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="5"    y1="7.5"  x2="2.5"  y2="7.5"  stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="5"    y1="10.5" x2="2.5"  y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="13"   y1="7.5"  x2="15.5" y2="7.5"  stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <line x1="13"   y1="10.5" x2="15.5" y2="10.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        <div class="footer-status-text">
+            <div class="footer-status-label">{t('stats-resources')}</div>
+            <div class="footer-status-value">{$isJarvisRunning ? `RAM ${$jarvisRamUsage}MB` : '—'}</div>
         </div>
     </div>
+
 </div>
 
 <style lang="scss">
-    .stats-bar {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        padding: 1.1rem 1.5rem;
-        background: transparent;
-    }
+.footer-separator {
+    height: 1px;
+    width: calc(100% + 2 * var(--page-px));
+    margin-left: calc(-1 * var(--page-px));
+    background: var(--shell-separator);
+}
 
-    .stat-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.6rem;
-    }
+.footer-statusbar {
+    display: grid;
+    grid-template-columns: 140px 1px 140px 1px 140px;
+    column-gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding-top: 18px;
+    padding-bottom: 22px;
+}
 
-    .stat-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-top: 0.5rem;
-        background: rgba(70, 70, 70, 0.6);
-        transition: all 0.3s ease;
+.footer-status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        &.active {
-            background: var(--color);
-            box-shadow: 0 0 10px var(--color);
-        }
-    }
+.footer-status-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--status-online);
+    opacity: 0.88;
+    filter: drop-shadow(0 0 6px var(--accent-glow-sm));
+    flex-shrink: 0;
+}
 
-    .stat-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.15rem;
-    }
+.footer-status-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
 
-    .stat-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #ffffff;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+.footer-status-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(220, 235, 245, 0.92);
+    line-height: 1;
+}
 
-    .stat-value {
-        font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.42);
-        line-height: 1.35;
-        font-style: italic;
-    }
+.footer-status-value {
+    margin-top: 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: rgba(185, 205, 220, 0.52);
+}
 
-    .stat-value-sub {
-        font-size: 0.65rem;
-        color: rgba(255, 255, 255, 0.28);
-    }
+.footer-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(var(--white-rgb), 0.06);
+    justify-self: center;
+    align-self: center;
+}
 </style>

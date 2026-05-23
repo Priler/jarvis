@@ -1,4 +1,4 @@
-use crate::config;
+use crate::{config, keychain};
 use serde::{Deserialize, Serialize};
 
 use crate::config::structs::SpeechToTextEngine;
@@ -28,16 +28,22 @@ pub struct Settings {
     // audio processing
     pub noise_suppression: NoiseSuppressionBackend,
     pub gain_normalizer: bool,
+    #[serde(default = "default_vad_energy_threshold")]
+    pub vad_energy_threshold: f32,
 
     #[serde(default = "default_language")]
     pub language: String,
 
     pub api_keys: ApiKeys,
+
+    #[serde(default)]
+    pub ollama: OllamaConfig,
 }
 
 fn default_intent_backend() -> String { config::DEFAULT_INTENT_BACKEND.to_string() }
 fn default_slots_backend() -> String { config::DEFAULT_SLOTS_BACKEND.to_string() }
 fn default_vad_backend() -> String { config::DEFAULT_VAD_BACKEND.to_string() }
+fn default_vad_energy_threshold() -> f32 { config::VAD_ENERGY_THRESHOLD }
 fn default_language() -> String { crate::i18n::detect_system_language().to_string() }
 
 // ### KEY-VALUE ACCESS
@@ -57,9 +63,11 @@ impl Settings {
             "speech_to_text_engine"     => Some(format!("{:?}", self.speech_to_text_engine)),
             "noise_suppression"         => Some(format!("{:?}", self.noise_suppression)),
             "gain_normalizer"           => Some(self.gain_normalizer.to_string()),
+            "vad_energy_threshold"      => Some(self.vad_energy_threshold.to_string()),
             "language"                  => Some(self.language.clone()),
-            "api_key__picovoice"        => Some(self.api_keys.picovoice.clone()),
-            "api_key__openai"           => Some(self.api_keys.openai.clone()),
+            "api_key__picovoice"        => keychain::get_api_key("picovoice").ok(),
+            "ollama_url"                => Some(self.ollama.url.clone()),
+            "ollama_model"              => Some(self.ollama.model.clone()),
             _ => None,
         }
     }
@@ -111,14 +119,27 @@ impl Settings {
                     _ => return Err(format!("expected 'true' or 'false', got: '{}'", val)),
                 };
             }
+            "vad_energy_threshold" => {
+                let v = val.parse::<f32>()
+                    .map_err(|_| format!("invalid float for vad_energy_threshold: '{}'", val))?;
+                if v < 0.0 {
+                    return Err(format!("vad_energy_threshold must be >= 0, got: {}", v));
+                }
+                self.vad_energy_threshold = v;
+            }
             "language" => {
                 self.language = val.to_string();
             }
             "api_key__picovoice" => {
-                self.api_keys.picovoice = val.to_string();
+                keychain::set_api_key("picovoice", val)
+                    .map_err(|e| format!("failed to store API key in OS keyring: {}", e))?;
+                // Do not store in the Settings struct — key lives only in keyring.
             }
-            "api_key__openai" => {
-                self.api_keys.openai = val.to_string();
+            "ollama_url" => {
+                self.ollama.url = val.to_string();
+            }
+            "ollama_model" => {
+                self.ollama.model = val.to_string();
             }
             _ => return Err(format!("unknown setting: '{}'", key)),
         }
@@ -139,9 +160,11 @@ impl Settings {
             "speech_to_text_engine",
             "noise_suppression",
             "gain_normalizer",
+            "vad_energy_threshold",
             "language",
             "api_key__picovoice",
-            "api_key__openai",
+            "ollama_url",
+            "ollama_model",
         ]
     }
 }
@@ -166,12 +189,16 @@ impl Default for Settings {
 
             noise_suppression: config::DEFAULT_NOISE_SUPPRESSION,
             gain_normalizer: config::DEFAULT_GAIN_NORMALIZER,
+            vad_energy_threshold: config::VAD_ENERGY_THRESHOLD,
 
             language: crate::i18n::detect_system_language().to_string(),
 
             api_keys: ApiKeys {
                 picovoice: String::from(""),
-                openai: String::from(""),
+            },
+            ollama: OllamaConfig {
+                url: String::from("http://localhost:11434"),
+                model: String::from(""),
             },
         }
     }
@@ -179,6 +206,125 @@ impl Default for Settings {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiKeys {
+    // SEC-6: key is stored in the OS keyring, not in the JSON settings file.
+    // skip_serializing ensures new saves never write the key to disk.
+    // The field is still deserializable so existing JSON files can be migrated
+    // on first load (see db::init_settings migration step).
+    #[serde(skip_serializing, default)]
     pub picovoice: String,
-    pub openai: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct OllamaConfig {
+    pub url: String,
+    pub model: String,
+}
+
+impl Default for OllamaConfig {
+    fn default() -> Self {
+        OllamaConfig {
+            url: String::from("http://localhost:11434"),
+            model: String::from(""),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_microphone_is_minus_one() {
+        assert_eq!(Settings::default().microphone, -1);
+    }
+
+    #[test]
+    fn picovoice_key_is_not_serialized() {
+        let mut s = Settings::default();
+        s.api_keys.picovoice = "secret".to_string();
+        let json = serde_json::to_string(&s).unwrap();
+        assert!(!json.contains("secret"));
+        assert!(!json.contains("picovoice"));
+    }
+
+    #[test]
+    fn picovoice_key_is_deserialized_for_migration() {
+        let json = r#"{"microphone":-1,"voice":"","wake_word_engine":"Vosk",
+            "intent_backend":"embedding","slots_backend":"gliner","vad_backend":"energy",
+            "gliner_model":"","speech_to_text_engine":"Vosk","vosk_model":"",
+            "noise_suppression":"None","gain_normalizer":false,"language":"en",
+            "api_keys":{"picovoice":"oldkey"},
+            "ollama":{"url":"http://localhost:11434","model":""}}"#;
+        let s: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(s.api_keys.picovoice, "oldkey");
+    }
+
+    #[test]
+    fn set_get_microphone_roundtrip() {
+        let mut s = Settings::default();
+        s.set("selected_microphone", "3").unwrap();
+        assert_eq!(s.get("selected_microphone").unwrap(), "3");
+    }
+
+    #[test]
+    fn set_unknown_key_returns_error() {
+        let mut s = Settings::default();
+        assert!(s.set("nonexistent_key", "value").is_err());
+    }
+
+    #[test]
+    fn set_gain_normalizer_true_and_false() {
+        let mut s = Settings::default();
+        s.set("gain_normalizer", "true").unwrap();
+        assert_eq!(s.get("gain_normalizer").unwrap(), "true");
+        s.set("gain_normalizer", "false").unwrap();
+        assert_eq!(s.get("gain_normalizer").unwrap(), "false");
+    }
+
+    #[test]
+    fn set_gain_normalizer_invalid_value_returns_error() {
+        let mut s = Settings::default();
+        assert!(s.set("gain_normalizer", "yes").is_err());
+    }
+
+    #[test]
+    fn get_unknown_key_returns_none() {
+        let s = Settings::default();
+        assert!(s.get("nonexistent_key").is_none());
+    }
+
+    #[test]
+    fn vad_energy_threshold_default_and_roundtrip() {
+        let mut s = Settings::default();
+        // Default matches config constant
+        assert_eq!(s.vad_energy_threshold, crate::config::VAD_ENERGY_THRESHOLD);
+        // Set and get roundtrip
+        s.set("vad_energy_threshold", "75.5").unwrap();
+        assert_eq!(s.get("vad_energy_threshold").unwrap(), "75.5");
+        assert!((s.vad_energy_threshold - 75.5).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn vad_energy_threshold_rejects_negative() {
+        let mut s = Settings::default();
+        assert!(s.set("vad_energy_threshold", "-1.0").is_err());
+    }
+
+    #[test]
+    fn vad_energy_threshold_rejects_non_float() {
+        let mut s = Settings::default();
+        assert!(s.set("vad_energy_threshold", "fast").is_err());
+    }
+
+    #[test]
+    fn vad_energy_threshold_missing_from_json_uses_default() {
+        let json = r#"{"microphone":-1,"voice":"","wake_word_engine":"Vosk",
+            "intent_backend":"embedding","slots_backend":"gliner","vad_backend":"energy",
+            "gliner_model":"","speech_to_text_engine":"Vosk","vosk_model":"",
+            "noise_suppression":"None","gain_normalizer":false,"language":"en",
+            "api_keys":{"picovoice":""},
+            "ollama":{"url":"http://localhost:11434","model":""}}"#;
+        let s: Settings = serde_json::from_str(json).unwrap();
+        assert_eq!(s.vad_energy_threshold, crate::config::VAD_ENERGY_THRESHOLD);
+    }
 }

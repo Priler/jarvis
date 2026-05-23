@@ -1,0 +1,21 @@
+[[commands]]
+id = "open_calculator"
+type = "cli"
+cli_cmd = "calc"
+
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+sounds.en = ["ok1", "ok2", "ok3"]
+
+phrases.ru = [
+    "открой калькулятор",
+    "запусти калькулятор",
+    "калькулятор открой",
+    "включи калькулятор",
+    "калькулятор",
+]
+phrases.en = [
+    "open calculator",
+    "launch calculator",
+    "start calculator",
+    "calculator",
+]

@@ -1,0 +1,14 @@
+[package]
+name = "build-rpw"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "build-rpw"
+path = "src/main.rs"
+
+[dependencies]
+rustpotter = { git = "https://github.com/Priler/rustpotter" }
+hound.workspace = true

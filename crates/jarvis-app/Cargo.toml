@@ -8,6 +8,9 @@ edition.workspace = true
 
 [dependencies]
 jarvis-core = { path = "../jarvis-core", features = ["intent"] }
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
 once_cell.workspace = true
 log.workspace = true
 simple-log = "2.4"

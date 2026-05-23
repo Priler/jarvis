@@ -1,185 +1,256 @@
 <script lang="ts">
-    import { goto } from "@roxi/routify"
-    import { invoke } from "@tauri-apps/api/core"
-    import { onMount } from "svelte"
-    import { currentLanguage, setLanguage, translations, translate } from "@/stores"
-    
-    let appVersion = ""
-    let commandsCount = 0
+    import { goto, isActive } from "@roxi/routify"
+    import { tStore } from "@/stores"
+    import WindowFrame from "@/components/layout/WindowFrame.svelte"
 
-    let selectedLang = "?"
-    let langDropdownOpen = false
-
-    const languages = [
-        { code: "ru", label: "RU", flag: "🇷🇺", name: "Русский" },
-        { code: "en", label: "EN", flag: "🇬🇧", name: "English" },
-        { code: "ua", label: "UA", flag: "🇺🇦", name: "Українська" },
-    ]
-
-    onMount(async () => {
-        try {
-            appVersion = await invoke<string>("get_app_version")
-            commandsCount = await invoke<number>("get_commands_count")
-
-            // load saved language
-            const savedLang = await invoke<string>("db_read", { key: "language" })
-            if (savedLang) {
-                selectedLang = savedLang
-            }
-        } catch {
-            commandsCount = 0
-        }
-    })
-
-    async function selectLanguage(code: string) {
-        await setLanguage(code)
-        langDropdownOpen = false
-    }
-
-    function toggleLangDropdown() {
-        langDropdownOpen = !langDropdownOpen
-    }
-
-    function closeLangDropdown(e: MouseEvent) {
-        const target = e.target as HTMLElement
-        if (!target.closest('.lang-selector')) {
-            langDropdownOpen = false
-        }
-    }
-
-    $: currentLang = languages.find(l => l.code === $currentLanguage) || languages[0]
-    $: t = (key: string) => translate($translations, key)
+    $: t = $tStore
 </script>
 
-<svelte:window on:click={closeLangDropdown} />
+<header class="header">
 
-<header id="header" class="header">
-    <div class="header-left">
-        <div class="logo">
-            <a href="/" title="JARVIS">
-                <img src="/media/128x128.png" alt="Jarvis Logo" />
-            </a>
-            <div class="logo-text">
-                <span class="logo-title"><a href="/" id="jarvis-logo">&nbsp;</a></span>
-                <span class="logo-version"><small>v</small>{appVersion} <span class="v-badge">BETA</span></span>
-            </div>
-        </div>
+    <!-- Level 1: System Shell -->
+    <div class="shell-bar">
+        <a class="logo" href="/" title="JARVIS" on:click|preventDefault={() => $goto('/')}>
+            <svg class="logo-icon" width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="0.75" opacity="0.28"/>
+                <g class="logo-spin">
+                    <circle cx="20" cy="20" r="13" stroke="currentColor" stroke-width="1"
+                            stroke-dasharray="3.5 4.5" opacity="0.58"/>
+                </g>
+                <circle cx="20" cy="20" r="8" stroke="currentColor" stroke-width="1.25" opacity="0.78"/>
+                <circle cx="20" cy="20" r="3.5" fill="currentColor"/>
+                <line x1="20" y1="2" x2="20" y2="7" stroke="currentColor" stroke-width="1" opacity="0.40"/>
+                <line x1="20" y1="33" x2="20" y2="38" stroke="currentColor" stroke-width="1" opacity="0.40"/>
+                <line x1="2" y1="20" x2="7" y2="20" stroke="currentColor" stroke-width="1" opacity="0.40"/>
+                <line x1="33" y1="20" x2="38" y2="20" stroke="currentColor" stroke-width="1" opacity="0.40"/>
+            </svg>
+            <span class="brand-name">JARVIS</span>
+        </a>
+        <WindowFrame />
     </div>
-    
-    <div class="header-right">
-        <button class="header-btn" on:click={() => $goto('/commands')}>
-            <span class="btn-text">{t('header-commands')}</span>
-            <span class="btn-badge purple">{commandsCount}+</span>
-        </button>
-        
-        <button class="header-btn" on:click={() => $goto('/settings')}>
-            <span class="btn-text">{t('header-settings')}</span>
-        </button>
 
-        <div class="lang-selector">
-            <button class="lang-btn" on:click|stopPropagation={toggleLangDropdown}>
-                <span class="lang-flag"><img src="/media/flags/{currentLang.label}.png" width="23px" alt="{currentLang.flag}"></span>
-            </button>
-            
-            {#if langDropdownOpen}
-                <div class="lang-dropdown">
-                    {#each languages as lang}
-                        <button 
-                            class="lang-option" 
-                            class:active={lang.code === $currentLanguage}
-                            on:click|stopPropagation={() => selectLanguage(lang.code)}
-                        >
-                            <span class="lang-flag"><img src="/media/flags/{lang.label}.png" width="20px" alt="{lang.flag}"></span>
-                            <span class="lang-name">{lang.name}</span>
-                        </button>
-                    {/each}
-                </div>
-            {/if}
-        </div>
-    </div>
+    <!-- Level 2: Application Navigation -->
+    <nav class="nav-bar" aria-label={t('nav-main') || 'Main navigation'}>
+        <a
+            class="nav-tab"
+            href="/"
+            class:active={$isActive('/', {}, { recursive: false })}
+            aria-current={$isActive('/', {}, { recursive: false }) ? 'page' : undefined}
+            on:click|preventDefault={() => $goto('/')}
+        >
+            {t('header-home')}
+        </a>
+        <a
+            class="nav-tab"
+            href="/commands"
+            class:active={$isActive('/commands')}
+            aria-current={$isActive('/commands') ? 'page' : undefined}
+            on:click|preventDefault={() => $goto('/commands')}
+        >
+            {t('header-commands')}
+        </a>
+        <a
+            class="nav-tab"
+            href="/settings"
+            class:active={$isActive('/settings')}
+            aria-current={$isActive('/settings') ? 'page' : undefined}
+            on:click|preventDefault={() => $goto('/settings')}
+        >
+            {t('header-settings')}
+        </a>
+        <a
+            class="nav-tab"
+            href="/system"
+            class:active={$isActive('/system')}
+            aria-current={$isActive('/system') ? 'page' : undefined}
+            on:click|preventDefault={() => $goto('/system')}
+        >
+            {t('header-system')}
+        </a>
+        <div class="scan-line" aria-hidden="true"></div>
+    </nav>
+
 </header>
 
 <style lang="scss">
-    .lang-selector {
-        position: relative;
-    }
+.header {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+}
 
-    .lang-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.5rem 0.65rem;
-        background: transparent;
-        border: none;
-        border-radius: 6px;
-        color: #ffffff;
-        font-size: 0.7rem;
-        cursor: pointer;
+/* ── Level 1: System shell ── */
+.shell-bar {
+    height: var(--shell-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 0 20px;
+    background: linear-gradient(180deg, rgba(11,15,22,0.98) 0%, rgba(7,10,15,0.96) 100%);
+    box-shadow: inset 0 1px 0 rgba(var(--accent-rgb), 0.08),
+                inset 0 -10px 18px rgba(var(--black-rgb), 0.16);
+    -webkit-app-region: drag;
+    position: relative;
+    flex-shrink: 0;
 
-        &:hover {
-            background: rgba(35, 50, 55, 0.7);
-        }
-    }
-
-    .lang-flag {
-        font-size: 0.9rem;
-        line-height: 1;
-    }
-
-    .lang-code {
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-
-    .lang-arrow {
-        font-size: 0.8rem;
-        opacity: 0.6;
-        transition: transform 0.2s ease;
-
-        &.open {
-            transform: rotate(180deg);
-        }
-    }
-
-    .lang-dropdown {
+    &::after {
+        content: '';
         position: absolute;
-        top: calc(100% + 0.35rem);
+        bottom: 0;
+        left: 0;
         right: 0;
-        background: rgba(20, 30, 35, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
-        overflow: hidden;
-        z-index: 100;
-        min-width: 130px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        height: 1px;
+        background: var(--shell-separator);
+        pointer-events: none;
+    }
+}
+
+/* ── Logo / brand ── */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: var(--accent);
+    -webkit-app-region: no-drag;
+    position: relative;
+    transition: opacity 140ms ease;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 46px;
+        height: 46px;
+        background: radial-gradient(circle, rgba(var(--accent-rgb), 0.10), transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
-    .lang-option {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        width: 100%;
-        padding: 0.6rem 0.85rem;
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.75);
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        text-align: left;
+    &:hover { opacity: 0.75; }
+}
 
-        &:hover {
-            background: rgba(82, 254, 254, 0.1);
-            color: #ffffff;
-        }
+.logo-icon {
+    filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.12));
+    flex-shrink: 0;
+}
 
-        &.active {
-            background: rgba(82, 254, 254, 0.15);
-            color: #52fefe;
-        }
+.logo-spin {
+    transform-origin: 20px 20px;
+    animation: logo-spin 24s linear infinite;
+}
+
+@keyframes logo-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.brand-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.10em;
+    color: var(--text);
+    text-transform: uppercase;
+    line-height: 1;
+    padding-right: 0.05em;
+}
+
+/* ── Level 2: Application navigation ── */
+.nav-bar {
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: linear-gradient(180deg, rgba(7,10,15,0.92) 0%, rgba(5,8,12,0.90) 100%);
+    position: relative;
+    flex-shrink: 0;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--shell-separator);
+        pointer-events: none;
+    }
+}
+
+/* ── Nav tabs ── */
+.nav-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: rgba(var(--white-rgb), 0.55);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 140ms ease;
+    white-space: nowrap;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent-glow-lg);
+        opacity: 0;
+        transition: opacity 140ms ease;
     }
 
-    .lang-name {
-        font-weight: 500;
+    &:hover { color: rgba(var(--white-rgb), 0.88); }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--accent-rgb), 0.55);
+        outline-offset: -2px;
+        border-radius: 2px;
     }
+
+    &.active {
+        color: var(--text);
+        font-weight: 700;
+
+        &::after { opacity: 1; }
+    }
+}
+
+/* ── Scan line ── */
+.scan-line {
+    position: absolute;
+    bottom: 0;
+    left: -30%;
+    width: 30%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.28), transparent);
+    animation: scan-sweep 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scan-sweep {
+    from { left: -30%; }
+    to   { left: 110%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logo-spin { animation: none; }
+    .scan-line { display: none; }
+    .nav-tab   { transition: none; }
+}
 </style>

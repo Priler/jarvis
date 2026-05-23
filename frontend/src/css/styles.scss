@@ -1,92 +1,104 @@
-// ### BASE STYLES
+/* JARVIS UI — Base reset & global styles */
 
-html,
-body {
+*, *::before, *::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    min-height: 100vh;
-    min-width: 100vw;
-    background-color: #4c5062;
-    color: white;
-
-    // assistant page background
-    &.assist-page {
-        background: radial-gradient(
-            circle,
-            rgba(24, 123, 123, 0.49) 0%,
-            rgba(13, 15, 19, 1) 64%
-        );
-
-        &.assist-active {
-            background: radial-gradient(
-                circle,
-                rgba(24, 81, 123, 0.64) 0%,
-                rgba(13, 15, 19, 1) 64%
-            );
-        }
-    }
 }
 
-:root {
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,229,255,0.18) rgba(255,255,255,0.02);
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-base) !important;
+    color: var(--text);
+    font-family: var(--font);
     font-size: 16px;
-    line-height: 24px;
-    font-weight: 400;
-
-    color: #0f0f0f;
-    background-color: #f6f6f6;
-
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+}
+
+/* Webkit scrollbar — unified design */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb {
+    background: rgba(0,229,255,0.18);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,229,255,0.30); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+::selection {
+    background: rgba(0,229,255,0.18);
+    color: #fff;
 }
 
 a {
-    color: #2a9cd0;
+    color: var(--accent);
     text-decoration: none;
-    font-weight: bold;
-
-    &:hover {
-        color: #1dabed;
-        text-decoration: underline;
-    }
+    transition: var(--ease);
 }
-
-// ### LAYOUT OVERRIDES
+a:hover { opacity: 0.8; }
 
 #wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     padding: 0;
-    margin: 0;
-}
+    position: relative;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 52%),
+        linear-gradient(180deg, var(--bg-base) 0%, var(--bg-surface) 100%);
 
-#header,
-main {
-    padding: 0 30px;
-}
-
-// ### FORM OVERRIDES
-
-select,
-input {
-    color: #ccc !important;
-}
-
-.form {
-    label {
-        font-weight: bold !important;
-        color: #8ac832 !important;
-        font-size: 15px !important;
-        border-bottom: 1px dotted gray;
-        margin-bottom: 10px !important;
-
-        & + div {
-            line-height: 1.2em;
-        }
+    /* Grid on its own layer with edge-fade mask */
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,255,255,0.014) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.014) 1px, transparent 1px);
+        background-size: 48px 48px;
+        -webkit-mask-image: radial-gradient(ellipse at 50% 50%, transparent 18%, black 80%);
+        mask-image: radial-gradient(ellipse at 50% 50%, transparent 18%, black 80%);
+        pointer-events: none;
+        z-index: -1;
     }
+}
 
-    .svelteui-Tab-label {
-        font-size: 18px !important;
+main {
+    --page-px: 24px;
+    flex: 1;
+    padding: 0 var(--page-px);
+}
+
+/* Route transition — fade-in on mount */
+main > * {
+    animation: route-in 180ms ease both;
+}
+
+@keyframes route-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+input, select, textarea, button {
+    font-family: var(--font);
+}
+input:focus:not(:focus-visible), select:focus:not(:focus-visible), textarea:focus:not(:focus-visible) { outline: none; }
+
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

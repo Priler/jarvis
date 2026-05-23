@@ -26,18 +26,45 @@ pub fn init_settings() -> structs::Settings {
         db_file_path.display()
     );
 
-    if db_file_path.exists() {
+    let mut settings = if db_file_path.exists() {
         if let Ok(db_file) = File::open(&db_file_path) {
             let reader = BufReader::new(db_file);
-            if let Ok(settings) = serde_json::from_reader(reader) {
+            if let Ok(s) = serde_json::from_reader(reader) {
                 info!("Settings loaded.");
-                return settings;
+                s
+            } else {
+                warn!("Error parsing settings file. Creating default struct.");
+                structs::Settings::default()
+            }
+        } else {
+            warn!("Cannot open settings file. Creating default struct.");
+            structs::Settings::default()
+        }
+    } else {
+        warn!("No settings file found. Creating default struct.");
+        structs::Settings::default()
+    };
+
+    // SEC-6: migrate Picovoice API key from plaintext JSON to OS keyring.
+    // The field is deserialized from old JSON files but never written back.
+    if !settings.api_keys.picovoice.is_empty() {
+        let old_key = std::mem::take(&mut settings.api_keys.picovoice);
+        match crate::keychain::set_api_key("picovoice", &old_key) {
+            Ok(()) => {
+                info!("Migrated Picovoice API key from settings file to OS keyring.");
+                // Overwrite settings file immediately so the plaintext key is removed.
+                if let Err(e) = save_settings(&settings) {
+                    warn!("Failed to overwrite settings file after key migration: {}", e);
+                }
+            }
+            Err(e) => {
+                warn!("Failed to migrate Picovoice API key to keyring: {}. Key left in memory only.", e);
+                settings.api_keys.picovoice = old_key;
             }
         }
     }
 
-    warn!("No settings file found or there was an error parsing it. Creating default struct.");
-    structs::Settings::default()
+    settings
 }
 
 /// init settings and return a SettingsManager ready to use
@@ -49,10 +76,13 @@ pub fn init() -> SettingsManager {
 pub fn save_settings(settings: &structs::Settings) -> Result<(), std::io::Error> {
     let db_file_path = get_db_file_path();
 
-    std::fs::write(
-        &db_file_path,
-        serde_json::to_string_pretty(&settings).unwrap(),
-    )?;
+    let json = serde_json::to_string_pretty(&settings)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    // Write to a temp file then rename atomically to avoid partial writes corrupting settings.
+    let tmp_path = db_file_path.with_extension("tmp");
+    std::fs::write(&tmp_path, &json)?;
+    std::fs::rename(&tmp_path, &db_file_path)?;
 
     info!("Settings saved to: {:#}", db_file_path.display());
     Ok(())

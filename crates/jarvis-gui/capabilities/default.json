@@ -8,12 +8,12 @@
     "shell:allow-open",
     "dialog:allow-message",
     "fs:default",
-    "fs:allow-read",
-    "fs:allow-write",
     {
       "identifier": "fs:scope",
       "allow": [
-        "$RESOURCE/**"
+        "$RESOURCE/**",
+        "$APPCONFIG/**",
+        "$APPLOG/**"
       ]
     },
     "core:window:allow-show",

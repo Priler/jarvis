@@ -1,0 +1,23 @@
+/* JARVIS — System page shared card styles */
+
+.sys-card {
+    padding: 4px 18px;
+    border-radius: var(--r-xl);
+    background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.012));
+    border: 1px solid rgba(255,255,255,0.055);
+
+    &--primary { padding: 20px 22px; }
+}
+
+.sys-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 42px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.038);
+
+    &:last-child { border-bottom: none; }
+
+    &--sm { min-height: 38px; }
+}

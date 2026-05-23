@@ -1,0 +1,74 @@
+[[commands]]
+id = "music_play"
+type = "lua"
+script = "music.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+phrases.ru = [
+    "включи музыку",
+    "воспроизведи музыку",
+    "запусти музыку",
+    "играй музыку",
+    "поставь музыку",
+    "давай музыку",
+]
+
+
+[[commands]]
+id = "music_stop"
+type = "lua"
+script = "music.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+phrases.ru = [
+    "выключи музыку",
+    "останови музыку",
+    "стоп музыка",
+    "хватит музыки",
+    "музыку выключи",
+]
+
+
+[[commands]]
+id = "music_pause"
+type = "lua"
+script = "music.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+phrases.ru = [
+    "пауза",
+    "поставь на паузу",
+    "продолжи музыку",
+    "возобнови музыку",
+    "продолжи воспроизведение",
+]
+
+
+[[commands]]
+id = "music_next"
+type = "lua"
+script = "music.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+phrases.ru = [
+    "следующий трек",
+    "следующая песня",
+    "дальше",
+    "пропусти",
+    "другая песня",
+    "другой трек",
+]
+
+
+[[commands]]
+id = "music_prev"
+type = "lua"
+script = "music.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
+phrases.ru = [
+    "предыдущий трек",
+    "предыдущая песня",
+    "назад",
+    "вернись к прошлой песне",
+]

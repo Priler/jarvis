@@ -1,5 +1,6 @@
 import { writable, derived } from "svelte/store"
-import { invoke } from "@tauri-apps/api/core"
+import { getTranslations, getCurrentLanguage, setLanguageInvoke, getSupportedLangs } from "./api"
+import { addToast } from "./toast"
 
 // stores
 export const translations = writable<Record<string, string>>({})
@@ -10,46 +11,42 @@ export function translate(translations: Record<string, string>, key: string, fal
     return translations[key] || fallback || key
 }
 
+// derived store — use $tStore('key') or $: t = $tStore in components
+export const tStore = derived(translations, $trans =>
+    (key: string, fallback?: string) => translate($trans, key, fallback)
+)
+
 // load translations from backend
 export async function loadTranslations() {
     try {
-        const [trans, lang] = await Promise.all([
-            invoke<Record<string, string>>("get_translations"),
-            invoke<string>("get_current_language")
-        ])
+        const [trans, lang] = await Promise.all([getTranslations(), getCurrentLanguage()])
         translations.set(trans)
         currentLanguage.set(lang)
-    } catch (err) {
+        document.documentElement.lang = lang
+    } catch (err: unknown) {
         console.error("Failed to load translations:", err)
+        addToast("Failed to load translations — UI text may be unavailable", "error")
     }
 }
 
 // change language
 export async function setLanguage(lang: string) {
     try {
-        const newTranslations = await invoke<Record<string, string>>("set_language", { lang })
+        const newTranslations = await setLanguageInvoke(lang)
         translations.set(newTranslations)
         currentLanguage.set(lang)
-    } catch (err) {
+        document.documentElement.lang = lang
+    } catch (err: unknown) {
         console.error("Failed to set language:", err)
-    }
-}
-
-export async function loadLanguage() {
-    try {
-        const lang = await invoke<string>("db_read", { key: "language" })
-        if (lang) {
-            currentLanguage.set(lang)
-        }
-    } catch (err) {
-        console.error("Failed to load language:", err)
+        addToast("Failed to change language", "error")
     }
 }
 
 export async function getSupportedLanguages(): Promise<string[]> {
     try {
-        return await invoke<string[]>("get_supported_languages")
-    } catch {
+        return await getSupportedLangs()
+    } catch (err: unknown) {
+        console.error("Failed to get supported languages:", err)
         return ["ru", "en", "ua"]
     }
 }

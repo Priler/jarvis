@@ -1,0 +1,102 @@
+[[commands]]
+id = "app_notepad"
+type = "cli"
+cli_cmd = "notepad"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой блокнот",
+    "запусти блокнот",
+    "нужен блокнот",
+]
+
+
+[[commands]]
+id = "app_explorer"
+type = "cli"
+cli_cmd = "explorer"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой проводник",
+    "запусти проводник",
+    "нужен проводник",
+]
+
+
+[[commands]]
+id = "app_paint"
+type = "cli"
+cli_cmd = "mspaint"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой paint",
+    "запусти paint",
+    "открой красилку",
+]
+
+
+[[commands]]
+id = "app_terminal"
+type = "cli"
+cli_cmd = "wt"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой терминал",
+    "запусти терминал",
+    "открой консоль",
+    "нужен терминал",
+    "нужна консоль",
+]
+
+
+[[commands]]
+id = "app_settings"
+type = "lua"
+script = "apps.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой настройки",
+    "запусти настройки",
+    "открой настройки виндовс",
+    "параметры системы",
+]
+
+
+[[commands]]
+id = "app_discord"
+type = "lua"
+script = "apps.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой дискорд",
+    "запусти дискорд",
+    "нужен дискорд",
+]
+
+
+[[commands]]
+id = "app_telegram"
+type = "lua"
+script = "apps.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой телеграм",
+    "запусти телеграм",
+    "нужен телеграм",
+]
+
+
+[[commands]]
+id = "app_obs"
+type = "lua"
+script = "apps.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "открой obs",
+    "запусти obs",
+    "включи obs",
+    "нужен obs",
+]

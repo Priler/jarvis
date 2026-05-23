@@ -3,7 +3,6 @@
 
 use jarvis_core::{config, db, i18n, voices, DB, SettingsManager};
 
-#[macro_use]
 extern crate simple_log;
 
 mod events;
@@ -68,6 +67,7 @@ fn main() {
             // fs
             tauri_commands::get_log_file_path,
             tauri_commands::show_in_folder,
+            tauri_commands::read_ipc_token,
 
             // sys
             tauri_commands::get_current_ram_usage,
@@ -99,6 +99,9 @@ fn main() {
             tauri_commands::list_voices,
             tauri_commands::get_voice,
             tauri_commands::preview_voice,
+
+            // ollama
+            tauri_commands::list_ollama_models,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

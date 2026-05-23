@@ -3,6 +3,7 @@
 # after Rust build
 # Note that Rust build should be run via "cargo make <cmd>" command
 # in order to automate all the compile process
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -36,7 +37,44 @@ TARGET_DIRS = (
     "target/release"
 )
 
-ABS_PATH = os.getcwd() + "/"
+# Resolve all paths relative to this script's directory (project root),
+# regardless of the working directory from which the script is invoked.
+SCRIPT_DIR = Path(__file__).parent.resolve()
+ABS_PATH = str(SCRIPT_DIR) + "/"
+
+# SHA-256 manifest for Windows DLLs.
+# Regenerate with: python -c "import hashlib,os; print(hashlib.sha256(open(path,'rb').read()).hexdigest())"
+# If a DLL hash mismatches, the build is aborted — do NOT distribute unverified DLLs.
+KNOWN_DLL_HASHES = {
+    "libgcc_s_seh-1.dll":  "201bf8a54ebb490f93ea4beb20740a483bf67036b90b5720f32d0c746a72d1e9",
+    "libstdc++-6.dll":     "a1d96a848a567d7657e152cfe92e2fd62da412968cc11ec8bdb04bf20ebc5747",
+    "libvosk.dll":         "9331c2f6a32cf77141af27c9750e79532718f51bbc2e3cea3c60f14ca4251e4e",
+    "libwinpthread-1.dll": "92caeb8a4ea281c674003462a233f3b445b685b0a6f93eb11254feda2dda9cde",
+    "libpv_recorder.dll":  "055e91935a3c9a1595f63d0b3d4a33b61aa49a07893f5d39746f11070497e907",
+}
+
+
+def sha256_file(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def verify_dll(src_path: str) -> bool:
+    """Return True if the DLL passes the known-hash check (or is not in the manifest)."""
+    name = os.path.basename(src_path)
+    expected = KNOWN_DLL_HASHES.get(name)
+    if expected is None:
+        return True
+    actual = sha256_file(src_path)
+    if actual != expected:
+        print(f"[!] SHA-256 MISMATCH for {name}:")
+        print(f"    expected: {expected}")
+        print(f"    actual:   {actual}")
+        return False
+    return True
 
 # flags
 force_overwrite = "--force" in sys.argv
@@ -163,6 +201,11 @@ for tdir in TARGET_DIRS:
                 print("[+] Directory copied: ", src, "->", target_name)
 
         elif os.path.isfile(src_path):
+            # SHA-256 integrity check before copying DLLs.
+            if not verify_dll(src_path):
+                print(f"[!] Aborting: DLL integrity check failed for {src}")
+                sys.exit(1)
+
             target_name = dest_name if dest_name else os.path.basename(src)
             full_target_file_path = os.path.join(tdir, target_name)
 

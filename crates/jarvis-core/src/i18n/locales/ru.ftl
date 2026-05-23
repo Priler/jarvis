@@ -15,8 +15,10 @@ tray-vad = Детекция голоса (VAD)
 tray-gain-normalizer = Нормализация громкости
 
 # HEADER
+header-home = ГЛАВНАЯ
 header-commands = КОМАНДЫ
 header-settings = НАСТРОЙКИ
+header-system = СИСТЕМА
 
 # SEARCH
 search-placeholder = Введите команду вручную или произнесите «Джарвис» ...
@@ -104,14 +106,23 @@ settings-vosk-model-desc =
 settings-models-not-found = Модели не найдены
 settings-models-hint = Поместите модели Vosk в папку resources/vosk
 
-# settings - openai
-settings-openai-key = Ключ OpenAI
-settings-openai-not-supported = В данный момент ChatGPT не поддерживается. Он будет добавлен в ближайших обновлениях.
+# settings - ollama
+settings-ollama-desc = Ollama позволяет запускать языковые модели локально, без интернета и без передачи данных на сторонние серверы.
+settings-ollama-url = URL сервера Ollama
+settings-ollama-url-desc = Адрес запущенного Ollama. По умолчанию: http://localhost:11434
+settings-ollama-load-models = Загрузить модели
+settings-ollama-model = Модель
+settings-ollama-model-desc = Выберите модель после подключения к серверу Ollama.
+settings-ollama-no-models = Модели не найдены. Убедитесь что Ollama запущена и модели установлены.
+settings-ollama-error = Не удалось подключиться к Ollama
 
 # COMMANDS PAGE
 commands-title = Команды
 commands-search = Поиск команд...
 commands-count = { $count } команд
+commands-no-commands = Нет доступных команд
+commands-load-error = Не удалось загрузить команды
+commands-retry = Повторить
 commands-wip-title = [404] Этот раздел еще находится в разработке!
 commands-wip-desc = Тут будет список команд + полноценный редактор команд.
 commands-wip-follow = Следите за обновлениями в
@@ -136,6 +147,11 @@ settings-gliner-model-desc =
     Выберите вариант модели.
     Квантизированные модели (int8, uint8) быстрее, но менее точны.
 settings-gliner-models-hint = Модели GLiNER не найдены.
+
+# CONFIRM OVERLAY
+confirm-overlay-title = Подтверждение команды
+confirm-overlay-execute = Выполнить
+confirm-overlay-cmd-label = Команда
 
 # ETC
 search-error-not-running = Ассистент не запущен

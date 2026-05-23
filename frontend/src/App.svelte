@@ -2,42 +2,107 @@
     import { onMount, onDestroy } from "svelte"
     import { Router } from "@roxi/routify"
     import routes from "../.routify/routes.default.js"
-    import { SvelteUIProvider } from "@svelteuidev/core"
     import Events from "./Events.svelte"
+    import Toasts from "@/components/ui/Toasts.svelte"
+    import ConfirmOverlay from "@/components/ui/ConfirmOverlay.svelte"
 
-    import {
-        loadVoiceSetting,
-        loadAppInfo,
-        startStatsPolling,
-        stopStatsPolling,
-        connectIpc,
-        disconnectIpc,
-        loadTranslations
-    } from "@/stores"
+    import { disconnectIpc, stopStatsPolling, pendingConfirmation, sendConfirmResult } from "@/stores"
+    import { stopEventTracking } from "@/lib/stores/event-tracker"
+    import { criticalInit, deferredInit } from "@/lib/bootstrap"
 
-    onMount(() => {
-        // load static data
-        loadVoiceSetting()
-        loadAppInfo()
+    let ready = false
+    let initError: string | null = null
 
-        // start process monitoring
-        startStatsPolling(5000)
-
-        // connect to IPC
-        connectIpc()
-
-        // load language
-        loadTranslations()
+    onMount(async () => {
+        try {
+            await criticalInit()
+            ready = true
+        } catch (err) {
+            initError = err instanceof Error ? err.message : "Initialization failed"
+        }
+        deferredInit()
     })
 
     onDestroy(() => {
-        stopStatsPolling()
         disconnectIpc()
+        stopStatsPolling()
+        stopEventTracking()
     })
+
+    function handleConfirmApprove() {
+        const p = $pendingConfirmation
+        if (p) {
+            sendConfirmResult(p.id, true)
+            pendingConfirmation.set(null)
+        }
+    }
+
+    function handleConfirmDeny() {
+        const p = $pendingConfirmation
+        if (p) {
+            sendConfirmResult(p.id, false)
+            pendingConfirmation.set(null)
+        }
+    }
 </script>
 
-<SvelteUIProvider themeObserver="dark" withNormalizeCSS withGlobalStyles>
+{#if initError}
+    <div class="app-init-error" role="alert">
+        <p class="error-message">{initError}</p>
+    </div>
+{:else if !ready}
+    <div class="app-init" aria-busy="true" aria-live="polite" aria-label="Initializing">
+        <div class="init-dot"></div>
+    </div>
+{:else}
     <Router {routes} />
-</SvelteUIProvider>
+    <Events />
+{/if}
+<Toasts />
+<ConfirmOverlay
+    pending={$pendingConfirmation}
+    on:approve={handleConfirmApprove}
+    on:deny={handleConfirmDeny}
+/>
 
-<Events />
+<style>
+.app-init-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg-base);
+}
+
+.error-message {
+    font-size: 0.8rem;
+    color: var(--color-error, #e06c75);
+    opacity: 0.8;
+}
+
+.app-init {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--bg-base);
+}
+
+.init-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+    animation: init-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes init-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .init-dot { animation: none; opacity: 0.8; }
+}
+</style>

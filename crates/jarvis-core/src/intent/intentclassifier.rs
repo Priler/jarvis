@@ -57,8 +57,27 @@ pub async fn init(commands: &[JCommandsList]) -> Result<(), String> {
     Ok(())
 }
 
+/// Re-train the classifier with updated commands. Adds new examples on top of existing ones;
+/// for a fully clean retrain the app must be restarted (OnceCell MODEL cannot be replaced).
+pub async fn reload(commands: &[JCommandsList]) -> Result<(), String> {
+    let model = MODEL.get().ok_or("IntentClassifier not initialized")?;
+    train_classifier(&model.classifier, commands).await?;
+    let current_hash = commands::commands_hash(commands);
+    if let Some(config_dir) = APP_CONFIG_DIR.get() {
+        let cache_path = config_dir.join(TRAINING_CACHE_FILE);
+        let hash_path = config_dir.join(COMMANDS_HASH_FILE);
+        if let Ok(export) = model.classifier.export_training_data().await {
+            let _ = fs::write(&cache_path, export);
+            let _ = fs::write(&hash_path, &current_hash);
+        }
+    }
+    info!("IntentClassifier reloaded");
+    Ok(())
+}
+
 pub async fn classify(text: &str) -> Result<IntentPrediction, IntentError> {
-    let model = MODEL.get().expect("IntentClassifier not initialized");
+    let model = MODEL.get()
+        .ok_or_else(|| IntentError::ClassificationFailed("IntentClassifier not initialized".to_string()))?;
     model.classifier.predict_intent(text).await
 }
 

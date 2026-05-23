@@ -1,34 +1,37 @@
 <script lang="ts">
-    import { onMount } from "svelte"
+    import { onMount, onDestroy } from "svelte"
     import { listen } from "@tauri-apps/api/event"
-    import { invoke } from "@tauri-apps/api/core"
+    import { playSound } from "@/lib/api"
     import { assistantVoice } from "@/stores"
+    import { DEFAULT_VOICE_ID } from "@/lib/engine-options"
 
-    let voiceVal = "jarvis-og"
-    assistantVoice.subscribe(value => {
-        voiceVal = value || "jarvis-og"
-    })
+    $: voiceVal = $assistantVoice || DEFAULT_VOICE_ID
+
+    const SAFE_NAME = /^[a-zA-Z0-9_-]+$/
+
+    let unlisteners: (() => void)[] = []
 
     onMount(async () => {
-        // audio playback event
-        await listen<{ data: string }>("audio-play", async (event) => {
+        const unlistenAudio = await listen<{ data: string }>("audio-play", async (event) => {
             const voice = voiceVal || "jarvis-remake"
-            const filename = `sound/${voice}/${event.payload.data}.wav`
+            const rawName = event.payload.data
+
+            if (!SAFE_NAME.test(rawName) || !SAFE_NAME.test(voice)) {
+                console.error("[Events] invalid sound path:", voice, rawName)
+                return
+            }
 
             try {
-                await invoke("play_sound", { filename, sleep: true })
-            } catch (err) {
+                await playSound(`sound/${voice}/${rawName}.wav`)
+            } catch (err: unknown) {
                 console.error("failed to play sound:", err)
             }
         })
 
-        // assistant state events
-        await listen("assistant-greet", () => {
-            document.getElementById("arc-reactor")?.classList.add("active")
-        })
+        unlisteners = [unlistenAudio]
+    })
 
-        await listen("assistant-waiting", () => {
-            document.getElementById("arc-reactor")?.classList.remove("active")
-        })
+    onDestroy(() => {
+        unlisteners.forEach(fn => fn())
     })
 </script>

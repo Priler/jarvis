@@ -1,26 +1,28 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "jarvis-app",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "identifier": "com.priler.jarvis",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
+    "beforeBundleCommand": "python ../../post_build.py --sync",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../../frontend/dist/client"
   },
   "app": {
     "withGlobalTauri": false,
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ws://127.0.0.1:9712; media-src 'self' asset: https://asset.localhost"
     },
     "windows": [
       {
         "fullscreen": false,
         "resizable": false,
+        "decorations": false,
         "title": "Jarvis Voice Assistant",
-        "width": 550,
-        "height": 800
+        "width": 540,
+        "height": 760
       }
     ]
   },

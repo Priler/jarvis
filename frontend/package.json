@@ -5,37 +5,44 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "svelte-check --ignore '.routify' --no-tsconfig && vite build",
+    "build": "vite build && svelte-check --ignore \".routify/**\" --tsconfig ./tsconfig.json",
     "preview": "vite preview",
-    "check": "svelte-check --ignore '.routify' --tsconfig ./tsconfig.json",
+    "check": "svelte-check --ignore \".routify/**\" --tsconfig ./tsconfig.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "tauri": "tauri"
   },
   "dependencies": {
-    "@svelteuidev/composables": "^0.15.7",
-    "@svelteuidev/core": "^0.15.7",
-    "@svelteuidev/motion": "^0.15.7",
     "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-fs": "^2",
-    "@tauri-apps/plugin-shell": "^2",
-    "howler": "^2.2.4",
-    "radix-icons-svelte": "^1.2.1",
-    "worker-timers": "^8.0.27"
+    "@tauri-apps/plugin-shell": "^2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@roxi/routify": "^3.6.4",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@tauri-apps/cli": "^2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/svelte": "^5.3.1",
     "@tsconfig/svelte": "^5.0.6",
-    "@types/howler": "^2.2.12",
     "@types/node": "^25.0.3",
+    "eslint": "^9.39.4",
+    "eslint-plugin-svelte": "^3.17.1",
+    "happy-dom": "^20.9.0",
+    "prettier": "^3.8.3",
+    "prettier-plugin-svelte": "^3.5.2",
     "sass": "^1.97.1",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.0",
     "svelte-preprocess": "^5.1.4",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.3",
     "vite": "^5.4.21",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^4.1.6"
   }
 }

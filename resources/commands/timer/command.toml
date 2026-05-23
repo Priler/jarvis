@@ -1,0 +1,52 @@
+[[commands]]
+id = "time_say"
+type = "lua"
+script = "timer.lua"
+sandbox = "standard"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "который час",
+    "сколько времени",
+    "скажи время",
+    "какое сейчас время",
+    "что за время",
+]
+
+
+[[commands]]
+id = "timer_5min"
+type = "lua"
+script = "timer.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "поставь таймер на пять минут",
+    "таймер пять минут",
+    "таймер на пять минут",
+]
+
+
+[[commands]]
+id = "timer_10min"
+type = "lua"
+script = "timer.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "поставь таймер на десять минут",
+    "таймер десять минут",
+    "таймер на десять минут",
+]
+
+
+[[commands]]
+id = "timer_15min"
+type = "lua"
+script = "timer.lua"
+sandbox = "full"
+sounds.ru = ["ok1", "ok2", "ok3"]
+phrases.ru = [
+    "поставь таймер на пятнадцать минут",
+    "таймер пятнадцать минут",
+    "таймер на пятнадцать минут",
+]
