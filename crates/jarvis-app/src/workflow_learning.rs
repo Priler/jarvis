@@ -95,6 +95,41 @@ pub fn record_tool_execution(tool_id: impl Into<String>) {
     }
 }
 
+/// Records multiple tools in a single lock acquisition, guaranteeing they appear
+/// consecutively in sequence_history regardless of parallel test threads.
+pub fn batch_record(tools: &[&str]) {
+    let now = ts_now();
+    if let Ok(mut state) = STATE.lock() {
+        for &tool_id in tools {
+            SEQUENCES_RECORDED.fetch_add(1, Ordering::Relaxed);
+            if state.sequence_history.len() >= MAX_SEQUENCE_HISTORY {
+                state.sequence_history.remove(0);
+            }
+            state.sequence_history.push(tool_id.to_string());
+
+            let len = state.sequence_history.len();
+            if len >= WINDOW_SIZE {
+                let window: Vec<String> = state.sequence_history[len - WINDOW_SIZE..].to_vec();
+                let key = WorkflowPattern::key(&window);
+                let entry = state.patterns.entry(key).or_insert_with(|| {
+                    PATTERNS_LEARNED.fetch_add(1, Ordering::Relaxed);
+                    WorkflowPattern { sequence: window.clone(), occurrences: 0, confidence: 0.0, last_seen_ms: now }
+                });
+                entry.occurrences  += 1;
+                entry.last_seen_ms  = now;
+                entry.confidence    = (entry.occurrences as f32 / 10.0).min(1.0);
+                if entry.occurrences == LEARN_THRESHOLD {
+                    crate::world_state_journal::log(
+                        crate::world_state_journal::WorldEventKind::WorkflowPatternLearned {
+                            pattern: WorkflowPattern::key(&window), occurrences: entry.occurrences,
+                        },
+                    );
+                }
+            }
+        }
+    }
+}
+
 pub fn strong_patterns() -> Vec<WorkflowPattern> {
     STATE.lock().map(|s| s.patterns.values()
         .filter(|p| p.is_strong())
@@ -145,12 +180,16 @@ fn ts_now() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use once_cell::sync::Lazy;
+    use std::sync::Mutex;
+
+    static TEST_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
     fn setup() { clear(); }
 
     #[test]
     fn record_adds_to_history() {
-        // Use SEQUENCES_RECORDED counter (always increases, unaffected by MAX)
+        let _g = TEST_LOCK.lock().unwrap();
         let before = SEQUENCES_RECORDED.load(Ordering::Relaxed);
         record_tool_execution("history.test.unique");
         assert!(SEQUENCES_RECORDED.load(Ordering::Relaxed) > before);
@@ -158,33 +197,31 @@ mod tests {
 
     #[test]
     fn pattern_detected_after_threshold() {
-        // Use 20 iterations so that even with parallel-test window contamination
-        // at least LEARN_THRESHOLD clean windows accumulate.
+        let _g = TEST_LOCK.lock().unwrap();
         let seq = ["pat.uniq1", "pat.uniq2", "pat.uniq3"];
-        for _ in 0..20 {
-            for tool in &seq {
-                record_tool_execution(*tool);
-            }
+        for _ in 0..5 {
+            batch_record(&seq);
         }
         let key = WorkflowPattern::key(&seq.iter().map(|s| s.to_string()).collect::<Vec<_>>());
         let found = all_patterns().into_iter().any(|p| WorkflowPattern::key(&p.sequence) == key && p.is_strong());
-        assert!(found, "no strong pattern for unique sequence after 20 repetitions");
+        assert!(found, "no strong pattern for unique sequence after 5 batch repetitions");
     }
 
     #[test]
     fn matches_known_pattern_returns_some_for_strong() {
-        // Use 20 iterations to survive parallel-test window contamination
+        let _g = TEST_LOCK.lock().unwrap();
         let seq = ["mknp.a", "mknp.b", "mknp.c"];
-        for _ in 0..20 {
-            for t in &seq { record_tool_execution(*t); }
+        for _ in 0..5 {
+            batch_record(&seq);
         }
         let recent: Vec<String> = seq.iter().map(|s| s.to_string()).collect();
         let m = matches_known_pattern(&recent);
-        assert!(m.is_some(), "expected pattern match for unique sequence after 20 repetitions");
+        assert!(m.is_some(), "expected pattern match for unique sequence after 5 batch repetitions");
     }
 
     #[test]
     fn sequences_recorded_counter_increments() {
+        let _g = TEST_LOCK.lock().unwrap();
         setup();
         let before = SEQUENCES_RECORDED.load(Ordering::Relaxed);
         record_tool_execution("test.tool");
@@ -193,11 +230,10 @@ mod tests {
 
     #[test]
     fn pattern_confidence_bounded() {
+        let _g = TEST_LOCK.lock().unwrap();
         setup();
         for _ in 0..20 {
-            record_tool_execution("x.a");
-            record_tool_execution("x.b");
-            record_tool_execution("x.c");
+            batch_record(&["x.a", "x.b", "x.c"]);
         }
         for p in all_patterns() {
             assert!(p.confidence <= 1.0);
@@ -206,6 +242,7 @@ mod tests {
 
     #[test]
     fn clear_reduces_sequence_len() {
+        let _g = TEST_LOCK.lock().unwrap();
         record_tool_execution("clear.test.t1");
         record_tool_execution("clear.test.t2");
         record_tool_execution("clear.test.t3");

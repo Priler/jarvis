@@ -58,3 +58,103 @@
 
 
 {"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779395607193,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779397478468,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779397478475,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779397478478,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779397478480,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779397478541,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779424925561,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779424925568,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779424925570,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779424925570,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779424925583,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429938872,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429938873,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429938874,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429938874,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429938909,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429947402,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429947403,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429947404,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429947406,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779429947411,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779436126115,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779436126116,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779436126117,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779436126117,"attempts":0,"context":{}}
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779436126136,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779454633894,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779454633895,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779454633895,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779454633896,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779454633920,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779458670429,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779458670430,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779458670430,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779458670430,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779458670508,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779459784867,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779459784868,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779459784868,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779459784869,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779459784944,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779460694168,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779460694169,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779460694202,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779460694172,"attempts":0,"context":{}}
+
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779460694220,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779467994639,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779467994639,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779467994640,"attempts":0,"context":{}}
+
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779467994640,"attempts":0,"context":{}}
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779467994671,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779468065196,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779468065196,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779468065198,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779468065199,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779468065201,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779477659590,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779477659591,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779477659592,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779477659591,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779477659609,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779478536130,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779478536131,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779478536131,"attempts":0,"context":{}}
+
+
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779478536203,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779478536204,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779479646263,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779479646264,"attempts":0,"context":{}}
+
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779479646310,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779479646310,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779479646313,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779480130116,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779480130117,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779480130118,"attempts":0,"context":{}}{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779480130118,"attempts":0,"context":{}}
+
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779480130123,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505206000,"attempts":0,"context":{}}{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505206001,"attempts":0,"context":{}}
+
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505206049,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505206050,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505206053,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505416953,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505416954,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505416979,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505416980,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505416982,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505451989,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505451990,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505451990,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505451992,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505451994,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505529992,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505529993,"attempts":0,"context":{}}{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505530010,"attempts":0,"context":{}}
+
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505530052,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505530055,"attempts":0,"context":{}}
+{"task_id":"counter-test","description":"x","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505966180,"attempts":0,"context":{}}
+{"task_id":"task-del","description":"delete me","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505966181,"attempts":0,"context":{}}
+{"task_id":"task-1","description":"open IDE","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505966182,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v1","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505966184,"attempts":0,"context":{}}
+{"task_id":"task-dup-unique-key","description":"v2","tool_id":null,"arg":null,"goal_id":null,"saved_ms":1779505966186,"attempts":0,"context":{}}

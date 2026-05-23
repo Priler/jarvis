@@ -181,13 +181,14 @@ mod tests {
     }
 
     #[test]
-    fn uncertainty_level_moderate() {
+    fn uncertainty_level_high() {
+        // confidence=0.3 → uncertainty=0.7 → High (0.50 ≤ u < 0.75)
         let b = Belief {
             id: 0, label: "x".into(), confidence: 0.3, stability: 0.5,
             causal_support: 0.4, contradiction_pressure: 0.0,
             evidence_strength: EvidenceStrength::Weak, decay_rate: 0.005, ts_ms: 0,
         };
-        assert_eq!(b.uncertainty_level(), UncertaintyLevel::Moderate);
+        assert_eq!(b.uncertainty_level(), UncertaintyLevel::High);
     }
 
     #[test]
