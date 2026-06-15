@@ -125,8 +125,8 @@ error-not-found = Не знайдено
 # ### NOTIFICATIONS
 notification-saved = Налаштування збережено!
 notification-error = Помилка
-notification-assistant-started = Асистент запущено
-notification-assistant-stopped = Асистент зупинено
+notification-assistant-started = Асистента запущено
+notification-assistant-stopped = Асистента зупинено
 
 # SLOTS EXTRACTION
 settings-slot-engine = Витяг параметрів
@@ -138,6 +138,7 @@ settings-gliner-model-desc =
 settings-gliner-models-hint = Моделі GLiNER не знайдено.
 
 # ETC
-search-error-not-running = Асистент не запущено
+
+search-error-not-running = Асистента не запущено
 search-error-failed = Не вдалося виконати команду
 settings-no-voices = Голоси не знайдено
