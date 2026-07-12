@@ -7,7 +7,7 @@ pub mod vosk_models;
 pub mod gliner_models;
 
 // re-export loaders
-#[cfg(feature = "jarvis_app")]
+#[cfg(feature = "intent")]
 pub use loaders::embedding;
 
 #[cfg(feature = "jarvis_app")]
@@ -16,7 +16,7 @@ pub use loaders::gliner;
 #[cfg(feature = "jarvis_app")]
 pub use loaders::ort_model;
 
-#[cfg(feature = "jarvis_app")]
+#[cfg(feature = "intent")]
 pub use loaders::intent_classifier;
 
 #[cfg(feature = "vosk")]

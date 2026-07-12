@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use jarvis_core::{COMMANDS_LIST, DB, JCommandsList, commands, config, db, intent};
+use jarvis_core::{COMMANDS_LIST, DB, JCommandsList, commands, config, db, intent, models};
 
 fn print_help() {
     println!("
@@ -103,6 +103,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // init dirs
     config::init_dirs()?;
+
+    // init model registry before selecting an intent backend
+    models::init()?;
     
     // init settings
     let settings = db::init();

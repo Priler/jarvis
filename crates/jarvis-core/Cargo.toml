@@ -59,6 +59,6 @@ jarvis_app = [
     "lua",
     "ort", "ndarray", "tokenizers", "regex",]
 
-intent = ["intent-classifier", "tokio"]
+intent = ["intent-classifier", "tokio", "fastembed"]
 lua = ["mlua", "reqwest", "winrt-notification"]
 lua_only = ["lua", "tokio"]
