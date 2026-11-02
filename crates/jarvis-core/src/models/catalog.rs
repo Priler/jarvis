@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use super::structs::{Task, ModelDef, BackendOption};
+use super::structs::{BackendOption, ModelDef, Task};
 
 // scan the models directory for folders containing model.toml
 pub fn scan_models(models_dir: &Path) -> Vec<ModelDef> {
@@ -33,7 +33,10 @@ pub fn scan_models(models_dir: &Path) -> Vec<ModelDef> {
 
         match load_model_def(&toml_path, &path) {
             Ok(def) => {
-                info!("Found model: {} ({}) - tasks: {:?}", def.name, def.id, def.tasks);
+                info!(
+                    "Found model: {} ({}) - tasks: {:?}",
+                    def.name, def.id, def.tasks
+                );
                 models.push(def);
             }
             Err(e) => warn!("Failed to load model from {:?}: {}", path, e),
@@ -44,11 +47,9 @@ pub fn scan_models(models_dir: &Path) -> Vec<ModelDef> {
 }
 
 fn load_model_def(toml_path: &Path, model_dir: &Path) -> Result<ModelDef, String> {
-    let content = fs::read_to_string(toml_path)
-        .map_err(|e| format!("read error: {}", e))?;
+    let content = fs::read_to_string(toml_path).map_err(|e| format!("read error: {}", e))?;
 
-    let parsed: ModelToml = toml::from_str(&content)
-        .map_err(|e| format!("parse error: {}", e))?;
+    let parsed: ModelToml = toml::from_str(&content).map_err(|e| format!("parse error: {}", e))?;
 
     let mut def = parsed.model;
     def.path = model_dir.to_path_buf();
@@ -64,13 +65,11 @@ struct ModelToml {
 // Code backends per task
 pub fn code_backends(task: Task) -> Vec<BackendOption> {
     match task {
-        Task::Intent => vec![
-            BackendOption {
-                id: "intent-classifier".into(),
-                name: "Intent Classifier".into(),
-                model_id: None,
-            },
-        ],
+        Task::Intent => vec![BackendOption {
+            id: "intent-classifier".into(),
+            name: "Intent Classifier".into(),
+            model_id: None,
+        }],
         Task::Slots => vec![],
         Task::Vad => vec![
             BackendOption {
@@ -84,33 +83,27 @@ pub fn code_backends(task: Task) -> Vec<BackendOption> {
                 model_id: None,
             },
         ],
-        Task::NoiseSuppression => vec![
-            BackendOption {
-                id: "nnnoiseless".into(),
-                name: "Nnnoiseless".into(),
-                model_id: None,
-            },
-        ],
-        Task::Stt => vec![
-            BackendOption {
-                id: "vosk".into(),
-                name: "Vosk".into(),
-                model_id: None,
-            },
-        ],
+        Task::NoiseSuppression => vec![BackendOption {
+            id: "nnnoiseless".into(),
+            name: "Nnnoiseless".into(),
+            model_id: None,
+        }],
+        Task::Stt => vec![BackendOption {
+            id: "vosk".into(),
+            name: "Vosk".into(),
+            model_id: None,
+        }],
     }
 }
 
 // get all available options for a task:
 // "none" first, then code backends, then AI models from catalog
 pub fn get_options(task: Task, models: &[ModelDef]) -> Vec<BackendOption> {
-    let mut options = vec![
-        BackendOption {
-            id: "none".into(),
-            name: "Disabled".into(),
-            model_id: None,
-        },
-    ];
+    let mut options = vec![BackendOption {
+        id: "none".into(),
+        name: "Disabled".into(),
+        model_id: None,
+    }];
 
     options.extend(code_backends(task));
 
@@ -136,5 +129,7 @@ pub fn is_valid_backend(task: Task, backend_id: &str, models: &[ModelDef]) -> bo
         return true;
     }
 
-    models.iter().any(|m| m.id == backend_id && m.tasks.contains(&task))
+    models
+        .iter()
+        .any(|m| m.id == backend_id && m.tasks.contains(&task))
 }

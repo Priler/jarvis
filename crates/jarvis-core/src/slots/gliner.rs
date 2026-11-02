@@ -1,11 +1,11 @@
 // BASED ON: gline-rs crate source code
 // https://github.com/fbilhaut/gline-rs
 
+use ndarray::Array;
+use once_cell::sync::OnceCell;
+use ort::value::Tensor;
 use std::collections::HashMap;
 use std::sync::Arc;
-use once_cell::sync::OnceCell;
-use ndarray::Array;
-use ort::value::Tensor;
 
 use crate::commands::{SlotDefinition, SlotValue};
 use crate::models::gliner::GlinerModel;
@@ -19,7 +19,9 @@ const MAX_LENGTH: usize = 512;
 const MIN_CONFIDENCE: f32 = 0.4;
 
 pub fn init_with_model(model: Arc<GlinerModel>) -> Result<(), String> {
-    MODEL.set(model).map_err(|_| "GLiNER model already initialized".to_string())?;
+    MODEL
+        .set(model)
+        .map_err(|_| "GLiNER model already initialized".to_string())?;
     info!("GLiNER slot extraction ready");
     Ok(())
 }
@@ -41,7 +43,9 @@ fn split_words<'a>(text: &'a str, model: &GlinerModel, limit: Option<usize>) -> 
             text: m.as_str(),
         });
         if let Some(lim) = limit {
-            if tokens.len() >= lim { break; }
+            if tokens.len() >= lim {
+                break;
+            }
         }
     }
     tokens
@@ -93,7 +97,9 @@ fn encode_single(
     let mut entity_tokens: usize = 0;
 
     for (pos, word) in prompt.iter().enumerate() {
-        let encoding = model.tokenizer.encode(word.as_str(), false)
+        let encoding = model
+            .tokenizer
+            .encode(word.as_str(), false)
             .map_err(|e| format!("Tokenizer encode error: {}", e))?;
         let ids = encoding.get_ids().to_vec();
         total_tokens += ids.len();
@@ -106,9 +112,20 @@ fn encode_single(
     let text_offset = entity_tokens + 1;
 
     if log::log_enabled!(log::Level::Debug) {
-        debug!("GLiNER prompt ({} total, ent_len={}, text_offset={}):", prompt.len(), ent_len, text_offset);
+        debug!(
+            "GLiNER prompt ({} total, ent_len={}, text_offset={}):",
+            prompt.len(),
+            ent_len,
+            text_offset
+        );
         for (i, (word, enc)) in prompt.iter().zip(word_encodings.iter()).enumerate() {
-            debug!("  [{}]{} '{}' -> {:?}", i, if i < ent_len { " ENT" } else { " TXT" }, word, enc);
+            debug!(
+                "  [{}]{} '{}' -> {:?}",
+                i,
+                if i < ent_len { " ENT" } else { " TXT" },
+                word,
+                enc
+            );
         }
     }
 
@@ -162,7 +179,10 @@ fn encode_single(
 
 // span tensors
 
-fn make_span_tensors(num_words: usize, max_width: usize) -> (ndarray::Array3<i64>, ndarray::Array2<bool>) {
+fn make_span_tensors(
+    num_words: usize,
+    max_width: usize,
+) -> (ndarray::Array3<i64>, ndarray::Array2<bool>) {
     let num_spans = num_words * max_width;
 
     let mut span_idx = Array::zeros((1, num_spans, 2));
@@ -218,7 +238,9 @@ fn decode_and_search(
             let width = end - start;
             for (class_idx, &entity_label) in entities.iter().enumerate() {
                 let flat_idx = start * dim_mw * dim_e + width * dim_e + class_idx;
-                if flat_idx >= logits_data.len() { continue; }
+                if flat_idx >= logits_data.len() {
+                    continue;
+                }
 
                 let raw_score = logits_data[flat_idx];
                 let prob = sigmoid(raw_score);
@@ -254,8 +276,8 @@ fn greedy_flat(mut spans: Vec<Entity>) -> Vec<Entity> {
     let mut prev = 0usize;
 
     for next in 1..spans.len() {
-        let no_overlap = spans[next].start >= spans[prev].end
-            || spans[prev].start >= spans[next].end;
+        let no_overlap =
+            spans[next].start >= spans[prev].end || spans[prev].start >= spans[next].end;
 
         if no_overlap {
             keep[prev] = true;
@@ -267,7 +289,11 @@ fn greedy_flat(mut spans: Vec<Entity>) -> Vec<Entity> {
     keep[prev] = true;
 
     let mut idx = 0;
-    spans.retain(|_| { let k = keep[idx]; idx += 1; k });
+    spans.retain(|_| {
+        let k = keep[idx];
+        idx += 1;
+        k
+    });
     spans
 }
 
@@ -306,24 +332,27 @@ pub fn extract(
 
     let (span_idx, span_mask) = make_span_tensors(encoded.num_words, MAX_WIDTH);
 
-    let t_input_ids = Tensor::from_array(encoded.input_ids).map_err(|e| format!("tensor: {}", e))?;
-    let t_attn = Tensor::from_array(encoded.attention_masks).map_err(|e| format!("tensor: {}", e))?;
+    let t_input_ids =
+        Tensor::from_array(encoded.input_ids).map_err(|e| format!("tensor: {}", e))?;
+    let t_attn =
+        Tensor::from_array(encoded.attention_masks).map_err(|e| format!("tensor: {}", e))?;
     let t_words = Tensor::from_array(encoded.word_masks).map_err(|e| format!("tensor: {}", e))?;
-    let t_lengths = Tensor::from_array(encoded.text_lengths).map_err(|e| format!("tensor: {}", e))?;
+    let t_lengths =
+        Tensor::from_array(encoded.text_lengths).map_err(|e| format!("tensor: {}", e))?;
     let t_span_idx = Tensor::from_array(span_idx).map_err(|e| format!("tensor: {}", e))?;
     let t_span_mask = Tensor::from_array(span_mask).map_err(|e| format!("tensor: {}", e))?;
 
     let mut session = model.session.lock();
-    let outputs = session.run(
-        ort::inputs! {
+    let outputs = session
+        .run(ort::inputs! {
             "input_ids" => t_input_ids,
             "attention_mask" => t_attn,
             "words_mask" => t_words,
             "text_lengths" => t_lengths,
             "span_idx" => t_span_idx,
             "span_mask" => t_span_mask,
-        }
-    ).map_err(|e| format!("ort inference error: {}", e))?;
+        })
+        .map_err(|e| format!("ort inference error: {}", e))?;
 
     let (shape, logits_data) = outputs["logits"]
         .try_extract_tensor::<f32>()
@@ -333,9 +362,20 @@ pub fn extract(
 
     // debug dump - gated so sigmoid/loop don't run in release
     if log::log_enabled!(log::Level::Debug) {
-        debug!("GLiNER logits shape: {:?}, data len: {}", logits_shape, logits_data.len());
-        let max_logit = logits_data.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
-        debug!("GLiNER max logit: {:.4}, sigmoid: {:.4}", max_logit, sigmoid(max_logit));
+        debug!(
+            "GLiNER logits shape: {:?}, data len: {}",
+            logits_shape,
+            logits_data.len()
+        );
+        let max_logit = logits_data
+            .iter()
+            .cloned()
+            .fold(f32::NEG_INFINITY, f32::max);
+        debug!(
+            "GLiNER max logit: {:.4}, sigmoid: {:.4}",
+            max_logit,
+            sigmoid(max_logit)
+        );
 
         let num_words = logits_shape.get(1).copied().unwrap_or(0);
         let dim_mw = logits_shape.get(2).copied().unwrap_or(0);
@@ -349,10 +389,26 @@ pub fn extract(
                         let prob = sigmoid(score);
                         if prob > 0.05 {
                             let end = start + width;
-                            let w_start = if start < words.len() { words[start].text } else { "?" };
-                            let w_end = if end < words.len() { words[end].text } else { "?" };
-                            debug!("  span[{}..{}] '{}'->'{}' label={} score={:.3} prob={:.3}",
-                                start, end, w_start, w_end, labels.get(class_idx).unwrap_or(&"?"), score, prob);
+                            let w_start = if start < words.len() {
+                                words[start].text
+                            } else {
+                                "?"
+                            };
+                            let w_end = if end < words.len() {
+                                words[end].text
+                            } else {
+                                "?"
+                            };
+                            debug!(
+                                "  span[{}..{}] '{}'->'{}' label={} score={:.3} prob={:.3}",
+                                start,
+                                end,
+                                w_start,
+                                w_end,
+                                labels.get(class_idx).unwrap_or(&"?"),
+                                score,
+                                prob
+                            );
                         }
                     }
                 }
@@ -361,7 +417,13 @@ pub fn extract(
     }
 
     let entities = decode_and_search(
-        logits_data, &logits_shape, &words, text, &labels, MAX_WIDTH, THRESHOLD,
+        logits_data,
+        &logits_shape,
+        &words,
+        text,
+        &labels,
+        MAX_WIDTH,
+        THRESHOLD,
     );
 
     let mut result = HashMap::new();
@@ -371,8 +433,12 @@ pub fn extract(
             continue;
         }
 
-        debug!("GLiNER entity: '{}' -> '{}' ({:.1}%)",
-            entity.text, entity.label, entity.prob * 100.0);
+        debug!(
+            "GLiNER entity: '{}' -> '{}' ({:.1}%)",
+            entity.text,
+            entity.label,
+            entity.prob * 100.0
+        );
 
         if let Some(slot_names) = label_to_slots.get(entity.label.as_str()) {
             for &slot_name in slot_names {

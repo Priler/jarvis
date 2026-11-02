@@ -2,8 +2,8 @@
 // each consumer needs its own DenoiseState (stateful per-stream),
 // so this doesn't go through the registry. just centralizes creation.
 
-use nnnoiseless::DenoiseState;
 use crate::config;
+use nnnoiseless::DenoiseState;
 
 // noise suppression instance
 pub struct NnnoiselessNS {

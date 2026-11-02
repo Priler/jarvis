@@ -1,7 +1,7 @@
+use parking_lot::{Mutex, RwLock};
 use std::any::Any;
 use std::collections::HashMap;
 use std::sync::Arc;
-use parking_lot::{Mutex, RwLock};
 
 use super::structs::ModelDef;
 
@@ -35,11 +35,7 @@ impl ModelRegistry {
 
     // get a loaded model, downcasted to the expected type
     pub fn get<T: 'static + Send + Sync>(&self, id: &str) -> Option<Arc<T>> {
-        self.loaded.lock()
-            .get(id)?
-            .clone()
-            .downcast::<T>()
-            .ok()
+        self.loaded.lock().get(id)?.clone().downcast::<T>().ok()
     }
 
     // get or load a model. if two components request the same id,
@@ -59,7 +55,8 @@ impl ModelRegistry {
         }
 
         // grab model def (releases catalog lock immediately)
-        let def = self.get_model_def(id)
+        let def = self
+            .get_model_def(id)
             .ok_or_else(|| format!("Model '{}' not found in catalog", id))?;
 
         // run loader without holding any lock

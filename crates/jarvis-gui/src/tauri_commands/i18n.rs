@@ -1,6 +1,6 @@
+use crate::AppState;
 use jarvis_core::i18n;
 use std::collections::HashMap;
-use crate::AppState;
 
 // Get all translations for frontend
 #[tauri::command]
@@ -30,7 +30,7 @@ pub fn set_language(state: tauri::State<'_, AppState>, lang: &str) -> HashMap<St
         log::error!("Failed to save language setting: {}", e);
     }
 
-        // return new translations
+    // return new translations
     i18n::get_all_translations()
 }
 

@@ -16,23 +16,20 @@ pub fn init() -> Result<(), String> {
 
     let engine = DB.get().unwrap().read().wake_word_engine;
 
-    WAKE_WORD_ENGINE.set(engine)
+    WAKE_WORD_ENGINE
+        .set(engine)
         .map_err(|_| "Wake word engine already set".to_string())?;
 
     match engine {
-        WakeWordEngine::Porcupine => {
-            Err("Porcupine wake-word engine is not supported".to_string())
-        }
+        WakeWordEngine::Porcupine => Err("Porcupine wake-word engine is not supported".to_string()),
         WakeWordEngine::Rustpotter => {
             info!("Initializing Rustpotter wake-word engine.");
-            rustpotter::init()
-                .map_err(|_| "Failed to init Rustpotter".to_string())
+            rustpotter::init().map_err(|_| "Failed to init Rustpotter".to_string())
         }
         WakeWordEngine::Vosk => {
             info!("Initializing Vosk as wake-word engine.");
             warn!("Using Vosk as wake-word engine is highly not recommended, because it's very slow for this task.");
-            vosk::init()
-                .map_err(|_| "Failed to init Vosk wake-word".to_string())
+            vosk::init().map_err(|_| "Failed to init Vosk wake-word".to_string())
         }
     }
 }

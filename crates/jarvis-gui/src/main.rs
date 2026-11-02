@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use jarvis_core::{config, db, i18n, voices, DB, SettingsManager};
+use jarvis_core::{config, db, i18n, voices, SettingsManager, DB};
 
 #[macro_use]
 extern crate simple_log;
@@ -17,7 +17,7 @@ pub struct AppState {
 
 fn main() {
     config::init_dirs().expect("Failed to init dirs");
-    
+
     // basic logging setup (simpler for GUI)
     simple_log::quick!("info");
 
@@ -39,7 +39,7 @@ fn main() {
 
     // set global DB (for core modules that read settings at init time)
     DB.set(manager.arc().clone())
-            .expect("DB already initialized");
+        .expect("DB already initialized");
 
     tauri::Builder::default()
         .manage(AppState { settings: manager })
@@ -51,11 +51,9 @@ fn main() {
             tauri_commands::pv_get_audio_devices,
             tauri_commands::pv_get_audio_device_name,
             tauri_commands::play_sound,
-
             // db
             tauri_commands::db_read,
             tauri_commands::db_write,
-
             // etc
             tauri_commands::get_app_version,
             tauri_commands::get_author_name,
@@ -64,11 +62,9 @@ fn main() {
             tauri_commands::get_boosty_link,
             tauri_commands::get_patreon_link,
             tauri_commands::get_feedback_link,
-
             // fs
             tauri_commands::get_log_file_path,
             tauri_commands::show_in_folder,
-
             // sys
             tauri_commands::get_current_ram_usage,
             tauri_commands::get_peak_ram_usage,
@@ -77,24 +73,19 @@ fn main() {
             tauri_commands::get_jarvis_app_stats,
             tauri_commands::is_jarvis_app_running,
             tauri_commands::run_jarvis_app,
-
             // vosk
             tauri_commands::list_vosk_models,
-
             // gliner
             tauri_commands::list_gliner_models,
-
             // i18n
             tauri_commands::get_translations,
             tauri_commands::translate,
             tauri_commands::get_current_language,
             tauri_commands::set_language,
             tauri_commands::get_supported_languages,
-
             // commands
             tauri_commands::get_commands_count,
             tauri_commands::get_commands_list,
-
             // voices
             tauri_commands::list_voices,
             tauri_commands::get_voice,

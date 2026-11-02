@@ -1,6 +1,6 @@
+pub mod gain_normalizer;
 pub mod noise_suppression;
 pub mod vad;
-pub mod gain_normalizer;
 
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;

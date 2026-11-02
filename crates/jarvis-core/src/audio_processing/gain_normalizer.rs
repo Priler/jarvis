@@ -10,7 +10,9 @@ pub fn init() {
         return;
     }
 
-    NORMALIZER.set(Mutex::new(simple::GainNormalizer::new())).ok();
+    NORMALIZER
+        .set(Mutex::new(simple::GainNormalizer::new()))
+        .ok();
     info!("Gain normalizer: enabled");
 }
 

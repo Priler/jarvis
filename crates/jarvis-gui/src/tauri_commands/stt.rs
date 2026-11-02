@@ -1,4 +1,4 @@
-use jarvis_core::{vosk_models, gliner_models};
+use jarvis_core::{gliner_models, vosk_models};
 use serde::Serialize;
 
 #[derive(Serialize)]

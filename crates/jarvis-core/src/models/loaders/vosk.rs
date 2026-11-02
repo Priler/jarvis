@@ -16,7 +16,11 @@ unsafe impl Sync for VoskModel {}
 // vosk models aren't in the catalog (they use their own directory structure),
 // so we pass the path directly and use model_id for dedup.
 // @ToDo: Consider moving to catalog
-pub fn load(registry: &ModelRegistry, model_id: &str, model_path: &str) -> Result<Arc<VoskModel>, String> {
+pub fn load(
+    registry: &ModelRegistry,
+    model_id: &str,
+    model_path: &str,
+) -> Result<Arc<VoskModel>, String> {
     // check if already loaded
     if let Some(existing) = registry.get::<VoskModel>(model_id) {
         info!("Vosk model '{}' already loaded, reusing", model_id);

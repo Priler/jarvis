@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use serde::{Serialize, Deserialize};
 
 // tasks that components can request a backend for
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

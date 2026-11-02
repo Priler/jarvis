@@ -1,5 +1,5 @@
-mod none;
 mod energy;
+mod none;
 
 use once_cell::sync::OnceCell;
 use parking_lot::Mutex;
@@ -9,14 +9,16 @@ use crate::DB;
 static BACKEND: OnceCell<String> = OnceCell::new();
 
 #[cfg(feature = "nnnoiseless")]
-static NNNOISELESS_STATE: OnceCell<Mutex<crate::models::nnnoiseless::NnnoiselessVAD>> = OnceCell::new();
+static NNNOISELESS_STATE: OnceCell<Mutex<crate::models::nnnoiseless::NnnoiselessVAD>> =
+    OnceCell::new();
 
 pub fn init() {
     if BACKEND.get().is_some() {
         return;
     }
 
-    let backend = DB.get()
+    let backend = DB
+        .get()
         .map(|db| db.read().vad_backend.clone())
         .unwrap_or_else(|| "energy".to_string());
 
@@ -31,7 +33,9 @@ pub fn init() {
         }
         #[cfg(feature = "nnnoiseless")]
         "nnnoiseless" => {
-            NNNOISELESS_STATE.set(Mutex::new(crate::models::nnnoiseless::NnnoiselessVAD::new())).ok();
+            NNNOISELESS_STATE
+                .set(Mutex::new(crate::models::nnnoiseless::NnnoiselessVAD::new()))
+                .ok();
             info!("VAD: Nnnoiseless");
         }
         other => {

@@ -1,5 +1,5 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, PartialEq)]
 pub enum WakeWordEngine {

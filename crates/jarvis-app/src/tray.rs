@@ -1,16 +1,17 @@
 mod menu;
 
-use tray_icon::{
-    menu::MenuEvent,
-    TrayIconBuilder,
-};
 use image;
 use std::process::Command;
+use tray_icon::{menu::MenuEvent, TrayIconBuilder};
 
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 use winit::platform::windows::EventLoopBuilderExtWindows;
 
-use jarvis_core::{config, i18n, voices, ipc::{self, IpcEvent}, SettingsManager};
+use jarvis_core::{
+    config, i18n,
+    ipc::{self, IpcEvent},
+    voices, SettingsManager,
+};
 
 const TRAY_ICON_BYTES: &[u8] = include_bytes!("../../../resources/icons/32x32.png");
 
@@ -19,7 +20,10 @@ pub fn init_blocking(settings: SettingsManager) {
 
     // build menu with settings submenus
     let tray_menu = menu::build(&settings);
-    let menu::TrayMenu { menu, state: tray_state } = tray_menu;
+    let menu::TrayMenu {
+        menu,
+        state: tray_state,
+    } = tray_menu;
 
     let _tray_icon = TrayIconBuilder::new()
         .with_menu(Box::new(menu))
@@ -44,14 +48,16 @@ pub fn init_blocking(settings: SettingsManager) {
 
     #[cfg(target_os = "macos")]
     {
-        use winit::event_loop::{EventLoop, ControlFlow};
+        use winit::event_loop::{ControlFlow, EventLoop};
         let event_loop = EventLoop::new().unwrap();
-        event_loop.run(move |_event, elwt| {
-            elwt.set_control_flow(ControlFlow::Wait);
-            if let Ok(event) = menu_channel.try_recv() {
-                handle_menu_event(&event, &settings, &tray_state);
-            }
-        }).unwrap();
+        event_loop
+            .run(move |_event, elwt| {
+                elwt.set_control_flow(ControlFlow::Wait);
+                if let Ok(event) = menu_channel.try_recv() {
+                    handle_menu_event(&event, &settings, &tray_state);
+                }
+            })
+            .unwrap();
     }
 
     #[cfg(target_os = "windows")]
@@ -60,16 +66,18 @@ pub fn init_blocking(settings: SettingsManager) {
             if let Ok(event) = menu_channel.try_recv() {
                 handle_menu_event(&event, &settings, &tray_state);
             }
-            
+
             // pump Windows messages
             unsafe {
                 let mut msg: winapi::um::winuser::MSG = std::mem::zeroed();
                 while winapi::um::winuser::PeekMessageW(
-                    &mut msg, 
-                    std::ptr::null_mut(), 
-                    0, 0, 
-                    winapi::um::winuser::PM_REMOVE
-                ) != 0 {
+                    &mut msg,
+                    std::ptr::null_mut(),
+                    0,
+                    0,
+                    winapi::um::winuser::PM_REMOVE,
+                ) != 0
+                {
                     winapi::um::winuser::TranslateMessage(&msg);
                     winapi::um::winuser::DispatchMessageW(&msg);
                 }
@@ -172,7 +180,7 @@ fn restart_app() {
             return;
         }
     };
-    
+
     match Command::new(&exe_path).spawn() {
         Ok(_) => {
             info!("Spawned new instance, exiting current...");
@@ -202,13 +210,14 @@ fn launch_gui() {
             return;
         }
     };
-    
-    let gui_path = exe_path.parent()
+
+    let gui_path = exe_path
+        .parent()
         .map(|p| p.join(get_gui_executable_name()))
         .unwrap_or_else(|| get_gui_executable_name().into());
-    
+
     info!("Launching GUI: {:?}", gui_path);
-    
+
     match Command::new(&gui_path).spawn() {
         Ok(_) => info!("Launched jarvis-gui"),
         Err(e) => error!("Failed to launch jarvis-gui: {}", e),

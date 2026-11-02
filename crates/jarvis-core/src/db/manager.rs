@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use parking_lot::RwLock;
+use std::sync::Arc;
 
-use super::structs::Settings;
 use super::save_settings;
+use super::structs::Settings;
 
 // centralized settings manager.
 // wraps Arc<RwLock<Settings>> and handles locking + auto-save
@@ -37,8 +37,7 @@ impl SettingsManager {
             settings.clone()
         };
 
-        save_settings(&snapshot)
-            .map_err(|e| format!("failed to save settings: {}", e))?;
+        save_settings(&snapshot).map_err(|e| format!("failed to save settings: {}", e))?;
 
         Ok(())
     }
@@ -53,8 +52,7 @@ impl SettingsManager {
             settings.clone()
         };
 
-        save_settings(&snapshot)
-            .map_err(|e| format!("failed to save settings: {}", e))?;
+        save_settings(&snapshot).map_err(|e| format!("failed to save settings: {}", e))?;
 
         Ok(())
     }
@@ -78,10 +76,9 @@ impl SettingsManager {
     // dump all settings as key-value pairs (for debugging)
     pub fn dump(&self) -> Vec<(String, String)> {
         let settings = self.inner.read();
-        Settings::keys().iter()
-            .filter_map(|&key| {
-                settings.get(key).map(|val| (key.to_string(), val))
-            })
+        Settings::keys()
+            .iter()
+            .filter_map(|&key| settings.get(key).map(|val| (key.to_string(), val)))
             .collect()
     }
 }

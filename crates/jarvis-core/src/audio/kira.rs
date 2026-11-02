@@ -8,8 +8,7 @@ use std::sync::Mutex;
 // };
 
 use kira::{
-    AudioManager, AudioManagerSettings, DefaultBackend,
-    sound::static_sound::StaticSoundData,
+    sound::static_sound::StaticSoundData, AudioManager, AudioManagerSettings, DefaultBackend,
 };
 
 static MANAGER: OnceCell<Mutex<AudioManager>> = OnceCell::new();
@@ -17,7 +16,7 @@ static MANAGER: OnceCell<Mutex<AudioManager>> = OnceCell::new();
 pub fn init() -> Result<(), ()> {
     if MANAGER.get().is_some() {
         return Ok(());
-    }  // already initialized
+    } // already initialized
 
     // Create an audio manager. This plays sounds and manages resources.
     match AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()) {
@@ -56,7 +55,11 @@ pub fn play_sound(filename: &PathBuf) {
             }
         }
         Err(err) => {
-            warn!("Cannot find sound file: {} (err: {})", filename.display(), err);
+            warn!(
+                "Cannot find sound file: {} (err: {})",
+                filename.display(),
+                err
+            );
         }
     }
 }

@@ -6,55 +6,61 @@ use std::time::Duration;
 
 pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
     let http = lua.create_table()?;
-    
+
     // jarvis.http.get(url, headers?)
     let get_fn = lua.create_function(|lua, (url, headers): (String, Option<Table>)| {
         http_request(lua, "GET", &url, None, headers)
     })?;
     http.set("get", get_fn)?;
-    
+
     // jarvis.http.post(url, body, headers?)
-    let post_fn = lua.create_function(|lua, (url, body, headers): (String, Option<String>, Option<Table>)| {
-        http_request(lua, "POST", &url, body, headers)
-    })?;
+    let post_fn = lua.create_function(
+        |lua, (url, body, headers): (String, Option<String>, Option<Table>)| {
+            http_request(lua, "POST", &url, body, headers)
+        },
+    )?;
     http.set("post", post_fn)?;
-    
+
     // jarvis.http.post_json(url, data, headers?)
-    let post_json_fn = lua.create_function(|lua, (url, data, headers): (String, Table, Option<Table>)| {
-        // convert Lua table to JSON string
-        let json_value = table_to_json(lua, data)?;
-        let body = serde_json::to_string(&json_value)
-            .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
-        // add content-type header
-        let mut header_map: HashMap<String, String> = HashMap::new();
-        header_map.insert("Content-Type".to_string(), "application/json".to_string());
-        
-        if let Some(h) = headers {
-            for pair in h.pairs::<String, String>() {
-                if let Ok((k, v)) = pair {
-                    header_map.insert(k, v);
+    let post_json_fn = lua.create_function(
+        |lua, (url, data, headers): (String, Table, Option<Table>)| {
+            // convert Lua table to JSON string
+            let json_value = table_to_json(lua, data)?;
+            let body = serde_json::to_string(&json_value)
+                .map_err(|e| mlua::Error::runtime(e.to_string()))?;
+
+            // add content-type header
+            let mut header_map: HashMap<String, String> = HashMap::new();
+            header_map.insert("Content-Type".to_string(), "application/json".to_string());
+
+            if let Some(h) = headers {
+                for pair in h.pairs::<String, String>() {
+                    if let Ok((k, v)) = pair {
+                        header_map.insert(k, v);
+                    }
                 }
             }
-        }
-        
-        http_request_with_headers(lua, "POST", &url, Some(body), header_map)
-    })?;
+
+            http_request_with_headers(lua, "POST", &url, Some(body), header_map)
+        },
+    )?;
     http.set("post_json", post_json_fn)?;
-    
+
     // jarvis.http.json(url) - GET + parse JSON
     let json_fn = lua.create_function(|lua, url: String| {
         let client = reqwest::blocking::Client::builder()
             .timeout(Duration::from_secs(30))
             .build()
             .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
-        let response = client.get(&url)
+
+        let response = client
+            .get(&url)
             .send()
             .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-        
+
         if response.status().is_success() {
-            let json: serde_json::Value = response.json()
+            let json: serde_json::Value = response
+                .json()
                 .map_err(|e| mlua::Error::runtime(e.to_string()))?;
             json_to_lua(lua, json)
         } else {
@@ -62,9 +68,9 @@ pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
         }
     })?;
     http.set("json", json_fn)?;
-    
+
     jarvis.set("http", http)?;
-    
+
     Ok(())
 }
 
@@ -76,13 +82,11 @@ fn http_request(
     headers: Option<Table>,
 ) -> mlua::Result<Table> {
     let header_map: HashMap<String, String> = if let Some(h) = headers {
-        h.pairs::<String, String>()
-            .filter_map(|r| r.ok())
-            .collect()
+        h.pairs::<String, String>().filter_map(|r| r.ok()).collect()
     } else {
         HashMap::new()
     };
-    
+
     http_request_with_headers(lua, method, url, body, header_map)
 }
 
@@ -97,29 +101,29 @@ fn http_request_with_headers(
         .timeout(Duration::from_secs(30))
         .build()
         .map_err(|e| mlua::Error::runtime(e.to_string()))?;
-    
+
     let mut request = match method {
         "POST" => client.post(url),
         "PUT" => client.put(url),
         "DELETE" => client.delete(url),
         _ => client.get(url),
     };
-    
+
     for (k, v) in headers {
         request = request.header(&k, &v);
     }
-    
+
     if let Some(b) = body {
         request = request.body(b);
     }
-    
+
     let result = lua.create_table()?;
-    
+
     match request.send() {
         Ok(response) => {
             result.set("ok", response.status().is_success())?;
             result.set("status", response.status().as_u16())?;
-            
+
             // get headers
             let headers_table = lua.create_table()?;
             for (name, value) in response.headers() {
@@ -128,7 +132,7 @@ fn http_request_with_headers(
                 }
             }
             result.set("headers", headers_table)?;
-            
+
             // get body
             match response.text() {
                 Ok(text) => result.set("body", text)?,
@@ -142,22 +146,25 @@ fn http_request_with_headers(
             result.set("body", "")?;
         }
     }
-    
+
     Ok(result)
 }
 
 // Convert Lua table to serde_json::Value
 fn table_to_json(lua: &Lua, table: Table) -> mlua::Result<serde_json::Value> {
-    use serde_json::{Value as JsonValue, Map};
-    
+    use serde_json::{Map, Value as JsonValue};
+
     // check if it's an array (sequential integer keys starting from 1)
-    let is_array = table.clone().pairs::<i64, Value>()
+    let is_array = table
+        .clone()
+        .pairs::<i64, Value>()
         .filter_map(|r| r.ok())
         .enumerate()
         .all(|(i, (k, _))| k == (i + 1) as i64);
-    
+
     if is_array && table.len()? > 0 {
-        let arr: Vec<JsonValue> = table.sequence_values::<Value>()
+        let arr: Vec<JsonValue> = table
+            .sequence_values::<Value>()
             .filter_map(|r| r.ok())
             .map(|v| lua_to_json(lua, v))
             .collect::<Result<Vec<_>, _>>()?;
@@ -174,17 +181,15 @@ fn table_to_json(lua: &Lua, table: Table) -> mlua::Result<serde_json::Value> {
 
 // Convert Lua Value to serde_json::Value
 fn lua_to_json(lua: &Lua, value: Value) -> mlua::Result<serde_json::Value> {
-    use serde_json::{Value as JsonValue, Number};
-    
+    use serde_json::{Number, Value as JsonValue};
+
     match value {
         Value::Nil => Ok(JsonValue::Null),
         Value::Boolean(b) => Ok(JsonValue::Bool(b)),
         Value::Integer(i) => Ok(JsonValue::Number(Number::from(i))),
-        Value::Number(n) => {
-            Number::from_f64(n)
-                .map(JsonValue::Number)
-                .ok_or_else(|| mlua::Error::runtime("Invalid float"))
-        }
+        Value::Number(n) => Number::from_f64(n)
+            .map(JsonValue::Number)
+            .ok_or_else(|| mlua::Error::runtime("Invalid float")),
         Value::String(s) => Ok(JsonValue::String(s.to_str()?.to_string())),
         Value::Table(t) => table_to_json(lua, t),
         _ => Err(mlua::Error::runtime("Unsupported type for JSON")),
@@ -194,7 +199,7 @@ fn lua_to_json(lua: &Lua, value: Value) -> mlua::Result<serde_json::Value> {
 // Convert serde_json::Value to Lua Value
 fn json_to_lua(lua: &Lua, json: serde_json::Value) -> mlua::Result<Value> {
     use serde_json::Value as JsonValue;
-    
+
     match json {
         JsonValue::Null => Ok(Value::Nil),
         JsonValue::Bool(b) => Ok(Value::Boolean(b)),

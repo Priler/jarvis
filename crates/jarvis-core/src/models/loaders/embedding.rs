@@ -1,8 +1,10 @@
 // fastembed embedding model (all-MiniLM-L6-v2, paraphrase-multilingual, etc.)
 
-use std::sync::Arc;
+use fastembed::{
+    OutputKey, Pooling, QuantizationMode, TextEmbedding, TokenizerFiles, UserDefinedEmbeddingModel,
+};
 use parking_lot::Mutex;
-use fastembed::{TextEmbedding, UserDefinedEmbeddingModel, TokenizerFiles, Pooling, QuantizationMode, OutputKey};
+use std::sync::Arc;
 
 use crate::models::registry::ModelRegistry;
 
@@ -29,7 +31,9 @@ pub fn load(registry: &ModelRegistry, model_id: &str) -> Result<Arc<EmbeddingMod
                 config_file: std::fs::read(model_dir.join("config.json"))
                     .map_err(|e| format!("Failed to read config.json: {}", e))?,
                 special_tokens_map_file: std::fs::read(model_dir.join("special_tokens_map.json"))
-                    .map_err(|e| format!("Failed to read special_tokens_map.json: {}", e))?,
+                    .map_err(|e| {
+                    format!("Failed to read special_tokens_map.json: {}", e)
+                })?,
                 tokenizer_config_file: std::fs::read(model_dir.join("tokenizer_config.json"))
                     .map_err(|e| format!("Failed to read tokenizer_config.json: {}", e))?,
             },
@@ -42,6 +46,8 @@ pub fn load(registry: &ModelRegistry, model_id: &str) -> Result<Arc<EmbeddingMod
             .map_err(|e| format!("Failed to load embedding model: {}", e))?;
 
         info!("Embedding model loaded: {}", def.name);
-        Ok(EmbeddingModel { embedding: Mutex::new(model) })
+        Ok(EmbeddingModel {
+            embedding: Mutex::new(model),
+        })
     })
 }

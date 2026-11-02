@@ -11,7 +11,7 @@ impl GainNormalizer {
 
     pub fn normalize(&mut self, input: &[i16]) -> Vec<i16> {
         let rms = self.calculate_rms(input);
-        
+
         if rms < 1.0 {
             return input.to_vec();
         }
@@ -21,7 +21,8 @@ impl GainNormalizer {
 
         self.current_gain = self.current_gain * 0.9 + clamped_gain * 0.1;
 
-        input.iter()
+        input
+            .iter()
             .map(|&s| {
                 let amplified = (s as f32) * self.current_gain;
                 amplified.clamp(i16::MIN as f32, i16::MAX as f32) as i16
@@ -38,9 +39,7 @@ impl GainNormalizer {
             return 0.0;
         }
 
-        let sum: f64 = samples.iter()
-            .map(|&s| (s as f64).powi(2))
-            .sum();
+        let sum: f64 = samples.iter().map(|&s| (s as f64).powi(2)).sum();
 
         (sum / samples.len() as f64).sqrt() as f32
     }

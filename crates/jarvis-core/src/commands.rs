@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
 use std::fs;
-use std::time::Duration;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
+use std::time::Duration;
 
 use seqdiff::ratio;
 
@@ -12,38 +12,83 @@ pub use structs::*;
 use crate::{config, i18n, APP_DIR};
 
 #[cfg(feature = "lua")]
-use crate::lua::{self, SandboxLevel, CommandContext};
+use crate::lua::{self, CommandContext, SandboxLevel};
 
 pub fn parse_commands() -> Result<Vec<JCommandsList>, String> {
     let mut commands: Vec<JCommandsList> = Vec::new();
 
     let commands_path = APP_DIR.join(config::COMMANDS_PATH);
-    let cmd_dirs = fs::read_dir(&commands_path)
-        .map_err(|e| format!("Error reading commands directory {:?}: {}", commands_path, e))?;
+    let cmd_dirs = fs::read_dir(&commands_path).map_err(|e| {
+        format!(
+            "Error reading commands directory {:?}: {}",
+            commands_path, e
+        )
+    })?;
 
     for entry in cmd_dirs.flatten() {
         let cmd_path = entry.path();
         let toml_file = cmd_path.join("command.toml");
-        
-        if !toml_file.exists() {
+        let yaml_file = cmd_path.join("command.yaml");
+        let yml_file = cmd_path.join("command.yml");
+
+        let config_file = if toml_file.exists() {
+            Some((toml_file, "toml"))
+        } else if yaml_file.exists() {
+            Some((yaml_file, "yaml"))
+        } else if yml_file.exists() {
+            Some((yml_file, "yaml"))
+        } else {
+            None
+        };
+
+        let Some((config_file, format)) = config_file else {
             continue;
-        }
-        
-        let content = match fs::read_to_string(&toml_file) {
+        };
+
+        let content = match fs::read_to_string(&config_file) {
             Ok(c) => c,
             Err(e) => {
-                warn!("Failed to read {}: {}", toml_file.display(), e);
+                warn!("Failed to read {}: {}", config_file.display(), e);
                 continue;
             }
         };
 
-        let file: JCommandsList = match toml::from_str(&content) {
-            Ok(f) => f,
-            Err(e) => {
-                warn!("Failed to parse {}: {}", toml_file.display(), e);
+        if content.trim().is_empty() {
+            debug!("Skipping empty command config: {}", config_file.display());
+            continue;
+        }
+
+        let file: JCommandsList = match format {
+            "toml" => match toml::from_str(&content) {
+                Ok(f) => f,
+                Err(e) => {
+                    warn!("Failed to parse {}: {}", config_file.display(), e);
+                    continue;
+                }
+            },
+            "yaml" => match serde_yaml::from_str(&content) {
+                Ok(f) => f,
+                Err(e) => {
+                    warn!("Failed to parse {}: {}", config_file.display(), e);
+                    continue;
+                }
+            },
+            _ => {
+                warn!(
+                    "Unsupported command config format: {}",
+                    config_file.display()
+                );
                 continue;
             }
         };
+
+        if file.commands.is_empty() {
+            warn!(
+                "Skipping command pack without commands: {}",
+                config_file.display()
+            );
+            continue;
+        }
 
         commands.push(JCommandsList {
             path: cmd_path,
@@ -59,32 +104,35 @@ pub fn parse_commands() -> Result<Vec<JCommandsList>, String> {
     }
 }
 
-
 pub fn commands_hash(commands: &[JCommandsList]) -> String {
-    use sha2::{Sha256, Digest};
-    
+    use sha2::{Digest, Sha256};
+
     let mut hasher = Sha256::new();
-    
+
     let lang = i18n::get_language();
     hasher.update(lang.as_bytes());
     hasher.update(b"|");
 
     // collect all command ids and phrases for current language, sorted
-    let mut all_data: Vec<(&str, _)> = commands.iter()
-        .flat_map(|ac| ac.commands.iter().map(|c| (c.id.as_str(), c.get_phrases(&lang))))
+    let mut all_data: Vec<(&str, _)> = commands
+        .iter()
+        .flat_map(|ac| {
+            ac.commands
+                .iter()
+                .map(|c| (c.id.as_str(), c.get_phrases(&lang)))
+        })
         .collect();
     all_data.sort_by_key(|(id, _)| *id);
-    
+
     for (id, phrases) in all_data {
         hasher.update(id.as_bytes());
         for phrase in phrases.iter() {
             hasher.update(phrase.as_bytes());
         }
     }
-    
+
     format!("{:x}", hasher.finalize())
 }
-
 
 pub fn fetch_command<'a>(
     phrase: &str,
@@ -106,27 +154,27 @@ pub fn fetch_command<'a>(
     for cmd_list in commands {
         for cmd in &cmd_list.commands {
             let cmd_phrases = cmd.get_phrases(&lang);
-            
+
             for cmd_phrase in cmd_phrases.iter() {
                 let cmd_phrase_lower = cmd_phrase.trim().to_lowercase();
                 let cmd_phrase_chars: Vec<char> = cmd_phrase_lower.chars().collect();
-                
+
                 // character-level similarity
                 let char_ratio = ratio(&phrase_chars, &cmd_phrase_chars);
-                
+
                 // word-level similarity
                 let cmd_words: Vec<&str> = cmd_phrase_lower.split_whitespace().collect();
                 let word_score = word_overlap_score(&phrase_words, &cmd_words);
-                
+
                 // combined score
                 let score = (char_ratio * 0.6) + (word_score * 0.4);
-                
+
                 // early exit on perfect match
                 if score >= 99.0 {
                     debug!("Perfect match: '{}' -> '{}'", phrase, cmd_phrase_lower);
                     return Some((&cmd_list.path, cmd));
                 }
-                
+
                 if score > best_score {
                     best_score = score;
                     result = Some((&cmd_list.path, cmd));
@@ -136,14 +184,16 @@ pub fn fetch_command<'a>(
     }
 
     if let Some((_, cmd)) = result {
-        info!("Fuzzy match: '{}' -> cmd '{}' (score: {:.1}%)", phrase, cmd.id, best_score);
+        info!(
+            "Fuzzy match: '{}' -> cmd '{}' (score: {:.1}%)",
+            phrase, cmd.id, best_score
+        );
     } else {
         debug!("No match for '{}' (best: {:.1}%)", phrase, best_score);
     }
-    
+
     result
 }
-
 
 fn word_overlap_score(input_words: &[&str], cmd_words: &[&str]) -> f64 {
     if input_words.is_empty() || cmd_words.is_empty() {
@@ -151,21 +201,18 @@ fn word_overlap_score(input_words: &[&str], cmd_words: &[&str]) -> f64 {
     }
 
     let mut matched = 0.0;
-    
+
     // pre-compute cmd word chars to avoid repeated allocations
-    let cmd_word_chars: Vec<Vec<char>> = cmd_words
-        .iter()
-        .map(|w| w.chars().collect())
-        .collect();
-    
+    let cmd_word_chars: Vec<Vec<char>> = cmd_words.iter().map(|w| w.chars().collect()).collect();
+
     for input_word in input_words {
         let input_chars: Vec<char> = input_word.chars().collect();
-        
+
         let best_word_match = cmd_word_chars
             .iter()
             .map(|cw| ratio(&input_chars, cw))
             .fold(0.0_f64, f64::max);
-        
+
         if best_word_match > 70.0 {
             matched += best_word_match / 100.0;
         }
@@ -175,35 +222,35 @@ fn word_overlap_score(input_words: &[&str], cmd_words: &[&str]) -> f64 {
     (matched / max_words) * 100.0
 }
 
-
-
-
 pub fn execute_exe(exe: &str, args: &[String]) -> std::io::Result<Child> {
     Command::new(exe).args(args).spawn()
 }
 
 pub fn execute_cli(cmd: &str, args: &[String]) -> std::io::Result<Child> {
-    debug!("Spawning: cmd /C {} {:?}", cmd, args);
-
-    if cfg!(target_os = "windows") {
-        Command::new("cmd").arg("/C").arg(cmd).args(args).spawn()
-    } else {
-        Command::new("sh").arg("-c").arg(cmd).args(args).spawn()
-    }
+    debug!("Spawning CLI command: {} {:?}", cmd, args);
+    Command::new(cmd)
+        .args(args)
+        .current_dir(APP_DIR.as_path())
+        .spawn()
 }
 
-pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, phrase: Option<&str>, slots: Option<&HashMap<String, SlotValue>>) -> Result<bool, String> {
+pub fn execute_command(
+    cmd_path: &PathBuf,
+    cmd_config: &JCommand,
+    phrase: Option<&str>,
+    slots: Option<&HashMap<String, SlotValue>>,
+) -> Result<bool, String> {
+    #[cfg(not(feature = "lua"))]
+    let _ = (phrase, slots);
+
     // execute command by the type
     match cmd_config.cmd_type.as_str() {
-
         // BRUH
         "voice" => Ok(true),
-        
+
         // LUA command
         #[cfg(feature = "lua")]
-        "lua" => {
-            execute_lua_command(cmd_path, cmd_config, phrase, slots)
-        }
+        "lua" => execute_lua_command(cmd_path, cmd_config, phrase, slots),
 
         // AutoHotkey command
         // @TODO: Consider adding ahk source files execution?
@@ -221,21 +268,29 @@ pub fn execute_command(cmd_path: &PathBuf, cmd_config: &JCommand, phrase: Option
                 .map(|_| true)
                 .map_err(|e| format!("AHK process spawn error: {}", e))
         }
-        
+
         // CLI command type
         // @TODO: Consider security restrictions
         "cli" => {
-            execute_cli(&cmd_config.cli_cmd, &cmd_config.cli_args)
-                .map(|_| true)
-                .map_err(|e| format!("CLI command error: {}", e))
+            let mut child = execute_cli(&cmd_config.cli_cmd, &cmd_config.cli_args)
+                .map_err(|e| format!("CLI command error: {}", e))?;
+            let status = child
+                .wait()
+                .map_err(|e| format!("CLI command wait error: {}", e))?;
+
+            if status.success() {
+                Ok(false)
+            } else {
+                Err(format!("CLI command exited with status: {}", status))
+            }
         }
-        
+
         // TERMINATOR command (T1000)
         "terminate" => {
             std::thread::sleep(Duration::from_secs(2));
             std::process::exit(0);
         }
-        
+
         // STOP CHANING
         "stop_chaining" => Ok(false),
 
@@ -271,7 +326,7 @@ fn execute_lua_command(
     cmd_path: &PathBuf,
     cmd_config: &JCommand,
     phrase: Option<&str>,
-    slots: Option<&HashMap<String, SlotValue>>
+    slots: Option<&HashMap<String, SlotValue>>,
 ) -> Result<bool, String> {
     // get script path
 
@@ -280,13 +335,13 @@ fn execute_lua_command(
     } else {
         &cmd_config.script
     };
-    
+
     let script_path = cmd_path.join(script_name);
-    
+
     if !script_path.exists() {
         return Err(format!("Lua script not found: {}", script_path.display()));
     }
-    
+
     // parse sandbox level
     let sandbox = SandboxLevel::from_str(&cmd_config.sandbox);
 
@@ -298,17 +353,22 @@ fn execute_lua_command(
         language: i18n::get_language(),
         slots: slots.map(|s| s.clone()),
     };
-    
+
     // get timeout
     let timeout = Duration::from_millis(cmd_config.timeout);
-    
-    info!("Executing Lua command: {} (sandbox: {:?}, timeout: {:?})", 
-          cmd_config.id, sandbox, timeout);
-    
+
+    info!(
+        "Executing Lua command: {} (sandbox: {:?}, timeout: {:?})",
+        cmd_config.id, sandbox, timeout
+    );
+
     // execute
     match lua::execute(&script_path, context, sandbox, timeout) {
         Ok(result) => {
-            info!("Lua command {} completed (chain: {})", cmd_config.id, result.chain);
+            info!(
+                "Lua command {} completed (chain: {})",
+                cmd_config.id, result.chain
+            );
             Ok(result.chain)
         }
         Err(e) => {

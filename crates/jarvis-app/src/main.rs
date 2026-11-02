@@ -1,14 +1,13 @@
 use jarvis_core::slots;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc;
+use std::sync::Arc;
 
 // include core
 use jarvis_core::{
-    audio, audio_processing, commands, config, db, listener, recorder, stt, intent,
+    audio, audio_processing, commands, config, db, i18n, intent,
     ipc::{self, IpcAction},
-    i18n, voices, models,
-    APP_CONFIG_DIR, APP_LOG_DIR, COMMANDS_LIST, DB,
+    listener, models, recorder, stt, voices, APP_CONFIG_DIR, APP_LOG_DIR, COMMANDS_LIST, DB,
 };
 
 // include log
@@ -35,7 +34,10 @@ fn main() -> Result<(), String> {
 
     // log some base info
     info!("Starting Jarvis v{} ...", config::APP_VERSION.unwrap());
-    info!("Config directory is: {}", APP_CONFIG_DIR.get().unwrap().display());
+    info!(
+        "Config directory is: {}",
+        APP_CONFIG_DIR.get().unwrap().display()
+    );
     info!("Log directory is: {}", APP_LOG_DIR.get().unwrap().display());
 
     // initialize settings
@@ -43,7 +45,7 @@ fn main() -> Result<(), String> {
 
     // set global DB (for core modules that read settings at init time)
     DB.set(settings.arc().clone())
-            .expect("DB already initialized");
+        .expect("DB already initialized");
 
     // init voices
     let voice_id = settings.lock().voice.clone();
@@ -76,11 +78,18 @@ fn main() -> Result<(), String> {
     let cmds = match commands::parse_commands() {
         Ok(c) => c,
         Err(e) => {
-            warn!("Failed to parse commands: {}. Starting with empty command list.", e);
+            warn!(
+                "Failed to parse commands: {}. Starting with empty command list.",
+                e
+            );
             Vec::new()
         }
     };
-    info!("Commands initialized. Count: {}, List: {:?}", cmds.len(), commands::list_paths(&cmds));
+    info!(
+        "Commands initialized. Count: {}, List: {:?}",
+        cmds.len(),
+        commands::list_paths(&cmds)
+    );
     COMMANDS_LIST.set(cmds).unwrap();
 
     // init audio
@@ -96,9 +105,7 @@ fn main() -> Result<(), String> {
     }
 
     // shared async runtime for intent classification, IPC, etc.
-    let rt = Arc::new(
-        tokio::runtime::Runtime::new().expect("Failed to create tokio runtime")
-    );
+    let rt = Arc::new(tokio::runtime::Runtime::new().expect("Failed to create tokio runtime"));
 
     // init intent-recognition engine
     rt.block_on(async {
@@ -109,7 +116,9 @@ fn main() -> Result<(), String> {
     });
 
     // init slots parsing engine
-    slots::init().map_err(|e| error!("Slot extraction init failed: {}", e)).ok();
+    slots::init()
+        .map_err(|e| error!("Slot extraction init failed: {}", e))
+        .ok();
 
     // init audio processing
     info!("Initializing audio processing...");
@@ -147,7 +156,6 @@ fn main() -> Result<(), String> {
             IpcAction::Ping => {
                 // handled internally by server
             }
-            _ => {}
         }
     });
 
@@ -156,14 +164,19 @@ fn main() -> Result<(), String> {
     std::thread::spawn(move || {
         ipc_rt.block_on(ipc::start_server());
     });
-    
+
     // start the app (in the background thread)
     let app_rt = Arc::clone(&rt);
     std::thread::spawn(move || {
         let _ = app::start(text_cmd_rx, &app_rt);
     });
 
-    tray::init_blocking(settings);
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(60));
+        if should_stop() {
+            break;
+        }
+    }
 
     Ok(())
 }

@@ -1,8 +1,8 @@
 // GLiNER model for named entity recognition / slot extraction
 
-use std::sync::Arc;
 use parking_lot::Mutex;
 use regex::Regex;
+use std::sync::Arc;
 use tokenizers::Tokenizer;
 
 use crate::models::registry::ModelRegistry;
@@ -42,10 +42,14 @@ pub fn load(registry: &ModelRegistry, model_id: &str) -> Result<Arc<GlinerModel>
         let tokenizer = Tokenizer::from_file(&tokenizer_path)
             .map_err(|e| format!("Failed to load tokenizer: {}", e))?;
 
-        let splitter = Regex::new(WORD_REGEX)
-            .map_err(|e| format!("Failed to compile word regex: {}", e))?;
+        let splitter =
+            Regex::new(WORD_REGEX).map_err(|e| format!("Failed to compile word regex: {}", e))?;
 
         info!("GLiNER model loaded: {}", def.name);
-        Ok(GlinerModel { session: Mutex::new(session), tokenizer, splitter })
+        Ok(GlinerModel {
+            session: Mutex::new(session),
+            tokenizer,
+            splitter,
+        })
     })
 }

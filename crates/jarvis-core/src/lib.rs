@@ -1,8 +1,8 @@
 use once_cell::sync::{Lazy, OnceCell};
 use parking_lot::RwLock;
-use std::{sync::Arc};
 use platform_dirs::AppDirs;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 #[macro_use]
 extern crate log;
@@ -32,8 +32,8 @@ pub mod slots;
 pub mod models;
 
 // re-exported from models/
-pub use models::vosk_models;
 pub use models::gliner_models;
+pub use models::vosk_models;
 
 #[cfg(feature = "jarvis_app")]
 pub mod audio_processing;
@@ -49,12 +49,39 @@ pub mod audio_buffer;
 pub mod lua;
 
 // shared statics
-// pub static APP_DIR: Lazy<PathBuf> = Lazy::new(|| std::env::current_dir().unwrap());
+fn has_resources(path: &std::path::Path) -> bool {
+    path.join("resources").is_dir()
+}
+
 pub static APP_DIR: Lazy<PathBuf> = Lazy::new(|| {
-    std::env::current_exe()
+    if let Ok(path) = std::env::var("JARVIS_APP_DIR") {
+        let path = PathBuf::from(path);
+        if has_resources(&path) {
+            return path;
+        }
+        warn!(
+            "JARVIS_APP_DIR does not contain resources: {}",
+            path.display()
+        );
+    }
+
+    if let Ok(path) = std::env::current_dir() {
+        if has_resources(&path) {
+            return path;
+        }
+    }
+
+    let exe_dir = std::env::current_exe()
         .ok()
-        .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-        .unwrap_or_else(|| std::env::current_dir().unwrap())
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+
+    if let Some(path) = exe_dir.as_ref() {
+        if has_resources(path) {
+            return path.clone();
+        }
+    }
+
+    exe_dir.unwrap_or_else(|| std::env::current_dir().unwrap())
 });
 pub static SOUND_DIR: Lazy<PathBuf> = Lazy::new(|| APP_DIR.clone().join(config::SOUND_PATH));
 pub static APP_DIRS: OnceCell<AppDirs> = OnceCell::new();

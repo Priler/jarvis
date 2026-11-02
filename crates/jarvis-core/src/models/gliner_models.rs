@@ -1,6 +1,6 @@
+use crate::APP_DIR;
 use std::collections::HashMap;
 use std::fs;
-use crate::APP_DIR;
 
 const GLINER_DIRS: &[&str] = &["gliner_small-v2.1", "gliner_multi-v2.1"];
 
@@ -21,7 +21,9 @@ pub fn scan_gliner_variants() -> Vec<GlinerModelVariant> {
 
     for dir_name in GLINER_DIRS {
         let onnx_dir = base.join(dir_name).join("onnx");
-        if !onnx_dir.exists() { continue; }
+        if !onnx_dir.exists() {
+            continue;
+        }
 
         let entries = match fs::read_dir(&onnx_dir) {
             Ok(e) => e,
@@ -38,20 +40,28 @@ pub fn scan_gliner_variants() -> Vec<GlinerModelVariant> {
             let variant_type = file_name_to_type(&file_name);
             let size_mb = fs::metadata(&path).map(|m| m.len()).unwrap_or(0) / (1024 * 1024);
 
-            types.entry(variant_type)
+            types
+                .entry(variant_type)
                 .or_default()
                 .insert(dir_name.to_string(), size_mb);
         }
     }
 
-    let mut result: Vec<GlinerModelVariant> = types.into_iter().map(|(variant, sizes)| {
-        let size_str = build_size_string(&sizes);
-        let label = if variant == "full" { "Full".to_string() } else { variant.clone() };
-        GlinerModelVariant {
-            display_name: format!("{} ({})", label, size_str),
-            value: variant,
-        }
-    }).collect();
+    let mut result: Vec<GlinerModelVariant> = types
+        .into_iter()
+        .map(|(variant, sizes)| {
+            let size_str = build_size_string(&sizes);
+            let label = if variant == "full" {
+                "Full".to_string()
+            } else {
+                variant.clone()
+            };
+            GlinerModelVariant {
+                display_name: format!("{} ({})", label, size_str),
+                value: variant,
+            }
+        })
+        .collect();
 
     // sort: full first, then alphabetically
     result.sort_by(|a, b| {
@@ -93,9 +103,13 @@ fn build_size_string(sizes: &HashMap<String, u64>) -> String {
 }
 
 fn short_dir_name(dir: &str) -> &str {
-    if dir.contains("small") { "small" }
-    else if dir.contains("multi") { "multi" }
-    else { dir }
+    if dir.contains("small") {
+        "small"
+    } else if dir.contains("multi") {
+        "multi"
+    } else {
+        dir
+    }
 }
 
 // resolve variant type + language into actual file path

@@ -4,12 +4,12 @@ mod vosk;
 use crate::config;
 use once_cell::sync::OnceCell;
 
-use crate::config::structs::SpeechToTextEngine;
 pub use self::vosk::init_vosk;
-pub use self::vosk::recognize_wake_word;
 pub use self::vosk::recognize_speech;
+pub use self::vosk::recognize_wake_word;
 pub use self::vosk::reset_speech_recognizer;
 pub use self::vosk::reset_wake_recognizer;
+use crate::config::structs::SpeechToTextEngine;
 
 static STT_TYPE: OnceCell<SpeechToTextEngine> = OnceCell::new();
 
@@ -18,7 +18,8 @@ pub fn init() -> Result<(), String> {
         return Ok(());
     }
 
-    STT_TYPE.set(config::DEFAULT_SPEECH_TO_TEXT_ENGINE)
+    STT_TYPE
+        .set(config::DEFAULT_SPEECH_TO_TEXT_ENGINE)
         .map_err(|_| "STT type already set".to_string())?;
 
     match STT_TYPE.get().unwrap() {

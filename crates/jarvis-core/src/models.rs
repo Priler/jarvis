@@ -1,22 +1,22 @@
-mod registry;
 mod catalog;
-pub mod structs;
 pub mod loaders;
+mod registry;
+pub mod structs;
 
-pub mod vosk_models;
 pub mod gliner_models;
+pub mod vosk_models;
 
 // re-export loaders
-#[cfg(feature = "jarvis_app")]
+#[cfg(feature = "intent")]
 pub use loaders::embedding;
 
 #[cfg(feature = "jarvis_app")]
 pub use loaders::gliner;
 
-#[cfg(feature = "jarvis_app")]
+#[cfg(any(feature = "intent", feature = "jarvis_app"))]
 pub use loaders::ort_model;
 
-#[cfg(feature = "jarvis_app")]
+#[cfg(feature = "intent")]
 pub use loaders::intent_classifier;
 
 #[cfg(feature = "vosk")]
@@ -26,7 +26,7 @@ pub use loaders::vosk;
 pub use loaders::nnnoiseless;
 
 pub use registry::ModelRegistry;
-pub use structs::{Task, ModelDef, BackendOption};
+pub use structs::{BackendOption, ModelDef, Task};
 
 use once_cell::sync::OnceCell;
 
@@ -48,14 +48,17 @@ pub fn init() -> Result<(), String> {
     info!("Found {} model(s) in {:?}", models.len(), models_dir);
     registry.set_catalog(models);
 
-    REGISTRY.set(registry)
+    REGISTRY
+        .set(registry)
         .map_err(|_| "Models registry already initialized".to_string())?;
 
     Ok(())
 }
 
 pub fn registry() -> &'static ModelRegistry {
-    REGISTRY.get().expect("Models registry not initialized - call models::init() first")
+    REGISTRY
+        .get()
+        .expect("Models registry not initialized - call models::init() first")
 }
 
 pub fn get_options(task: Task) -> Vec<BackendOption> {

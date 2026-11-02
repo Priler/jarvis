@@ -1,6 +1,14 @@
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
-use serde::{Serialize, Deserialize};
 use parking_lot::RwLock;
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
+
+fn default_lua_sandbox() -> String {
+    crate::config::DEFAULT_LUA_SANDBOX.to_string()
+}
+
+fn default_lua_timeout() -> u64 {
+    crate::config::DEFAULT_LUA_TIMEOUT
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JCommandsList {
@@ -10,8 +18,6 @@ pub struct JCommandsList {
     pub commands: Vec<JCommand>,
 }
 
-
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JCommand {
     pub id: String,
@@ -19,22 +25,22 @@ pub struct JCommand {
     // Available command types are: "lua", "ahk", "cli", "voice", "terminate", "stop_chaining"
     #[serde(rename = "type")]
     pub cmd_type: String,
-    
+
     #[serde(default)]
     pub description: String,
-    
+
     // for "ahk" type
     #[serde(default)]
     pub exe_path: String,
     #[serde(default)]
     pub exe_args: Vec<String>,
-    
+
     // for "cli" type
     #[serde(default)]
     pub cli_cmd: String,
     #[serde(default)]
     pub cli_args: Vec<String>,
-    
+
     // #[serde(default)]
     // pub sounds: Vec<String>,
 
@@ -44,11 +50,11 @@ pub struct JCommand {
 
     // Lua sandbox level: "minimal", "standard", "full"
     // basically this is an access level
-    #[serde(default)]
+    #[serde(default = "default_lua_sandbox")]
     pub sandbox: String,
 
     // Script timeout in milliseconds (default 10000 = 10s)
-    #[serde(default)]
+    #[serde(default = "default_lua_timeout")]
     pub timeout: u64,
 
     // Multi-language sounds
@@ -66,12 +72,12 @@ pub struct JCommand {
     // CACHE
     #[serde(skip, default)]
     sounds_cache: RwLock<HashMap<String, Arc<Vec<String>>>>,
-    
+
     #[serde(skip, default)]
     phrases_cache: RwLock<HashMap<String, Arc<Vec<String>>>>,
 }
 
-// custom Clone 
+// custom Clone
 impl Clone for JCommand {
     fn clone(&self) -> Self {
         Self {
@@ -108,10 +114,12 @@ impl JCommand {
         if let Some(cached) = self.phrases_cache.read().get(lang) {
             return Arc::clone(cached);
         }
-        
+
         let result = Arc::new(self.resolve_localized(&self.phrases, lang));
-        self.phrases_cache.write().insert(lang.to_string(), Arc::clone(&result));
-        
+        self.phrases_cache
+            .write()
+            .insert(lang.to_string(), Arc::clone(&result));
+
         result
     }
 
@@ -125,10 +133,12 @@ impl JCommand {
         if let Some(cached) = self.sounds_cache.read().get(lang) {
             return Arc::clone(cached);
         }
-        
+
         let result = Arc::new(self.resolve_localized(&self.sounds, lang));
-        self.sounds_cache.write().insert(lang.to_string(), Arc::clone(&result));
-        
+        self.sounds_cache
+            .write()
+            .insert(lang.to_string(), Arc::clone(&result));
+
         result
     }
 
@@ -136,7 +146,6 @@ impl JCommand {
     pub fn get_all_sounds(&self) -> Vec<String> {
         self.sounds.values().flatten().cloned().collect()
     }
-
 
     // shared fallback
     fn resolve_localized(&self, map: &HashMap<String, Vec<String>>, lang: &str) -> Vec<String> {

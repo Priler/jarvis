@@ -7,7 +7,7 @@ use crate::commands::SlotValue;
 pub struct CommandContext {
     // The phrase that triggered the command
     pub phrase: String,
-    
+
     // Command ID
     pub command_id: String,
 
@@ -18,7 +18,7 @@ pub struct CommandContext {
     pub language: String,
 
     // Slots
-    pub slots: Option<HashMap<String, SlotValue>>
+    pub slots: Option<HashMap<String, SlotValue>>,
 }
 
 // Result returned from Lua script execution

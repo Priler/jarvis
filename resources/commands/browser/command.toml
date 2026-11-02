@@ -1,91 +1,18 @@
 [[commands]]
-id = "browser_open"
-type = "ahk"
-exe_path = "ahk/Run browser.exe"
-sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
-sounds.en = ["ok1", "ok2", "ok3"]
-sounds.ua = ["ok1", "ok2", "ok3", "ok4", "ok5", "ok6"]
+id = "open_browser"
+type = "cli"
+description = "Open browser"
+cli_cmd = "xdg-open"
+cli_args = ["https://www.google.com"]
 
-phrases.ru = [
-    "открой браузер",
-    "запусти браузер",
-    "открой хром",
-    "запусти хром",
-    "включи браузер",
-    "браузер открой",
-    "нужен браузер",
+[commands.phrases]
+ru = [
+  "открой браузер",
+  "запусти браузер",
+  "открой интернет",
 ]
-phrases.en = [
-    "open browser",
-    "launch browser",
-    "open chrome",
-    "launch chrome",
-    "start browser",
-    "i need browser",
-]
-phrases.ua = [
-    "відкрий браузер",
-    "запусти браузер",
-    "відкрий хром",
-    "запусти хром",
-    "увімкни браузер",
-    "потрібен браузер",
+en = [
+  "open browser",
+  "start browser",
 ]
 
-
-
-[[commands]]
-id = "browser_close"
-type = "ahk"
-exe_path = "ahk/Close browser.exe"
-sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
-sounds.en = ["ok1", "ok2", "ok3"]
-sounds.ua = ["ok1", "ok2", "ok3", "ok4", "ok5", "ok6"]
-
-phrases.ru = [
-    "закрой браузер",
-    "закрой все браузеры",
-    "выключи браузер",
-    "убери браузер",
-]
-phrases.en = [
-    "close browser",
-    "close all browsers",
-    "shut down browser",
-    "exit browser",
-]
-phrases.ua = [
-    "закрий браузер",
-    "закрий всі браузери",
-    "вимкни браузер",
-]
-
-
-
-[[commands]]
-id = "open_google"
-type = "ahk"
-exe_path = "ahk/Run website.exe"
-exe_args = ["http://google.com"]
-sounds.ru = ["ok1", "ok2", "ok3", "ok4"]
-sounds.en = ["ok1", "ok2", "ok3"]
-sounds.ua = ["ok1", "ok2", "ok3", "ok4", "ok5", "ok6"]
-
-phrases.ru = [
-    "открой гугл",
-    "открой гугл поиск",
-    "запусти гугл",
-    "зайди в гугл",
-]
-phrases.en = [
-    "open google",
-    "google search",
-    "launch google",
-    "go to google",
-]
-phrases.ua = [
-    "відкрий гугл",
-    "відкрий гугл пошук",
-    "запусти гугл",
-    "зайди в гугл",
-]

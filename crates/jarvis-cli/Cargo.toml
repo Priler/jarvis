@@ -7,8 +7,8 @@ repository.workspace = true
 edition.workspace = true
 
 [dependencies]
-jarvis-core = { path = "../jarvis-core", default-features = false, features = ["intent"]}
 tokio = { version = "1", features = ["rt-multi-thread", "sync", "macros"] }
+jarvis-core = { path = "../jarvis-core", default-features = false, features = ["intent", "lua_only"] }
 log.workspace = true
 env_logger = "0.11"
 parking_lot.workspace = true

@@ -1,9 +1,12 @@
-mod intentclassifier;
 mod embeddingclassifier;
+mod intentclassifier;
 
 use std::path::PathBuf;
 
-use crate::{commands::{self, JCommandsList, JCommand}, config, models};
+use crate::{
+    commands::{self, JCommand, JCommandsList},
+    config, models,
+};
 use once_cell::sync::OnceCell;
 
 use crate::DB;
@@ -17,7 +20,9 @@ pub async fn init(commands: &Vec<JCommandsList>) -> Result<(), String> {
 
     let backend = DB.get().unwrap().read().intent_backend.clone();
 
-    BACKEND.set(backend.clone()).map_err(|_| "Backend already set")?;
+    BACKEND
+        .set(backend.clone())
+        .map_err(|_| "Backend already set")?;
 
     match backend.as_str() {
         "none" => {
@@ -30,7 +35,10 @@ pub async fn init(commands: &Vec<JCommandsList>) -> Result<(), String> {
         }
         // any other value is treated as a model ID for embedding classification
         model_id => {
-            info!("Initializing EmbeddingClassifier with model '{}'.", model_id);
+            info!(
+                "Initializing EmbeddingClassifier with model '{}'.",
+                model_id
+            );
             let model = models::embedding::load(models::registry(), model_id)?;
             embeddingclassifier::init_with_model(model, &commands)?;
             info!("EmbeddingClassifier backend initialized.");
@@ -43,37 +51,33 @@ pub async fn init(commands: &Vec<JCommandsList>) -> Result<(), String> {
 pub async fn classify(text: &str) -> Option<(String, f64)> {
     match BACKEND.get()?.as_str() {
         "none" => None,
-        "intent-classifier" => {
-            match intentclassifier::classify(text).await {
-                Ok(prediction) => {
-                    let confidence = prediction.confidence.value();
-                    if confidence >= config::INTENT_CLASSIFIER_MIN_CONFIDENCE {
-                        Some((prediction.intent.to_string(), confidence))
-                    } else {
-                        None
-                    }
-                }
-                Err(e) => {
-                    error!("Intent classification error: {}", e);
+        "intent-classifier" => match intentclassifier::classify(text).await {
+            Ok(prediction) => {
+                let confidence = prediction.confidence.value();
+                if confidence >= config::INTENT_CLASSIFIER_MIN_CONFIDENCE {
+                    Some((prediction.intent.to_string(), confidence))
+                } else {
                     None
                 }
             }
-        }
-        _ => {
-            match embeddingclassifier::classify(text) {
-                Ok((intent_id, confidence)) => {
-                    if confidence >= config::EMBEDDING_MIN_CONFIDENCE {
-                        Some((intent_id, confidence))
-                    } else {
-                        None
-                    }
-                }
-                Err(e) => {
-                    error!("Embedding classification error: {}", e);
+            Err(e) => {
+                error!("Intent classification error: {}", e);
+                None
+            }
+        },
+        _ => match embeddingclassifier::classify(text) {
+            Ok((intent_id, confidence)) => {
+                if confidence >= config::EMBEDDING_MIN_CONFIDENCE {
+                    Some((intent_id, confidence))
+                } else {
                     None
                 }
             }
-        }
+            Err(e) => {
+                error!("Embedding classification error: {}", e);
+                None
+            }
+        },
     }
 }
 

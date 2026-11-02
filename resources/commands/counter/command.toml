@@ -1,13 +1,17 @@
 [[commands]]
-id = "counter"
+id = "counter_ping"
 type = "lua"
+description = "Test Lua command"
 script = "script.lua"
-sandbox = "standard"
-timeout = 5000
-phrases.ru = [
-    "счётчик"
+sandbox = "minimal"
+timeout = 3000
+
+[commands.phrases]
+ru = [
+  "проверка",
+  "тест",
 ]
-phrases.en = [
-    "counter",
-    "count",
+en = [
+  "test",
 ]
+

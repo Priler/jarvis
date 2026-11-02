@@ -259,7 +259,7 @@
     <Tabs.Tab label={t('settings-general')} icon={Gear}>
         <Space h="sm" />
         <div class="voice-select">
-            <label>{t('settings-voice')}</label>
+            <div class="field-label">{t('settings-voice')}</div>
             <p class="description">{t('settings-voice-desc')}</p>
             
             <div class="voice-options">

@@ -14,7 +14,8 @@ pub const IPC_PORT: u16 = 9712;
 pub const IPC_ADDR: &str = "127.0.0.1";
 
 static BROADCAST_TX: OnceCell<broadcast::Sender<IpcEvent>> = OnceCell::new();
-static ACTION_HANDLER: OnceCell<Arc<RwLock<Option<Box<dyn Fn(IpcAction) + Send + Sync>>>>> = OnceCell::new();
+static ACTION_HANDLER: OnceCell<Arc<RwLock<Option<Box<dyn Fn(IpcAction) + Send + Sync>>>>> =
+    OnceCell::new();
 
 // Initialize the IPC broadcast channel
 pub fn init() -> broadcast::Sender<IpcEvent> {
@@ -25,7 +26,7 @@ pub fn init() -> broadcast::Sender<IpcEvent> {
     let (tx, _) = broadcast::channel::<IpcEvent>(32);
     BROADCAST_TX.set(tx.clone()).ok();
     ACTION_HANDLER.set(Arc::new(RwLock::new(None))).ok();
-    
+
     info!("IPC: Broadcast channel initialized");
     tx
 }
@@ -58,13 +59,13 @@ where
 
 fn handle_action(action: IpcAction) {
     info!("IPC: Received action {:?}", action);
-    
+
     // handle ping internally
     if matches!(action, IpcAction::Ping) {
         send(IpcEvent::Pong);
         return;
     }
-    
+
     // forward to registered handler
     if let Some(handler_lock) = ACTION_HANDLER.get() {
         let handler = handler_lock.read();
@@ -95,7 +96,7 @@ pub async fn start_server() {
 
     while let Ok((stream, peer_addr)) = listener.accept().await {
         info!("IPC: Client connecting from {}", peer_addr);
-        
+
         let rx = BROADCAST_TX
             .get()
             .map(|tx| tx.subscribe())

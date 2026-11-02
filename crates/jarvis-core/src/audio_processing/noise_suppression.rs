@@ -8,7 +8,8 @@ use crate::config::structs::NoiseSuppressionBackend;
 static BACKEND: OnceCell<NoiseSuppressionBackend> = OnceCell::new();
 
 #[cfg(feature = "nnnoiseless")]
-static NNNOISELESS_STATE: OnceCell<Mutex<crate::models::nnnoiseless::NnnoiselessNS>> = OnceCell::new();
+static NNNOISELESS_STATE: OnceCell<Mutex<crate::models::nnnoiseless::NnnoiselessNS>> =
+    OnceCell::new();
 
 pub fn init(backend: NoiseSuppressionBackend) {
     if BACKEND.get().is_some() {
@@ -30,7 +31,9 @@ pub fn init(backend: NoiseSuppressionBackend) {
         }
         #[cfg(feature = "nnnoiseless")]
         NoiseSuppressionBackend::Nnnoiseless => {
-            NNNOISELESS_STATE.set(Mutex::new(crate::models::nnnoiseless::NnnoiselessNS::new())).ok();
+            NNNOISELESS_STATE
+                .set(Mutex::new(crate::models::nnnoiseless::NnnoiselessNS::new()))
+                .ok();
             info!("Noise suppression: Nnnoiseless");
         }
         #[cfg(not(feature = "nnnoiseless"))]

@@ -1,0 +1,22 @@
+[[commands]]
+id = "time_now"
+type = "lua"
+description = "Say current time"
+script = "script.lua"
+sandbox = "minimal"
+timeout = 3000
+
+[commands.phrases]
+ru = [
+  "сколько времени",
+  "который час",
+  "текущее время",
+  "скажи время",
+  "подскажи время",
+]
+en = [
+  "what time is it",
+  "current time",
+  "tell me the time",
+]
+

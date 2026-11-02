@@ -2,8 +2,8 @@
 // for models like BERT (tiny, distil, mini) that can serve
 // multiple tasks (intent, NER, text classification, etc.)
 
-use std::sync::Arc;
 use parking_lot::Mutex;
+use std::sync::Arc;
 use tokenizers::Tokenizer;
 
 use crate::models::registry::ModelRegistry;
@@ -32,13 +32,16 @@ pub fn load(registry: &ModelRegistry, model_id: &str) -> Result<Arc<OrtModel>, S
         let tokenizer = if tokenizer_path.exists() {
             Some(
                 Tokenizer::from_file(&tokenizer_path)
-                    .map_err(|e| format!("Failed to load tokenizer: {}", e))?
+                    .map_err(|e| format!("Failed to load tokenizer: {}", e))?,
             )
         } else {
             None
         };
 
         info!("ORT model loaded: {}", def.name);
-        Ok(OrtModel { session: Mutex::new(session), tokenizer })
+        Ok(OrtModel {
+            session: Mutex::new(session),
+            tokenizer,
+        })
     })
 }

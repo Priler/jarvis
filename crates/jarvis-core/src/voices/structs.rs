@@ -1,12 +1,11 @@
-use std::{collections::HashMap, path::PathBuf};
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VoiceConfig {
-
     #[serde(skip)]
     pub path: PathBuf,
-    
+
     pub voice: VoiceMeta,
 
     // Multi-language reactions
@@ -38,7 +37,7 @@ pub struct VoiceReactions {
     pub greet_evening: Vec<String>,
     #[serde(default)]
     pub greet_night: Vec<String>,
-    
+
     // wake word detected
     #[serde(default)]
     pub reply: Vec<String>,
@@ -46,7 +45,7 @@ pub struct VoiceReactions {
     // command executed
     #[serde(default)]
     pub ok: Vec<String>,
-    
+
     // command not found
     #[serde(default)]
     pub not_found: Vec<String>,
@@ -54,11 +53,11 @@ pub struct VoiceReactions {
     // thank you
     #[serde(default)]
     pub thanks: Vec<String>,
-    
+
     // error
     #[serde(default)]
     pub error: Vec<String>,
-    
+
     // shutdown
     #[serde(default)]
     pub goodbye: Vec<String>,
@@ -66,9 +65,9 @@ pub struct VoiceReactions {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Reaction {
-    Greet,      // app startup
-    Reply,      // wake word detected
-    Ok,         // command executed
+    Greet, // app startup
+    Reply, // wake word detected
+    Ok,    // command executed
     NotFound,
     Thanks,
     Error,

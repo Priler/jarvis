@@ -9,7 +9,7 @@ pub fn init_microphone(device_index: i32, frame_length: u32) -> bool {
     if RECORDER.get().is_some() {
         return true; // already initialized
     }
-    
+
     // initialize
     let pv_recorder = PvRecorderBuilder::new(frame_length as i32)
         .device_index(device_index)
@@ -109,7 +109,7 @@ pub fn list_audio_devices() -> Vec<String> {
         Err(err) => {
             error!("Failed to get audio devices: {}", err);
             Vec::new()
-        },
+        }
     }
 }
 

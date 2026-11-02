@@ -1,7 +1,7 @@
 use tray_icon::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 
+use jarvis_core::config::structs::{NoiseSuppressionBackend, WakeWordEngine};
 use jarvis_core::{i18n, voices, SettingsManager};
-use jarvis_core::config::structs::{WakeWordEngine, NoiseSuppressionBackend};
 
 // RADIO GROUP
 
@@ -90,7 +90,9 @@ pub fn build(settings: &SettingsManager) -> TrayMenu {
 
     // -- wake word engine submenu
     let ww_sub = Submenu::new(i18n::t("tray-wake-word"), true);
-    let current_ww = settings.read("selected_wake_word_engine").unwrap_or_default();
+    let current_ww = settings
+        .read("selected_wake_word_engine")
+        .unwrap_or_default();
     let mut ww_items = Vec::new();
     for (label, value) in &[("Rustpotter", "Rustpotter"), ("Vosk", "Vosk")] {
         let item = CheckMenuItem::with_id(
@@ -132,7 +134,11 @@ pub fn build(settings: &SettingsManager) -> TrayMenu {
     let vad_sub = Submenu::new(i18n::t("tray-vad"), true);
     let current_vad = settings.read("vad_backend").unwrap_or_default();
     let mut vad_items = Vec::new();
-    for (label, value) in &[("None", "none"), ("Energy", "energy"), ("Nnnoiseless", "nnnoiseless")] {
+    for (label, value) in &[
+        ("None", "none"),
+        ("Energy", "energy"),
+        ("Nnnoiseless", "nnnoiseless"),
+    ] {
         let item = CheckMenuItem::with_id(
             format!("set:vad_backend:{}", value),
             *label,
@@ -149,7 +155,8 @@ pub fn build(settings: &SettingsManager) -> TrayMenu {
     });
 
     // -- gain normalizer toggle
-    let gain_on = settings.read("gain_normalizer")
+    let gain_on = settings
+        .read("gain_normalizer")
         .map(|v| v == "true")
         .unwrap_or(true);
     let gain_toggle = CheckMenuItem::with_id(
@@ -168,8 +175,18 @@ pub fn build(settings: &SettingsManager) -> TrayMenu {
     let _ = menu.append(&vad_sub);
     let _ = menu.append(&gain_toggle);
     let _ = menu.append(&PredefinedMenuItem::separator());
-    let _ = menu.append(&MenuItem::with_id("restart", i18n::t("tray-restart"), true, None));
-    let _ = menu.append(&MenuItem::with_id("settings", i18n::t("tray-settings"), true, None));
+    let _ = menu.append(&MenuItem::with_id(
+        "restart",
+        i18n::t("tray-restart"),
+        true,
+        None,
+    ));
+    let _ = menu.append(&MenuItem::with_id(
+        "settings",
+        i18n::t("tray-settings"),
+        true,
+        None,
+    ));
     let _ = menu.append(&MenuItem::with_id("exit", i18n::t("tray-exit"), true, None));
 
     TrayMenu {

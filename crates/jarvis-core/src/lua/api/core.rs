@@ -1,9 +1,8 @@
 // Core Lua API: log, sleep, print, etc.
 
-use mlua::{Lua, Table, MultiValue};
+use mlua::{Lua, MultiValue, Table};
 
 pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
-
     // @ jarvis.log(level, message)
     // log something
     let log_fn = lua.create_function(|_, (level, message): (String, String)| {
@@ -17,18 +16,16 @@ pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
         Ok(())
     })?;
     jarvis.set("log", log_fn)?;
-    
+
     // @ jarvis.print(...)
     // simple print
     let print_fn = lua.create_function(|_, args: MultiValue| {
-        let parts: Vec<String> = args.iter()
-            .map(|v| format!("{:?}", v))
-            .collect();
+        let parts: Vec<String> = args.iter().map(|v| format!("{:?}", v)).collect();
         log::info!("[Lua] {}", parts.join(" "));
         Ok(())
     })?;
     jarvis.set("print", print_fn)?;
-    
+
     // @ jarvis.sleep(ms)
     // ..zZZ
     let sleep_fn = lua.create_function(|_, ms: u64| {
@@ -36,15 +33,15 @@ pub fn register(lua: &Lua, jarvis: &Table) -> mlua::Result<()> {
         Ok(())
     })?;
     jarvis.set("sleep", sleep_fn)?;
-    
+
     // @ jarvis.speak(text)
     // @TODO: update when TTS will be implemented
     let speak_fn = lua.create_function(|_, text: String| {
         log::info!("[Lua] SPEAK: {}", text);
-        // pass
+        crate::voices::speak_text(&text);
         Ok(())
     })?;
     jarvis.set("speak", speak_fn)?;
-    
+
     Ok(())
 }

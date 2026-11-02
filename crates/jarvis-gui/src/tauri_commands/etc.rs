@@ -67,7 +67,8 @@ pub fn get_feedback_link() -> String {
 
 #[tauri::command]
 pub fn get_log_file_path() -> String {
-    APP_LOG_DIR.get()
+    APP_LOG_DIR
+        .get()
         .map(|p| p.display().to_string())
         .unwrap_or_else(|| "unknown".to_string())
 }

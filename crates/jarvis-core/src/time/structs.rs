@@ -2,10 +2,10 @@ use chrono::Timelike;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TimeOfDay {
-    Morning,  // 5:00 - 11:59
-    Day,      // 12:00 - 16:59
-    Evening,  // 17:00 - 21:59
-    Night,    // 22:00 - 4:59
+    Morning, // 5:00 - 11:59
+    Day,     // 12:00 - 16:59
+    Evening, // 17:00 - 21:59
+    Night,   // 22:00 - 4:59
 }
 
 impl TimeOfDay {

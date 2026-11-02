@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "routes": "routify build -c",
+    "prebuild": "npm run routes",
     "dev": "vite",
     "build": "svelte-check --ignore '.routify' --no-tsconfig && vite build",
     "preview": "vite preview",

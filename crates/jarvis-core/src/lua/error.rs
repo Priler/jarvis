@@ -16,7 +16,7 @@ pub enum LuaError {
 
     // Sandbox violation
     SandboxViolation(String),
-    
+
     // IO error
     IoError(std::io::Error),
 }

@@ -1,0 +1,298 @@
+[[commands]]
+id = "led_on"
+type = "cli"
+description = "Turn LED strip on"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "on"]
+
+[commands.phrases]
+ru = [
+  "включи подсветку",
+  "включи светодиод",
+  "включи ленту",
+  "включи свет",
+]
+en = [
+  "turn on led",
+  "turn on light",
+]
+
+[[commands]]
+id = "led_off"
+type = "cli"
+description = "Turn LED strip off"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "off"]
+
+[commands.phrases]
+ru = [
+  "выключи подсветку",
+  "выключи светодиод",
+  "выключи ленту",
+  "выключи свет",
+]
+en = [
+  "turn off led",
+  "turn off light",
+]
+
+[[commands]]
+id = "led_red"
+type = "cli"
+description = "Set LED strip color to red"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "red"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет красный",
+  "цвет красный",
+  "сделай подсветку красной",
+  "поставь красный цвет",
+  "красная подсветка",
+  "включи красный свет",
+]
+en = [
+  "set red light",
+  "make led red",
+]
+
+[[commands]]
+id = "led_green"
+type = "cli"
+description = "Set LED strip color to green"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "green"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет зеленый",
+  "сделай цвет зелёный",
+  "цвет зеленый",
+  "цвет зелёный",
+  "сделай подсветку зеленой",
+  "сделай подсветку зелёной",
+  "поставь зеленый цвет",
+  "поставь зелёный цвет",
+  "зеленая подсветка",
+  "зелёная подсветка",
+]
+en = [
+  "set green light",
+  "make led green",
+]
+
+[[commands]]
+id = "led_blue"
+type = "cli"
+description = "Set LED strip color to blue"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "blue"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет синий",
+  "цвет синий",
+  "сделай подсветку синей",
+  "поставь синий цвет",
+  "синяя подсветка",
+  "включи синий свет",
+]
+en = [
+  "set blue light",
+  "make led blue",
+]
+
+[[commands]]
+id = "led_white"
+type = "cli"
+description = "Set LED strip color to white"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "white"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет белый",
+  "цвет белый",
+  "сделай подсветку белой",
+  "поставь белый цвет",
+  "белая подсветка",
+  "включи белый свет",
+]
+en = [
+  "set white light",
+  "make led white",
+]
+
+[[commands]]
+id = "led_yellow"
+type = "cli"
+description = "Set LED strip color to yellow"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "yellow"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет желтый",
+  "сделай цвет жёлтый",
+  "цвет желтый",
+  "цвет жёлтый",
+  "сделай подсветку желтой",
+  "сделай подсветку жёлтой",
+  "поставь желтый цвет",
+  "поставь жёлтый цвет",
+  "желтая подсветка",
+  "жёлтая подсветка",
+]
+en = [
+  "set yellow light",
+  "make led yellow",
+]
+
+[[commands]]
+id = "led_purple"
+type = "cli"
+description = "Set LED strip color to purple"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "purple"]
+
+[commands.phrases]
+ru = [
+  "сделай цвет фиолетовый",
+  "цвет фиолетовый",
+  "сделай подсветку фиолетовой",
+  "поставь фиолетовый цвет",
+  "фиолетовая подсветка",
+  "включи фиолетовый свет",
+]
+en = [
+  "set purple light",
+  "make led purple",
+]
+
+[[commands]]
+id = "led_cyan"
+type = "cli"
+description = "Set LED strip color to cyan"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "cyan"]
+
+[commands.phrases]
+ru = [
+  "включи цвет Гоши",
+  "сделай цвет голубой",
+  "цвет голубой",
+  "сделай подсветку голубой",
+  "поставь голубой цвет",
+  "голубая подсветка",
+  "включи голубой свет",
+]
+en = [
+  "set cyan light",
+  "make led cyan",
+]
+
+[[commands]]
+id = "led_brightness_0"
+type = "cli"
+description = "Set LED strip brightness to minimum"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "brightness", "0"]
+
+[commands.phrases]
+ru = [
+  "минимальная яркость",
+  "минимальная яркость подсветки",
+  "поставь минимальную яркость",
+  "сделай минимальную яркость",
+  "танец минимальной яркости",
+  "танец минимальная яркость",
+  "яркость ноль",
+  "яркость ноль процентов",
+  "подсветка ноль процентов",
+  "добавить яркость ноль",
+  "приглуши подсветку",
+  "сделай подсветку темнее",
+]
+en = [
+  "minimum brightness",
+  "set minimum brightness",
+  "set light brightness to zero percent",
+]
+
+[[commands]]
+id = "led_brightness_25"
+type = "cli"
+description = "Set LED strip brightness to 25 percent"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "brightness", "25"]
+
+[commands.phrases]
+ru = [
+  "низкая яркость",
+  "низкая яркость подсветки",
+  "яркость двадцать пять",
+  "яркость двадцать пять процентов",
+  "яркость подсветки двадцать пять процентов",
+  "сделай яркость подсветки двадцать пять процентов",
+  "поставь яркость двадцать пять",
+  "подсветка на двадцать пять процентов",
+]
+en = [
+  "set light brightness to twenty five percent",
+  "set led brightness to twenty five percent",
+]
+
+[[commands]]
+id = "led_brightness_50"
+type = "cli"
+description = "Set LED strip brightness to 50 percent"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "brightness", "50"]
+
+[commands.phrases]
+ru = [
+  "средняя яркость",
+  "средняя яркость подсветки",
+  "яркость пятьдесят",
+  "яркость пятьдесят процентов",
+  "поставь яркость пятьдесят",
+  "поставь яркость пятьдесят процентов",
+  "яркость подсветки пятьдесят процентов",
+  "сделай яркость подсветки пятьдесят процентов",
+  "подсветка на пятьдесят процентов",
+  "добавить яркость пятьдесят",
+]
+en = [
+  "set light brightness to fifty percent",
+  "set led brightness to fifty percent",
+]
+
+[[commands]]
+id = "led_brightness_100"
+type = "cli"
+description = "Set LED strip brightness to 100 percent"
+cli_cmd = "python3"
+cli_args = ["scripts/led_control.py", "brightness", "100"]
+
+[commands.phrases]
+ru = [
+  "максимальная яркость",
+  "яркость максимум",
+  "яркость сто",
+  "яркость сто процентов",
+  "яркость стал",
+  "поставь яркость сто",
+  "поставь яркость сто процентов",
+  "яркость подсветки сто процентов",
+  "сделай яркость подсветки сто процентов",
+  "подсветка на сто процентов",
+  "максимальная яркость подсветки",
+  "сделай подсветку ярче",
+  "сделай максимальную яркость",
+]
+en = [
+  "set light brightness to one hundred percent",
+  "set led brightness to one hundred percent",
+  "maximum led brightness",
+]

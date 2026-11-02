@@ -1,8 +1,12 @@
 use std::sync::mpsc::Receiver;
 use std::time::SystemTime;
 
-use jarvis_core::{audio_buffer::AudioRingBuffer, audio_processing, commands, config, listener, recorder, stt, COMMANDS_LIST, intent, voices, ipc::{self, IpcEvent}, i18n, slots};
-use rand::seq::SliceRandom;
+use jarvis_core::{
+    audio_buffer::AudioRingBuffer,
+    audio_processing, commands, config, i18n, intent,
+    ipc::{self, IpcEvent},
+    listener, recorder, slots, stt, voices, COMMANDS_LIST,
+};
 
 use crate::should_stop;
 
@@ -21,23 +25,25 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
     let frame_length: usize = 512;
     let sample_rate: usize = 16000;
     let mut frame_buffer: Vec<i16> = vec![0; frame_length];
-    
+
     // ring buffer: keeps last 5 seconds of audio (pre-roll)
     let mut audio_buffer = AudioRingBuffer::new(5.0, frame_length, sample_rate);
 
     // VAD state
     let mut vad_state = VadState::WaitingForVoice;
     let mut silence_frames: u32 = 0;
-    
+
     // how many frames of silence before we consider speech ended
     // 1.5 seconds = 1.5 * (16000 / 512) ≈ 47 frames
     let silence_threshold: u32 = ((1.5 * sample_rate as f32) / frame_length as f32) as u32;
-    
+
     voices::play_greet();
 
     match recorder::start_recording() {
-        Ok(_) => info!("Recording started. Microphone: {}", 
-            recorder::get_audio_device_name(recorder::get_selected_microphone_index())),
+        Ok(_) => info!(
+            "Recording started. Microphone: {}",
+            recorder::get_audio_device_name(recorder::get_selected_microphone_index())
+        ),
         Err(_) => {
             error!("Cannot start recording.");
             return Err(());
@@ -62,35 +68,38 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
 
         recorder::read_microphone(&mut frame_buffer);
         let processed = audio_processing::process(&frame_buffer);
-        
+
         match vad_state {
             VadState::WaitingForVoice => {
                 // always buffer audio
                 audio_buffer.push(&frame_buffer);
-                
+
                 if processed.is_voice {
                     // voice started! flush buffer to Vosk
-                    info!("VAD: Voice started, flushing {} buffered frames", audio_buffer.len());
-                    
+                    info!(
+                        "VAD: Voice started, flushing {} buffered frames",
+                        audio_buffer.len()
+                    );
+
                     for buffered_frame in audio_buffer.drain_all() {
                         listener::data_callback(&buffered_frame);
                     }
-                    
+
                     vad_state = VadState::VoiceActive;
                     silence_frames = 0;
                 }
             }
-            
+
             VadState::VoiceActive => {
                 // dual-feed: speech recognizer gets frames in parallel with wake word detector
-                let _ = stt::recognize(&frame_buffer, false);
+                let _ = stt::recognize(&processed.samples, false);
 
                 // feed to wake word detector
-                if let Some(_keyword_index) = listener::data_callback(&frame_buffer) {
+                if let Some(_keyword_index) = listener::data_callback(&processed.samples) {
                     // WAKE WORD DETECTED!
                     info!("Wake word activated!");
                     ipc::send(IpcEvent::WakeWordDetected);
-                    
+
                     stt::reset_wake_recognizer();
                     audio_processing::reset();
 
@@ -98,8 +107,8 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
                     let sniff_frames = ((0.3 * sample_rate as f32) / frame_length as f32) as u32;
                     for _ in 0..sniff_frames {
                         recorder::read_microphone(&mut frame_buffer);
-                        audio_processing::process(&frame_buffer);
-                        stt::recognize(&frame_buffer, false);
+                        let processed = audio_processing::process(&frame_buffer);
+                        stt::recognize(&processed.samples, false);
                     }
 
                     ipc::send(IpcEvent::Listening);
@@ -113,16 +122,16 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
                     stt::reset_speech_recognizer(); // NOW reset, after command is done
                     audio_processing::reset();
                     ipc::send(IpcEvent::Idle);
-                    
+
                     continue 'wake_word;
                 }
-                
+
                 // track silence
                 if processed.is_voice {
                     silence_frames = 0;
                 } else {
                     silence_frames += 1;
-                    
+
                     if silence_frames > silence_threshold {
                         debug!("VAD: Silence timeout, returning to wait state");
                         vad_state = VadState::WaitingForVoice;
@@ -141,14 +150,13 @@ fn main_loop(text_cmd_rx: Receiver<String>, rt: &tokio::runtime::Runtime) -> Res
     Ok(())
 }
 
-
 // Voice recognition for command after wake word
 fn recognize_command(
     frame_buffer: &mut [i16],
     rt: &tokio::runtime::Runtime,
     frame_length: usize,
     sample_rate: usize,
-    prefed_audio: bool
+    prefed_audio: bool,
 ) {
     let mut audio_buffer = AudioRingBuffer::new(2.0, frame_length, sample_rate);
     let mut vad_state = if prefed_audio {
@@ -159,23 +167,23 @@ fn recognize_command(
     let mut silence_frames: u32 = 0;
     let mut start = SystemTime::now();
     let mut first_recognition = prefed_audio;
-    
+
     // longer silence threshold for commands (user might pause to think)
     // 5 seconds
     let silence_threshold: u32 = ((5.0 * sample_rate as f32) / frame_length as f32) as u32;
-    
+
     loop {
         if crate::should_stop() {
             return;
         }
-        
+
         recorder::read_microphone(frame_buffer);
         let processed = audio_processing::process(frame_buffer);
-        
+
         match vad_state {
             VadState::WaitingForVoice => {
                 audio_buffer.push(frame_buffer);
-                
+
                 if processed.is_voice {
                     // flush buffer to STT
                     for buffered_frame in audio_buffer.drain_all() {
@@ -185,25 +193,25 @@ fn recognize_command(
                     silence_frames = 0;
                 } else {
                     silence_frames += 1;
-                    
+
                     if silence_frames > silence_threshold {
                         info!("Long silence detected, returning to wake word mode.");
                         return;
                     }
                 }
             }
-            
+
             VadState::VoiceActive => {
                 // feed to STT
-                if let Some(mut recognized_voice) = stt::recognize(frame_buffer, false) {
+                if let Some(mut recognized_voice) = stt::recognize(&processed.samples, false) {
                     info!("Recognized voice: {}", recognized_voice);
-                    
+
                     ipc::send(IpcEvent::SpeechRecognized {
                         text: recognized_voice.clone(),
                     });
-                    
+
                     recognized_voice = recognized_voice.to_lowercase();
-                    
+
                     // check if wake word repeated (reactivate)
                     let wake_phrases = config::get_wake_phrases(&i18n::get_language());
                     let contains_wake = wake_phrases.iter().any(|wp| recognized_voice.contains(wp));
@@ -235,7 +243,7 @@ fn recognize_command(
                             voices::play_reply();
                             stt::reset_speech_recognizer();
                             ipc::send(IpcEvent::Listening);
-                            
+
                             vad_state = VadState::WaitingForVoice;
                             silence_frames = 0;
                             start = SystemTime::now();
@@ -250,7 +258,7 @@ fn recognize_command(
                     }
 
                     first_recognition = false;
-                    
+
                     // filter activation phrases
                     // for tbr in config::ASSISTANT_PHRASES_TBR {
                     //     recognized_voice = recognized_voice.replace(tbr, "");
@@ -260,7 +268,7 @@ fn recognize_command(
                     }
 
                     recognized_voice = recognized_voice.trim().to_string();
-                    
+
                     if recognized_voice.len() < 5 {
                         debug!("Ignoring too short recognition: '{}'", recognized_voice);
                         continue;
@@ -269,10 +277,10 @@ fn recognize_command(
                     if recognized_voice.is_empty() {
                         continue;
                     }
-                    
+
                     // execute command and check if we should chain
                     let should_chain = execute_command(&recognized_voice, rt);
-                    
+
                     if should_chain {
                         // chain: reset and continue listening
                         info!("Chaining enabled, continuing to listen...");
@@ -289,13 +297,13 @@ fn recognize_command(
                         return;
                     }
                 }
-                
+
                 // track silence
                 if processed.is_voice {
                     silence_frames = 0;
                 } else {
                     silence_frames += 1;
-                    
+
                     if silence_frames > silence_threshold {
                         info!("Long silence detected, returning to wake word mode.");
                         return;
@@ -303,7 +311,7 @@ fn recognize_command(
                 }
             }
         }
-        
+
         // timeout
         if let Ok(elapsed) = start.elapsed() {
             if elapsed > config::CMS_WAIT_DELAY {
@@ -314,12 +322,13 @@ fn recognize_command(
     }
 }
 
-
 fn process_text_command(text: &str, rt: &tokio::runtime::Runtime) {
     info!("Processing text command: {}", text);
-    
-    ipc::send(IpcEvent::SpeechRecognized { text: text.to_string() });
-    
+
+    ipc::send(IpcEvent::SpeechRecognized {
+        text: text.to_string(),
+    });
+
     let mut filtered = text.to_lowercase();
     // for tbr in config::ASSISTANT_PHRASES_TBR {
     //     filtered = filtered.replace(tbr, "");
@@ -329,41 +338,43 @@ fn process_text_command(text: &str, rt: &tokio::runtime::Runtime) {
     }
 
     let filtered = filtered.trim();
-    
+
     if filtered.is_empty() {
         ipc::send(IpcEvent::Idle);
         return;
     }
-    
+
     // text commands never chain
     execute_command(filtered, rt);
 }
-
 
 // Execute command, returns true if chaining should continue
 fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
     let commands_list = match COMMANDS_LIST.get() {
         Some(c) => c,
         None => {
-            ipc::send(IpcEvent::Error { message: "Commands not loaded".to_string() });
+            ipc::send(IpcEvent::Error {
+                message: "Commands not loaded".to_string(),
+            });
             ipc::send(IpcEvent::Idle);
             return false;
         }
     };
-    
-    let cmd_result = if let Some((intent_id, confidence)) = 
-        rt.block_on(intent::classify(text)) 
-    {
-        info!("Intent recognized: {} (confidence: {:.2})", intent_id, confidence);
+
+    let cmd_result = if let Some((intent_id, confidence)) = rt.block_on(intent::classify(text)) {
+        info!(
+            "Intent recognized: {} (confidence: {:.2})",
+            intent_id, confidence
+        );
         intent::get_command_by_intent(commands_list, &intent_id)
     } else {
         info!("Intent not recognized, trying levenshtein fallback...");
         commands::fetch_command(text, commands_list)
     };
-    
+
     if let Some((cmd_path, cmd_config)) = cmd_result {
         info!("Command found: {:?}", cmd_path);
-        
+
         // extract slots if needed
         let extracted_slots = if !cmd_config.slots.is_empty() {
             let s = slots::extract(text, &cmd_config.slots);
@@ -375,7 +386,12 @@ fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
             None
         };
 
-        match commands::execute_command(&cmd_path, &cmd_config, Some(&text), extracted_slots.as_ref()) {
+        match commands::execute_command(
+            &cmd_path,
+            &cmd_config,
+            Some(&text),
+            extracted_slots.as_ref(),
+        ) {
             Ok(chain) => {
                 info!("Command executed successfully");
                 // voices::play_ok();
@@ -394,21 +410,22 @@ fn execute_command(text: &str, rt: &tokio::runtime::Runtime) -> bool {
                     id: cmd_config.id.clone(),
                     success: false,
                 });
-                ipc::send(IpcEvent::Error { message: msg.to_string() });
+                ipc::send(IpcEvent::Error {
+                    message: msg.to_string(),
+                });
             }
         }
     } else {
         info!("No command found for: {}", text);
         voices::play_not_found();
-        ipc::send(IpcEvent::Error { 
-            message: format!("Command not found: {}", text) 
+        ipc::send(IpcEvent::Error {
+            message: format!("Command not found: {}", text),
         });
     }
-    
+
     ipc::send(IpcEvent::Idle);
     false // no chain on error or not found
 }
-
 
 pub fn close(code: i32) {
     info!("Closing application.");

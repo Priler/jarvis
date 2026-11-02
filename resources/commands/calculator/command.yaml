@@ -1,33 +1,13 @@
-list:
-- command:
-    action: cli
-    cli_cmd: calc
-  voice:
-    sounds:
-    - ok1
-    - ok2
-    - ok3
-  phrases:
-  - включи калькулятор
-  - открой калькулятор
-  - покажи калькулятор
-  - запусти калькулятор
-  - калькулятор
+commands:
+  - id: open_calculator
+    type: cli
+    description: Open calculator
+    cli_cmd: "gnome-calculator"
+    phrases:
+      ru:
+        - "открой калькулятор"
+        - "запусти калькулятор"
+      en:
+        - "open calculator"
+        - "start calculator"
 
-- command:
-    action: cli
-    cli_cmd: taskkill
-    cli_args:
-    - /f
-    - /im
-    - CalculatorApp.exe
-  voice:
-    sounds:
-    - ok1
-    - ok2
-    - ok3
-  phrases:
-  - закрой калькулятор
-  - отключи калькулятор
-  - выключи калькулятор
-  - убери калькулятор

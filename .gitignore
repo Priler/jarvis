@@ -53,3 +53,8 @@ tree.txt
 
 # Ignore AI models
 /resources/models/*
+
+venv/
+__pycache__/
+*.zip
+.codex

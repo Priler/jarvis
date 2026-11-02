@@ -1,5 +1,5 @@
-pub mod structs;
 pub mod manager;
+pub mod structs;
 
 use crate::{config, APP_CONFIG_DIR};
 
